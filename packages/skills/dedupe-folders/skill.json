@@ -1,0 +1,10 @@
+{
+  "name": "dedupe-folders",
+  "version": "0.1.0",
+  "description": "按内容哈希找出重复文件，只保留最早的一份，其余移入 .trash（不真删）",
+  "entry": "./index.ts",
+  "capabilities": [
+    { "id": "fs.read", "scope": "{{root}}", "reason": "递归读取目录并计算文件哈希" },
+    { "id": "fs.write", "scope": "{{root}}", "reason": "把重复文件移进 .trash" }
+  ]
+}

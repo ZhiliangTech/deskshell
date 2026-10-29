@@ -2,6 +2,28 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.7.0 — 2026-10-30
+
+M05：公开 skill 从 7 个补到 10 个，每一个都有端到端测试与逐字节撤销证明。
+
+### Added — 3 个真实场景 skill
+
+- **`dedupe-folders`** —— 按内容哈希（前 8 MiB + 大小）找重复，保留最早的一份，其余移入 `.trash/`。撤销全部还原。
+- **`screenshot-organize`** —— 截图按 `YYYY/MM/` 归档并加时间前缀；只碰文件名含 `screenshot` / `截图` / `snipaste` 的图片。
+- **`sync-mirror`** —— 把 `src/` 镜像到 `mirror/`：缺失或变更的文本文件写过去，多余文件移入 `.trash`，二进制按设计跳过。
+
+### Fixed
+
+- **目录层级撤销不干净**：`screenshot-organize` / `sync-mirror` 原先只对叶子目录生成 `mkdir`，撤销后中间层（如 `2026/`）残留，做不到逐字节还原。改为逐级建目录、只为不存在的层级生成动作。
+- `undo-coverage` 的用例扩展到 10 个（8 个真跑 + 2 个 GUI 带理由跳过）。
+
+### Evidence
+
+    regress 39/39
+    undo coverage 8/8 passed, 2 skipped（逐字节一致）
+    new skills 12/12（行为 + 撤销一致性）
+    协议冻结 24/24 · v0 兼容 7/7 · ask 8/8 · m04 9/9
+
 ## 0.6.0 — 2026-10-30
 
 M03：能力授予变得可见，撤销从"步数对得上"升级为"逐字节对得上"。

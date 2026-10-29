@@ -1,0 +1,10 @@
+{
+  "name": "sync-mirror",
+  "version": "0.1.0",
+  "description": "把 source 子目录镜像到 dest 子目录：缺失/变更的文件写过去，dest 多余的文件移进 .trash（只处理文本文件）",
+  "entry": "./index.ts",
+  "capabilities": [
+    { "id": "fs.read", "scope": "{{root}}", "reason": "读取源目录内容" },
+    { "id": "fs.write", "scope": "{{root}}", "reason": "写入目标目录、把多余文件移进 .trash" }
+  ]
+}

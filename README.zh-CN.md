@@ -154,4 +154,17 @@ node bin/deskshell.ts run my-skill --mode preview
 3. 能力必须声明、必须带人话理由、必须落在作用域内。
 4. 内核不依赖任何模型；模型只允许出现在"理解屏幕"和"拆解任务"两个可替换接口后面。
 
+## 一起把它做出来
+
+deskshell 先是协议，其次才是产品——最硬的部分还没人认领：
+
+| 待认领 | 从哪里下手 |
+| --- | --- |
+| **Linux AT-SPI2 驱动** | 实现 `UiDriver`（mock 驱动就是模板），`scripts/verify-driver.ts` 是及格线 |
+| **录制器事件钩子**（干掉 300ms 轮询） | `packages/drivers/windows/recorder.ps1` |
+| dry-run diff · 撤销时间线 · 文档站搜索 | 已拆成带验收标准的 issue |
+| **新 skill** | `node scripts/new-skill.ts --name x`，然后只改 `plan()` |
+
+每个任务都自带 fixture、一个会失败的测试，和 48 小时内的首次响应。悬赏板、贡献者阶梯、治理与拉人手册在 [`outreach/`](outreach/)，已合并的贡献记在 [CONTRIBUTORS.md](CONTRIBUTORS.md)。
+
 MIT License.

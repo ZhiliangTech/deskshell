@@ -89,6 +89,42 @@ const CASES: Case[] = [
     },
   },
   {
+    name: "dedupe-folders",
+    fixture: (root) => {
+      files(root, [
+        ["a/one.txt", "same"],
+        ["b/one-copy.txt", "same"],
+        ["unique.txt", "different"],
+      ]);
+    },
+  },
+  {
+    name: "screenshot-organize",
+    fixture: (root) => {
+      const made: Array<[string, string]> = [
+        ["Screenshot 2026-03-04 at 10.11.12.png", "2026-03-04T10:11:12Z"],
+        ["截图 2026-04-05 09.08.07.png", "2026-04-05T09:08:07Z"],
+      ];
+      for (const [name, iso] of made) {
+        const f = path.join(root, name);
+        fs.writeFileSync(f, name);
+        const d = new Date(iso);
+        fs.utimesSync(f, d, d);
+      }
+    },
+  },
+  {
+    name: "sync-mirror",
+    fixture: (root) => {
+      files(root, [
+        ["src/a.md", "A"],
+        ["src/docs/b.md", "B"],
+        ["mirror/a.md", "OLD"],
+        ["mirror/stale.md", "remove"],
+      ]);
+    },
+  },
+  {
     name: "browser-tabs",
     fixture: () => undefined,
     skip: "需要真实浏览器窗口（GUI）",

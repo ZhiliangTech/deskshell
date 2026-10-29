@@ -51,7 +51,10 @@
       "from": 160,
       "to": 200,
       "accept": "10 个公开 skill，至少 3 个是 UI 类，每个都有快照与撤销测试",
-      "check": "deskshell list | wc -l；snapshots 数 ≥ 10"
+      "check": "deskshell list | wc -l；snapshots 数 ≥ 10",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "公开 skill 10 个；新增 3 个各有 12/12 端到端测试；undo-coverage 8/8 逐字节一致 + 2 个 GUI 带理由跳过；regress 39/39"
     },
     {
       "id": "M06",

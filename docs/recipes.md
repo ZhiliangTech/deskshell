@@ -76,6 +76,30 @@ heap growth       25 MB
 
 Cost stays linear: 0.7–0.8 ms per step at both 1000 and 5000 files, and the journal grows by roughly 400 bytes per step.
 
+## 6. Deduplicate by content
+
+```bash
+node bin/deskshell.ts run dedupe-folders --root .\photos --mode preview
+```
+
+Files are grouped by sha256 (first 8 MiB + size), the **oldest copy is kept**, every later duplicate moves into `.trash/`. Undo puts them all back — `.trash` is a real move, not a delete.
+
+## 7. File screenshots by date
+
+```bash
+node bin/deskshell.ts run screenshot-organize --root .\Pictures\Screenshots --mode apply
+```
+
+`Screenshot 2026-03-04 at 10.11.12.png` becomes `2026/03/20260304-1011-Screenshot ....png`. Only files whose name contains `screenshot` / `截图` / `snipaste` are touched; other images stay put.
+
+## 8. Mirror a folder
+
+```bash
+node bin/deskshell.ts run sync-mirror --root .uild --mode preview     # src -> mirror
+```
+
+Missing or changed text files are written, extras in the destination move into `.trash`, binary files are skipped by design (`fs.write` carries text). Undo restores every file's previous content.
+
 ## Writing your own
 
 ```bash

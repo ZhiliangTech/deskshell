@@ -158,4 +158,17 @@ Three hard rules: every action needs a `post` assertion; every action needs an `
 3. Capabilities must be declared, justified in plain language, and scoped.
 4. The kernel has no model dependency; models may only live behind two replaceable interfaces: perceive and plan.
 
+## Build it with us
+
+deskshell is a protocol first, a product second — and the hard parts are still unowned:
+
+| Open surface | Where to start |
+| --- | --- |
+| **Linux AT-SPI2 driver** | implement `UiDriver` (the mock driver is the template); `scripts/verify-driver.ts` is the bar to clear |
+| **Recorder event hooks** (drop the 300 ms polling) | `packages/drivers/windows/recorder.ps1` |
+| Dry-run diffs · undo timeline · docs search | scoped issues, kernel + docs site |
+| **New skills** | `node scripts/new-skill.ts --name x`, then only `plan()` |
+
+Every task ships with a fixture, a failing test, and a 48-hour first response. Bounty board, contributor ladder, governance and the outreach playbook live in [`outreach/`](outreach/). Merged work lands in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
 MIT License.

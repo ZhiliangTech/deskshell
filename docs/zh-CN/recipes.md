@@ -76,6 +76,30 @@ undo              3436 ms (回滚 5002 步)
 
 成本是线性的：1000 与 5000 文件下都是每步 0.7–0.8 ms，日志每步大约 400 字节。
 
+## 6. 按内容去重
+
+```bash
+node bin/deskshell.ts run dedupe-folders --root .\photos --mode preview
+```
+
+按 sha256（前 8 MiB + 文件大小）分组，**保留最早的那一份**，之后的重复项全部移进 `.trash/`。撤销会把它们全放回去——`.trash` 是真移动，不是删除。
+
+## 7. 截图按日期归档
+
+```bash
+node bin/deskshell.ts run screenshot-organize --root .\Pictures\Screenshots --mode apply
+```
+
+`Screenshot 2026-03-04 at 10.11.12.png` → `2026/03/20260304-1011-Screenshot ....png`。只处理文件名里含 `screenshot` / `截图` / `snipaste` 的图片，其它文件不动。
+
+## 8. 镜像目录
+
+```bash
+node bin/deskshell.ts run sync-mirror --root .uild --mode preview     # src -> mirror
+```
+
+缺失或变更的文本文件写过去，目标里多余的文件移进 `.trash`，二进制文件按设计跳过（`fs.write` 只带文本）。撤销会把每个文件的旧内容还回去。
+
 ## 自己写一个
 
 ```bash
