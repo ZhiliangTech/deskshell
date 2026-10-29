@@ -2,6 +2,20 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.5.1 — 2026-10-29
+
+M01 验收（"陌生人在 Windows 上 10 分钟跑通"）挖出来的两个真问题，都已修掉。
+
+### Fixed
+
+- **已安装的包在 Node 22.23.4 上直接崩溃（exit -1073741819）。** 启动器 `bin/deskshell.mjs` 用 `fs.cpSync` 把运行时镜像到用户缓存，在 Windows + Node 22 上会在拷贝 `bin/` 时触发访问违例，没有任何报错信息。换成手写递归拷贝（`readdir` + `copyFileSync`）后正常。0.5.0 的 tarball 与 GitHub Packages 版本都受影响，0.5.1 是替换版。
+- **安装路径依赖 github.com。** README 之前给的 `npm i -g <releases/download/...>` 在部分网络下连不上。新增 `install.ps1`：版本信息与安装包都走 `api.github.com`（可达），匿名也能下，无需 token。
+
+### Added
+
+- `install.ps1` — 检查 Node/npm 版本 → 经 API 取最新 release 资产 → `npm i -g` → 自动跑 `doctor`；支持 `-Prefix` 装到指定目录（干净环境验收用）。
+- `docs/install.md`（中英）—— 三条安装路径、常见失败与判断方法。
+
 ## 0.5.0 — 2026-10-29
 
 Operating a system you can leave running: batch undo, a journal that survives growth, previews that state the cost, and a recorder driven by events instead of polling.

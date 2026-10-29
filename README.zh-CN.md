@@ -55,16 +55,18 @@
 
 ## 安装
 
-需要 Node **>=22.18**（或 >=23.6）——CLI 直接运行 TypeScript，只有这些版本起类型擦除才默认开启。
+需要 Node **>=22.18**（或 >=23.6）——CLI 直接运行 TypeScript。
 
-**用 Release 里的 tarball**（不需要 registry、不需要登录）：
+**安装脚本**（`github.com` 打不开的网络也能用，它走 GitHub API 下载）：
 
-```bash
-npm i -g https://github.com/ciceroyang/deskshell/releases/download/v0.2.0/ciceroyang-deskshell-0.2.0.tgz
-deskshell doctor
+```powershell
+irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -OutFile install.ps1
+.\install.ps1
 ```
 
-**用 GitHub Packages**（需要带 `read:packages` 的 GitHub token）：
+它会检查 Node/npm、拉最新发行版、安装、然后自动跑 `deskshell doctor`。
+
+**GitHub Packages**（需要带 `read:packages` 的 token）：
 
 ```bash
 npm config set @ciceroyang:registry https://npm.pkg.github.com
@@ -78,7 +80,7 @@ git clone https://github.com/ciceroyang/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> 部分网络访问不了 npmjs.com（registry API 通，网页返回 403）。在解决之前，上面两条是受支持的安装路径；`npm i -g deskshell` 等公共 registry 能发布后再补。
+> 部分网络访问不了 npmjs.com（网页 403，registry API 正常），所以无作用域的公共包还差一个 token。安装细节和失败对照表见 [docs/zh-CN/install.md](docs/zh-CN/install.md)。
 
 ## 30 秒跑起来
 

@@ -9,6 +9,7 @@ const SKILLS_SLUG = "skills";
 
 const ORDER = [
   "index",
+  "install",
   "quickstart",
   "protocol",
   "writing-a-skill",

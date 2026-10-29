@@ -19,3 +19,9 @@
 {"ts":1793285919639,"label":"里程碑拆分","kind":"manual"}
 {"ts":1793285923886,"label":"读我加进度段","kind":"manual"}
 {"ts":1793285923952,"label":"push to GitHub","kind":"ship"}
+{"ts":1793288346649,"label":"M01 验收：干净环境安装","kind":"milestone"}
+{"ts":1793288429294,"label":"写 install.ps1","kind":"milestone"}
+{"ts":1793288482357,"label":"修 cpSync 崩溃","kind":"milestone"}
+{"ts":1793288499607,"label":"regress 全量回归","kind":"test"}
+{"ts":1793288553207,"label":"regress 全量回归","kind":"test"}
+{"ts":1793288571484,"label":"push to GitHub","kind":"ship"}

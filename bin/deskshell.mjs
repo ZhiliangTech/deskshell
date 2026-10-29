@@ -64,6 +64,22 @@ function cacheRoot() {
   fail("找不到可写的缓存目录（可用 DESKSHELL_RUNTIME_DIR 指定）");
 }
 
+/**
+ * 手写递归拷贝：Node 22.23.4 的 fs.cpSync 在 Windows 上拷这个包会直接触发
+ * 访问违例（exit -1073741819），换成 readdir + copyFileSync 就正常。
+ */
+function copyTree(src, dst) {
+  const stat = fs.statSync(src);
+  if (stat.isDirectory()) {
+    fs.mkdirSync(dst, { recursive: true });
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+      copyTree(path.join(src, entry.name), path.join(dst, entry.name));
+    }
+    return;
+  }
+  if (stat.isFile()) fs.copyFileSync(src, dst);
+}
+
 function walk(dir, out) {
   for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
     const rel = path.join(dir, entry.name);
@@ -93,7 +109,7 @@ function mirror() {
   fs.mkdirSync(staging, { recursive: true });
   for (const dir of RUNTIME_DIRS) {
     const src = path.join(ROOT, dir);
-    if (fs.existsSync(src)) fs.cpSync(src, path.join(staging, dir), { recursive: true });
+    if (fs.existsSync(src)) copyTree(src, path.join(staging, dir));
   }
   fs.copyFileSync(path.join(ROOT, "package.json"), path.join(staging, "package.json"));
   try {

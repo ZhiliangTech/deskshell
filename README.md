@@ -55,16 +55,18 @@ Three scenarios, one undo — file moves, a UI-driven export, and window geometr
 
 ## Install
 
-Requires Node **>=22.18** (or >=23.6) — the CLI runs TypeScript directly, and type stripping is only unflagged from those versions.
+Requires Node **>=22.18** (or >=23.6) — the CLI runs TypeScript directly.
 
-**From a release tarball** (no registry, no auth):
+**Installer** (works where `github.com` is blocked; it downloads through the GitHub API):
 
-```bash
-npm i -g https://github.com/ciceroyang/deskshell/releases/download/v0.2.0/ciceroyang-deskshell-0.2.0.tgz
-deskshell doctor
+```powershell
+irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -OutFile install.ps1
+.\install.ps1
 ```
 
-**From GitHub Packages** (needs a GitHub token with `read:packages`):
+It checks Node/npm, fetches the latest release asset, installs it, and runs `deskshell doctor` for you.
+
+**GitHub Packages** (needs a token with `read:packages`):
 
 ```bash
 npm config set @ciceroyang:registry https://npm.pkg.github.com
@@ -78,7 +80,7 @@ git clone https://github.com/ciceroyang/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> npmjs.com is unreachable from some networks (the registry API works, the website returns 403). Until that is resolved, the two channels above are the supported install paths; `npm i -g deskshell` will follow once the public registry publish goes through.
+> npmjs.com is unreachable from some networks (website 403, registry API fine), so the public unscoped package is still pending a token. Detailed install notes, including the failure table, are in [docs/install.md](docs/install.md).
 
 ## Quick start
 
