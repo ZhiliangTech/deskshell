@@ -113,6 +113,8 @@ async function loadSkill(skill: ShellSkill): Promise<Skill> {
 export interface ShellOptions {
   root: string;
   granted?: CapabilityId[];
+  /** 意图解析出来的参数，原样传给 skill.plan */
+  args?: Record<string, unknown>;
 }
 
 /** 只读预览：不产生任何副作用 */
@@ -121,7 +123,7 @@ export async function preview(skill: ShellSkill, opts: ShellOptions): Promise<Pr
   const granted = opts.granted ?? (s.manifest.capabilities.map((c) => c.id) as CapabilityId[]);
   const report = await run(
     s,
-    { root: opts.root },
+    { root: opts.root, ...(opts.args ?? {}) },
     { mode: "preview", root: opts.root, granted, journalPath: path.join(opts.root, ".deskshell", "journal.jsonl") },
     {},
   );
@@ -139,7 +141,7 @@ export async function apply(skill: ShellSkill, opts: ShellOptions): Promise<{ st
   const granted = opts.granted ?? (s.manifest.capabilities.map((c) => c.id) as CapabilityId[]);
   const report = await run(
     s,
-    { root: opts.root },
+    { root: opts.root, ...(opts.args ?? {}) },
     { mode: "apply", root: opts.root, granted, journalPath: path.join(opts.root, ".deskshell", "journal.jsonl") },
     {},
   );

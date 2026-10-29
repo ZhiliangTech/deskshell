@@ -51,6 +51,8 @@ const read = (k: string): string | null => text.match(new RegExp(`${k}=([^\r\n]*
 check("全局热键注册成功", read("SELFTEST hotkey") === "True", read("SELFTEST hotkey") ?? "缺失");
 check("能列出技能", Number(read("SELFTEST skills")) >= 10, read("SELFTEST skills") ?? "缺失");
 check("一句话匹配命中", read("SELFTEST match") === "downloads-cleanup", read("SELFTEST match") ?? "缺失");
+check("一句话能解析成带参数的计划", read("SELFTEST plan") === "log-archive", read("SELFTEST plan") ?? "缺失");
+check("计划里带着天数参数", read("SELFTEST planDays") === "30", read("SELFTEST planDays") ?? "缺失");
 check("预览给出步骤", Number(read("SELFTEST previewSteps")) > 0, read("SELFTEST previewSteps") ?? "缺失");
 check("预览给出能力申请单", Number(read("SELFTEST capabilities")) > 0, read("SELFTEST capabilities") ?? "缺失");
 check("取消返回明确信号", read("SELFTEST cancel") === "True", read("SELFTEST cancel") ?? "缺失");

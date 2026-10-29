@@ -4,7 +4,34 @@
   "description": "按内容哈希找出重复文件，只保留最早的一份，其余移入 .trash（不真删）",
   "entry": "./index.ts",
   "capabilities": [
-    { "id": "fs.read", "scope": "{{root}}", "reason": "递归读取目录并计算文件哈希" },
-    { "id": "fs.write", "scope": "{{root}}", "reason": "把重复文件移进 .trash" }
-  ]
+    {
+      "id": "fs.read",
+      "scope": "{{root}}",
+      "reason": "递归读取目录并计算文件哈希"
+    },
+    {
+      "id": "fs.write",
+      "scope": "{{root}}",
+      "reason": "把重复文件移进 .trash"
+    }
+  ],
+  "intents": {
+    "triggers": [
+      "去重",
+      "重复文件",
+      "同样的文件",
+      "清理重复",
+      "找重复"
+    ],
+    "args": {
+      "extensions": {
+        "type": "extensions",
+        "hint": "只查某些类型吗？例如 jpg / 图片 / 日志"
+      },
+      "minBytes": {
+        "type": "number",
+        "hint": "小于多少字节的文件可以跳过？"
+      }
+    }
+  }
 }

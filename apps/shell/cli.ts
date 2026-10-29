@@ -1,4 +1,5 @@
 import { apply, cancel, listShellSkills, matchSkills, preview } from "./core.ts";
+import { resolveIntent } from "./intent.ts";
 
 /**
  * 桌面壳的 CLI 胶水：UI（PowerShell）只负责画界面，
@@ -32,17 +33,23 @@ try {
       })),
       empty: skills.length === 0,
     });
+  } else if (cmd === "plan") {
+    const query = argv.slice(1).filter((a) => !a.startsWith("--")).join(" ");
+    const intent = await resolveIntent(query);
+    emit({ ok: true, query, intent });
   } else if (cmd === "preview" || cmd === "apply") {
     const name = argv[1];
     const root = flag("root") ?? process.cwd();
+    const argsRaw = flag("args");
+    const args = argsRaw ? (JSON.parse(argsRaw) as Record<string, unknown>) : {};
     const found = listShellSkills().find((s) => s.name === name);
     if (!found) {
       emit({ ok: false, error: `没有这个技能：${name}` });
     } else if (cmd === "preview") {
-      const p = await preview(found, { root });
+      const p = await preview(found, { root, args });
       emit({ ok: true, ...p });
     } else {
-      const r = await apply(found, { root });
+      const r = await apply(found, { root, args });
       emit({ ok: true, ...r });
     }
   } else if (cmd === "cancel") {

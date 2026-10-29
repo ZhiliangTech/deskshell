@@ -25,6 +25,34 @@ Press **Ctrl+Alt+Space** anywhere to summon it.
 3. The panel shows the **capability request sheet**, the step list, and the summary — all from `kernel.preview`, which is read-only.
 4. **执行** calls `kernel.apply`. **取消** calls `cancel()` and nothing else.
 
+## One sentence → a plan with arguments
+
+Matching a skill is the easy half; the sentence also carries parameters. Each `skill.json` can declare an `intents` block:
+
+```json
+"intents": {
+  "triggers": ["日志", "归档日志", "旧日志"],
+  "args": { "maxAgeDays": { "type": "days", "hint": "多少天之前的日志算旧日志？" } }
+}
+```
+
+`apps/shell/intent.ts` fills those slots offline — extensions (`jpg`, `图片`), day counts (`30 天`, `一周`), paths (quoted, `下载文件夹`, or `从 src 到 backup`), prefixes (`前缀 trip`). It returns `confidence`, the `missing` slots, and a `question`, so the panel asks instead of guessing:
+
+```
+批量重命名          → rename-batch, missing ["prefix"], conf 0.5
+给我订一张机票       → null（不猜）
+```
+
+Parameters are not decoration: `把 30 天前的日志归档` and `把 90 天前的日志归档` produce different plans, and the test checks that the step counts differ **and** that the apply step actually leaves the 2-day-old log alone.
+
+Swapping in a model later means implementing one interface:
+
+```ts
+interface ModelBackend { name: string; resolve(query: string, skills: ShellSkill[]): Promise<IntentResult | null>; }
+```
+
+`RuleBackend` is the default; `FixtureBackend` is the same contract backed by fixed Q&A, which is how the tests prove the seam works.
+
 ## Cancel is provably free
 
 That claim is a test, not a promise (`scripts/shell-test.ts`):

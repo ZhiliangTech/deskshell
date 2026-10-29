@@ -4,7 +4,29 @@
   "description": "把截图按拍摄日期归到 YYYY/MM/ 目录并加时间前缀，命名冲突直接失败而不是覆盖",
   "entry": "./index.ts",
   "capabilities": [
-    { "id": "fs.read", "scope": "{{root}}", "reason": "识别截图文件与时间" },
-    { "id": "fs.write", "scope": "{{root}}", "reason": "建日期目录并移动/重命名" }
-  ]
+    {
+      "id": "fs.read",
+      "scope": "{{root}}",
+      "reason": "识别截图文件与时间"
+    },
+    {
+      "id": "fs.write",
+      "scope": "{{root}}",
+      "reason": "建日期目录并移动/重命名"
+    }
+  ],
+  "intents": {
+    "triggers": [
+      "截图",
+      "归档截图",
+      "整理截图",
+      "按日期归档"
+    ],
+    "args": {
+      "patterns": {
+        "type": "text",
+        "hint": "截图文件名里有什么特征词？"
+      }
+    }
+  }
 }

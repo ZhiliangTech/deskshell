@@ -25,6 +25,34 @@ powershell -ExecutionPolicy Bypass -File apps/shell/ui.ps1 -Root "C:\Users\me\Do
 3. 面板展示**能力申请单**、步骤列表和汇总——全部来自 `kernel.preview`，只读。
 4. **执行** 调 `kernel.apply`；**取消** 调 `cancel()`，别的什么都不做。
 
+## 一句话 → 带参数的计划
+
+匹配到技能只是一半，句子里还带着参数。`skill.json` 可以声明 `intents`：
+
+```json
+"intents": {
+  "triggers": ["日志", "归档日志", "旧日志"],
+  "args": { "maxAgeDays": { "type": "days", "hint": "多少天之前的日志算旧日志？" } }
+}
+```
+
+`apps/shell/intent.ts` 离线把这些槽填上——扩展名（`jpg`、`图片`）、天数（`30 天`、`一周`）、路径（带引号、`下载文件夹`、或 `从 src 到 backup`）、前缀（`前缀 trip`）。它返回 `confidence`、`missing` 和一句 `question`，所以面板是**问你**而不是猜：
+
+```
+批量重命名          → rename-batch，缺 ["prefix"]，置信度 0.5
+给我订一张机票       → null（不猜）
+```
+
+参数不是装饰：`把 30 天前的日志归档` 和 `把 90 天前的日志归档` 会得到不同的 plan，测试既比对步数不同，也验证执行后那份 2 天的日志**真的没被动**。
+
+以后接模型只需要实现一个接口：
+
+```ts
+interface ModelBackend { name: string; resolve(query: string, skills: ShellSkill[]): Promise<IntentResult | null>; }
+```
+
+默认是 `RuleBackend`；`FixtureBackend` 是同一契约下的固定问答实现，测试用它证明这个接缝是通的。
+
 ## "取消零副作用"是被测出来的，不是承诺
 
 `scripts/shell-test.ts`：

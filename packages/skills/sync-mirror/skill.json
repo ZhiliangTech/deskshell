@@ -4,7 +4,35 @@
   "description": "把 source 子目录镜像到 dest 子目录：缺失/变更的文件写过去，dest 多余的文件移进 .trash（只处理文本文件）",
   "entry": "./index.ts",
   "capabilities": [
-    { "id": "fs.read", "scope": "{{root}}", "reason": "读取源目录内容" },
-    { "id": "fs.write", "scope": "{{root}}", "reason": "写入目标目录、把多余文件移进 .trash" }
-  ]
+    {
+      "id": "fs.read",
+      "scope": "{{root}}",
+      "reason": "读取源目录内容"
+    },
+    {
+      "id": "fs.write",
+      "scope": "{{root}}",
+      "reason": "写入目标目录、把多余文件移进 .trash"
+    }
+  ],
+  "intents": {
+    "triggers": [
+      "镜像",
+      "同步到",
+      "备份到",
+      "复制一份到"
+    ],
+    "args": {
+      "source": {
+        "type": "path",
+        "required": true,
+        "hint": "从哪个子目录复制？例如「src」"
+      },
+      "dest": {
+        "type": "path",
+        "required": true,
+        "hint": "到哪个子目录？例如「mirror」"
+      }
+    }
+  }
 }

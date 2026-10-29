@@ -4,7 +4,33 @@
   "description": "把匹配到的文件批量重命名成 prefix-001 这样的序列，目标重名时直接失败而不是覆盖",
   "entry": "./index.ts",
   "capabilities": [
-    { "id": "fs.read", "scope": "{{root}}", "reason": "列出待重命名的文件" },
-    { "id": "fs.write", "scope": "{{root}}", "reason": "执行重命名" }
-  ]
+    {
+      "id": "fs.read",
+      "scope": "{{root}}",
+      "reason": "列出待重命名的文件"
+    },
+    {
+      "id": "fs.write",
+      "scope": "{{root}}",
+      "reason": "执行重命名"
+    }
+  ],
+  "intents": {
+    "triggers": [
+      "重命名",
+      "改名",
+      "批量重命名"
+    ],
+    "args": {
+      "prefix": {
+        "type": "text",
+        "required": true,
+        "hint": "新名字用什么前缀？例如「前缀 trip」"
+      },
+      "pattern": {
+        "type": "extensions",
+        "hint": "只改哪些类型？"
+      }
+    }
+  }
 }

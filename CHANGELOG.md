@@ -2,6 +2,25 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.10.0 — 2026-10-30
+
+M08：一句话不只是挑个技能，而是带着参数进 plan。
+
+### Added
+
+- **`apps/shell/intent.ts`** —— 意图层：`skill.json` 里的 `intents`（triggers + args 槽位）→ 从中文句子抽参数。支持扩展名（`jpg`、`图片`→一组后缀）、天数（`30 天`、`一周`）、路径（引号、`下载文件夹`、`从 src 到 backup`）、前缀（`前缀 trip`）。返回 `confidence` / `missing` / `question`，缺槽位就问，不猜。
+- **`ModelBackend` 接口** —— 默认 `RuleBackend`（离线、确定性、可解释）；`FixtureBackend` 是同一契约下的固定问答实现，测试用它证明接缝可换。以后接模型只换实现，不换契约。
+- 5 个 skill 补 `intents`：`dedupe-folders`、`screenshot-organize`、`log-archive`、`rename-batch`、`sync-mirror`。
+- `apps/shell/cli.ts` 新增 `plan` 命令，`preview`/`apply` 支持 `--args`；`core.ts` 的 `preview`/`apply` 接受参数并原样传给 `skill.plan`。
+- 桌面壳面板改走意图层：先 plan（显示置信度与命中原因），缺参数时把追问显示出来并禁用执行。
+
+### Evidence
+
+    regress 42/42
+    intent 23/23（含"参数真的改变 plan"：30 天 vs 90 天步数不同，2 天日志未被动，撤销逐字节回原状）
+    shell ui 11/11（新增 plan=log-archive、planDays=30 两条）
+    文档站 30 页
+
 ## 0.9.0 — 2026-10-30
 
 M07：桌面壳 MVP —— Ctrl+Alt+Space 一句话，先看账单，再决定动不动手。

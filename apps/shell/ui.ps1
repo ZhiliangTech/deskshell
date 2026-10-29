@@ -108,6 +108,7 @@ $status.Text = "Ctrl+Alt+Space 唤起"
 $form.Controls.Add($status)
 
 $script:selected = $null
+$script:intentArgs = "{}"
 
 function Update-Preview {
   $text = $query.Text.Trim()
@@ -119,14 +120,34 @@ function Update-Preview {
     $status.Text = "Ctrl+Alt+Space 唤起"
     return
   }
-  $m = Invoke-Cli @("match", $text)
-  if (-not $m.ok) { $preview.Text = "匹配失败：$($m.error)"; return }
-  if ($m.empty) {
+  # 先问意图层：一句话 → 技能 + 参数
+  $plan = Invoke-Cli @("plan", $text)
+  $intent = $plan.intent
+  if (-not $intent) {
     $all = (Invoke-Cli @("skills")).skills.name -join "、"
     $preview.Text = "没有匹配的技能。`r`n`r`n当前可用：$all"
     $status.Text = "没匹配到 · 什么都没做"
     return
   }
+  $script:intentArgs = ($intent.args | ConvertTo-Json -Compress)
+  if (-not $script:intentArgs) { $script:intentArgs = "{}" }
+
+  if (@($intent.missing).Count -gt 0) {
+    $preview.Text = "还差一点信息：`r`n  " + ($intent.missing -join "、") + "`r`n`r`n" + $intent.question
+    $status.Text = "等你补充参数"
+    [void]$resultList.Items.Add($intent.skill)
+    $resultList.SelectedIndex = 0
+    $runButton.Enabled = $false
+    $script:selected = $intent.skill
+    return
+  }
+
+  $status.Text = "置信度 $($intent.confidence) · $($intent.reason)"
+  [void]$resultList.Items.Add($intent.skill)
+  $resultList.SelectedIndex = 0
+  Show-Candidate
+  return
+
   foreach ($cand in $m.matches) { [void]$resultList.Items.Add($cand.name) }
   $resultList.SelectedIndex = 0
   Show-Candidate
@@ -135,10 +156,11 @@ function Update-Preview {
 function Show-Candidate {
   if ($resultList.SelectedIndex -lt 0) { return }
   $name = $resultList.SelectedItem.ToString()
-  $p = Invoke-Cli @("preview", $name, "--root", $Root)
+  $p = Invoke-Cli @("preview", $name, "--root", $Root, "--args", $script:intentArgs)
   if (-not $p.ok) { $preview.Text = "预览失败：$($p.error)"; return }
   $lines = @()
   $lines += "技能：$($p.skill)"
+  $lines += "参数：" + $script:intentArgs
   $lines += ""
   $lines += "需要的能力："
   foreach ($cap in $p.capabilities) { $lines += ("  - " + $cap.id + "　" + $cap.reason) }
@@ -158,7 +180,7 @@ $resultList.Add_SelectedIndexChanged({ Show-Candidate })
 
 $runButton.Add_Click({
   if (-not $script:selected) { return }
-  $r = Invoke-Cli @("apply", $script:selected, "--root", $Root)
+  $r = Invoke-Cli @("apply", $script:selected, "--root", $Root, "--args", $script:intentArgs)
   if ($r.ok) {
     $status.Text = "已执行 $($r.steps) 步"
     [void][System.Windows.Forms.MessageBox]::Show("已执行 $($r.steps) 步。`r`n`r`n撤销：deskshell undo --last --root `"$Root`"", "deskshell")
@@ -208,6 +230,9 @@ $form.Add_Shown({
     $lines += ("SELFTEST skills=" + $skills.skills.Count)
     $m = Invoke-Cli @("match", "清理下载")
     $lines += ("SELFTEST match=" + $m.matches[0].name)
+    $pl = Invoke-Cli @("plan", "把 30 天前的日志归档")
+    $lines += ("SELFTEST plan=" + $pl.intent.skill)
+    $lines += ("SELFTEST planDays=" + $pl.intent.args.maxAgeDays)
     $p = Invoke-Cli @("preview", $m.matches[0].name, "--root", $Root)
     $lines += ("SELFTEST previewSteps=" + $p.steps.Count)
     $lines += ("SELFTEST capabilities=" + @($p.capabilities).Count)
