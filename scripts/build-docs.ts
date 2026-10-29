@@ -155,6 +155,12 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 fs.writeFileSync(path.join(OUT, "style.css"), css.trim() + "\n", "utf8");
 
+// 静态资源（截图 / 动图 / SVG）一起拷过去
+const assets = path.join(DOCS, "assets");
+if (fs.existsSync(assets)) {
+  fs.cpSync(assets, path.join(OUT, "assets"), { recursive: true });
+}
+
 pages.forEach((page, idx) => {
   const prev = idx > 0 ? pages[idx - 1] : null;
   const next = idx < pages.length - 1 ? pages[idx + 1] : null;
