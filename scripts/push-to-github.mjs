@@ -48,16 +48,22 @@ async function call(url, method = "GET", body) {
 
 const SKIP = new Set([".git", ".demo", ".tmp", "site", "node_modules", ".build"]);
 const files = [];
+const skipped = [];
 (function walk(dir) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (SKIP.has(e.name)) continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p);
-    else if (e.isFile()) files.push(p);
+    else if (e.isFile()) {
+      // 没有 workflow scope 的 token 无法创建 .github/workflows 下的文件（API 返回 404）
+      if (p.replace(/\\/g, "/").startsWith(".github/workflows/")) skipped.push(p);
+      else files.push(p);
+    }
   }
 })(".");
 
 console.log(`准备上传 ${files.length} 个文件`);
+if (skipped.length) console.log(`跳过（需要 workflow scope）：${skipped.join(", ")}`);
 
 // 空仓库不能直接建 blob（409），先通过 Contents API 落一个初始提交
 let head = await call(`${api}/git/ref/heads/${branch}`).catch(() => null);

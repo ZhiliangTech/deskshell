@@ -1,5 +1,8 @@
 # deskshell
 
+[![ci](https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 > AI 电脑管家：**协议优先**的内核。每个动作都可预览、可验证、可撤销、可审计。
 
 现状：v0 协议 + 参考实现 + 四个可跑的场景（文件整理 / 标签归档 / 窗口平铺 / 录制回放）。
