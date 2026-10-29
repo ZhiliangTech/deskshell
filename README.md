@@ -80,7 +80,7 @@ git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> npmjs.com's website 403s from some networks while the registry API stays fine — that is why the installer downloads through the API. If you need npm, install straight from Git: `npm i -g github:ZhiliangTech/deskshell`. Publishing without the website (legacy registry auth + unscoped package) is covered in [docs/install.md](docs/install.md).
+> The npm **website** is blocked on some networks while the registry API stays fine — which is why the installer goes through the API. The public npm package is still waiting on a registry-side 2FA approval; meanwhile use the installer, GitHub Packages (`@zhiliangtech/deskshell`, 0.9.0–0.11.0), or `npm i -g github:ZhiliangTech/deskshell`.
 
 ## Quick start
 

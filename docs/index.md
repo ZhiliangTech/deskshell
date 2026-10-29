@@ -10,6 +10,14 @@ deskshell is not a pile of "AI clicks the mouse" scripts. It separates **what to
 - **Kernel** — permissions, preview, execution, assertions, rollback, journal. The layer with a frozen interface.
 - **Driver** — platform-specific (Windows UIA / macOS AX / Mock), fully replaceable.
 
+## Build it with us
+
+Twelve scoped tasks, each with an acceptance command — and no cash bounty. What you get instead: ownership of what you build, your name in the contributors file, and a roadmap vote after two merged PRs.
+
+- [Contributor board](https://github.com/ZhiliangTech/deskshell/issues/3) — claim a task with one comment
+- [The task list](https://github.com/ZhiliangTech/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.md) — acceptance criteria, sizes, what we provide
+- [Discussions](https://github.com/ZhiliangTech/deskshell/discussions) — questions and the roadmap vote
+
 ## Three concepts
 
 **Capability** — what a skill asks for, with a scope and a plain-language reason. Users can refuse.

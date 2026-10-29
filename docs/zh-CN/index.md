@@ -10,6 +10,14 @@ deskshell 不是一个"会点鼠标的脚本集合"，而是一套**让 AI 安�
 - **Kernel** 负责权限、预览、执行、断言、回滚、审计；
 - **Driver** 负责具体平台的操作（Windows UIA / macOS AX / Linux AT-SPI）。
 
+## 一起把它做出来
+
+12 个已经拆好的任务，每个都带可跑的验收命令——没有现金悬赏。你拿到的是：做出来的东西归你维护、名字进贡献者名单、两个 PR 合并后有路线图投票权。
+
+- [贡献者板](https://github.com/ZhiliangTech/deskshell/issues/3) —— 一条评论就能认领
+- [任务清单](https://github.com/ZhiliangTech/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.zh-CN.md) —— 验收标准、工期、我们提供什么
+- [Discussions](https://github.com/ZhiliangTech/deskshell/discussions) —— 提问与路线图投票
+
 ## 三个概念
 
 **Capability** —— skill 向用户申请的能力，带作用域和人话理由。用户可以不批。

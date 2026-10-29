@@ -77,9 +77,15 @@ node scripts/publish-npm.ts              # scoped: @<your-npm-user>/deskshell
 node scripts/publish-npm-unscoped.ts     # unscoped: deskshell (repo untouched, temp copy)
 ```
 
-Both scripts bootstrap an npm CLI from the registry, so no local npm install is needed. The unscoped name `deskshell` is free as of 2026-10-30, which is what makes `npm i -g deskshell` possible.
+Both scripts bootstrap an npm CLI from the registry, so no local npm install is needed.
 
-If the registry is down too, use the Git channel above, GitHub Packages (§2), or the installer (§1). `.github/workflows/publish.yml` publishes to GitHub Packages on every `v*` tag, and to public npm only when the `NPM_TOKEN` secret exists.
+**Current state (2026-10-30):** the name `deskshell` on the public registry holds only a `0.0.0-stage` placeholder. npm 12 stages a brand-new package and requires a **2FA proof-of-presence approval** before the real version becomes visible, so a publish needs the one-time password at publish time:
+
+```bash
+NPM_OTP=<6 digits> NPM_NAME=deskshell node scripts/publish-npm-unscoped.ts
+```
+
+Until that approval lands, the supported channels are §1 (installer), §2 (GitHub Packages — 0.9.0, 0.10.0, 0.11.0 are live) and §4 (Git). `.github/workflows/publish.yml` publishes to GitHub Packages on every `v*` tag, skips versions that already exist, and only touches public npm when the `NPM_TOKEN` secret is set.
 
 ## What "it works" looks like
 
