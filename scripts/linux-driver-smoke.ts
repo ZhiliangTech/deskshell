@@ -91,7 +91,7 @@ async function spawnWindow(): Promise<{ kill: () => void; label: string }> {
   throw new Error(`没能创建测试窗口（试过 ${ATTEMPTS.map((a) => a.bin).join(" / ")}）：${errors.join(" | ").slice(0, 300)}`);
 }
 
-const app = spawnWindow();
+const app = await spawnWindow();
 await sleep(1500);
 
 try {

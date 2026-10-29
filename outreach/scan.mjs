@@ -77,6 +77,24 @@ const REPO_QUERIES = [
   { q: 'topic:rpa agent', pages: 1, note: '补充：RPA + agent' },
 ];
 
+/**
+ * 种子仓库：不在搜索结果里、但贡献面直接对应的项目，强制纳入 contributor 挖掘。
+ * 覆盖 deskshell 的硬缺口：Linux 控件层（AT-SPI2）、Windows 无障碍树、macOS AX、录制器输入。
+ * 视作人工指定，source 标记为 seed:manual。
+ */
+const SEED_REPOS = [
+  'agent-sh/computer-use-linux',        // 原生 Linux 桌面控制（AT-SPI 方向）
+  'pywinauto/pywinauto',                // Windows UIA 的老牌 Python 客户端
+  'FlaUI/FlaUInspect',                  // .NET UIA 检查器
+  'guidepup/virtual-screen-reader',     // 屏幕阅读器模拟（无障碍树断言）
+  'mediar-ai/mcp-server-macos-use',     // macOS AX + MCP
+  'AB498/computer-control-mcp',         // 桌面控制 MCP
+  'dddabtc/winremote-mcp',              // Windows 远程 MCP
+  'reacher-z/Awesome-CUA',              // computer-use 目录（传播面）
+  'trycua/cua',                         // computer-use 驱动/沙箱
+  'microsoft/accessibility-insights-web', // 无障碍树检测
+];
+
 // 用户检索：bio / 名称里的自述，用来捞“人和仓库都还没红”的个体开发者
 const USER_QUERIES = [
   { q: 'computer-use in:bio', note: 'bio: computer-use' },
@@ -134,6 +152,7 @@ async function resolveToken() {
 /* ------------------------------------------------------------------ */
 
 let requestCount = 0;
+let rateLimitWaits = 0;
 let lastRequestAt = 0;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -191,6 +210,7 @@ function makeClient(token) {
         else if (remaining === '0' && reset > 0) waitMs = Math.max(1000, reset * 1000 - Date.now() + 2000);
         else waitMs = 60000;
         waitMs = Math.min(waitMs, 300000);
+        rateLimitWaits += 1;
         if (!quiet) {
           console.log('  ! ' + status + ' rate-limited (remaining=' + remaining + '), sleep ' + Math.round(waitMs / 1000) + 's [attempt ' + attempt + ']');
         }
@@ -495,6 +515,10 @@ async function main() {
       repos: person.repos
         .sort((a, b) => b.stars - a.stars)
         .map((r) => ({ full_name: r.full_name, stars: r.stars, pushed_at: r.pushed_at, contributions: r.contributions })),
+      rank: person.minRank ?? null,
+      top_repo_active_recent_days: top && top.pushed_at
+        ? Math.round((Date.now() - new Date(top.pushed_at).getTime()) / 86400000)
+        : null,
       source: person.from_user_search ? 'user-search' : 'repo-contributors',
     });
 
@@ -520,6 +544,7 @@ async function main() {
       repo_excluded: SELF_REPO,
       token_source: resolved.source,
       requests: requestCount,
+      rate_limit_waits: rateLimitWaits,
       repo_queries: REPO_QUERIES,
       user_queries: USER_QUERIES,
       filters: {

@@ -65,3 +65,5 @@
 {"ts":1793293026932,"label":"regress 全量回归","kind":"test"}
 {"ts":1793293038281,"label":"Linux smoke 重写窗口探测","kind":"manual"}
 {"ts":1793293038343,"label":"push to GitHub","kind":"ship"}
+{"ts":1793293216566,"label":"修 smoke 的 await","kind":"manual"}
+{"ts":1793293216629,"label":"push to GitHub","kind":"ship"}
