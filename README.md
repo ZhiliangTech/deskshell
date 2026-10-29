@@ -108,7 +108,7 @@ Three hard rules: every action needs a `post` assertion; every action needs an `
 
 - [STATUS.md](STATUS.md) — every capability paired with a reproducible command and its actual output
 - [CHANGELOG.md](CHANGELOG.md) — 0.1.0 scope and known limits
-- [docs/](docs/) — protocol, writing skills, undo semantics, recorder, drivers, versioning, roadmap (Chinese)
+- [docs/](docs/) — protocol, skills, undo semantics, recorder, drivers, versioning, roadmap (**English**; 中文在 [docs/zh-CN](docs/zh-CN/))
 - `node scripts/build-docs.ts` → `site/index.html` for a local docs site
 
 ## Known limits

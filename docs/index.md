@@ -1,50 +1,49 @@
-# deskshell
+<p align="center"><img src="../brand/banner.svg" alt="deskshell" width="760"></p>
 
-![deskshell](brand/banner.svg)
+# deskshell docs
 
-![deskshell demo](assets/hero.gif)
+> A protocol-first shell for AI computer control. Every action is previewed, verified, undoable, and audited.
 
-deskshell 不是一个"会点鼠标的脚本集合"，而是一套**让 AI 安全操作电脑的系统**。它把"AI 要做什么"和"怎么保证不出事"彻底分开：
+deskshell is not a pile of "AI clicks the mouse" scripts. It separates **what to do** from **how to do it safely**:
 
-- **Skill** 只描述意图（要做什么），不碰系统 API；
-- **Kernel** 负责权限、预览、执行、断言、回滚、审计；
-- **Driver** 负责具体平台的操作（Windows UIA / macOS AX / Linux AT-SPI）。
+- **Skill** — declares intent only (`plan() → Action[]`). Never touches system APIs, never writes rollback code.
+- **Kernel** — permissions, preview, execution, assertions, rollback, journal. The layer with a frozen interface.
+- **Driver** — platform-specific (Windows UIA / macOS AX / Mock), fully replaceable.
 
-## 三个概念
+## Three concepts
 
-**Capability** —— skill 向用户申请的能力，带作用域和人话理由。用户可以不批。
+**Capability** — what a skill asks for, with a scope and a plain-language reason. Users can refuse.
 
-**Action** —— 一步操作，必须声明"执行前必须成立"（pre）、"执行后必须成立"（post）和"怎么撤销"（undo）。
+**Action** — one step. Must declare a `pre` condition, a `post` assertion, and how to `undo` itself.
 
-**Journal** —— 审计日志。每一步做了什么、是否成功、怎么撤销，全部落盘。
+**Journal** — append-only JSONL. What ran, whether it succeeded, how to undo it.
 
-## 为什么是协议优先
+## Why protocol first
 
-大多数"AI 操作电脑"的项目死在同一个地方：能跑通 demo，但没人敢用。因为用户不知道它下一步要干什么，也不知道出事之后怎么恢复。
+Most "AI operates the computer" projects die in the same place: the demo works, but nobody dares use it. Users don't know what it will do next, and they don't know how to recover when it goes wrong.
 
-deskshell 的答案是：**把信任做成协议的一部分**。
+deskshell makes trust part of the protocol:
 
-- 没有 post 断言的动作，内核不认；
-- 不可撤销的动作，默认拒绝；
-- 越出作用域的路径，直接拦掉。
+- an action without a post-assertion is rejected;
+- an action that cannot be undone is rejected by default;
+- a path outside the declared scope is blocked.
 
-## 现在有什么
+## What exists today
 
-- v0 协议与内核（TypeScript，零第三方依赖）
-- Windows UIA 驱动（已验证）：枚举窗口、读控件树、点击、输入、按键
-- macOS 驱动（实验性）：System Events，支持窗口/控件读取、聚焦、输入、按键
-- 三个参考 skill：`downloads-cleanup`、`browser-tabs`、`first-skill`
-- 任务录制：焦点 + 鼠标点击 → skill 草稿，自动推断输入断言
-- 命令行 demo：预览 / 执行 / 撤销 / 权限拒绝
+- Protocol v0 + kernel (TypeScript, zero dependencies)
+- Windows UIA driver (verified) and macOS native AX bridge (verified on hardware)
+- Mock driver with 11 contract tests (kernel is platform-agnostic)
+- Four usable skills, plus a recorder that turns a human session into a skill draft
+- Nine CLI commands, eleven assertions, JSONL audit, preview snapshots
+- This docs site, built from Markdown with `node scripts/build-docs.ts`
 
-## 平台状态
+## Where to go next
 
-| 平台 | 状态 | 验证 |
-| --- | --- | --- |
-| Windows | 已验证 | `node scripts/verify-driver.ts` |
-| macOS | 实验性 | `node scripts/verify-driver.ts --input` |
-| Linux | 计划中 | — |
-
-## 许可
-
-MIT。贡献前请读仓库根目录的 `CONTRIBUTING.md`。
+- [Quick start](quickstart.html) — run it in 30 seconds
+- [Protocol v0](protocol.html) — the five types and the invariants
+- [Writing a skill](writing-a-skill.html) — 30 lines to a working skill
+- [Undo and trust](undo-and-trust.html) — why rollback lives in the kernel
+- [Recording](recording.html) — record once, get a draft skill
+- [Drivers](drivers.html) — what each platform can and cannot do
+- [Versioning](versioning.html) — how the interface stays stable
+- [Roadmap](roadmap.html) — what is next, and what needs a decision

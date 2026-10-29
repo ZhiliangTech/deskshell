@@ -1,15 +1,17 @@
-# 版本与兼容
+<p align="center"><img src="../brand/logo-mark.svg" width="72" alt=""></p>
 
-生态的地基是"接口不会半夜变"。所以版本策略必须先于功能定下来。
+# Versioning
 
-## 版本号
+The foundation of an ecosystem is "the interface does not change at 2 a.m.". Version policy comes before features.
 
-- `core` 使用 `0.x`，协议标识为 `v0`；
-- 破坏性变更必须升 minor（`0.1 → 0.2`），并在 CHANGELOG 里写清楚迁移方式；
-- 修复类变更走 patch，每周可发；
-- 任何"语义悄悄改了但版本没变"的提交，一律回滚。
+## Version numbers
 
-## skill 声明协议版本
+- `core` is `0.x`; the protocol is `v0`;
+- breaking changes bump the minor (`0.1 → 0.2`) and ship with a migration note;
+- fixes go in patch releases, as often as weekly;
+- a commit that "quietly changes semantics" without a version bump is reverted.
+
+## Skills declare a protocol version
 
 ```json
 {
@@ -20,40 +22,41 @@
 }
 ```
 
-内核加载时校验 `protocol`：
+The kernel checks `protocol` on load:
 
-- 完全匹配：正常加载；
-- 主版本不匹配：拒绝加载，并在 UI 上提示"该 skill 需要更新"；
-- 字段缺失：按当前版本处理，但打印弃用警告。
+- exact match: load normally;
+- major mismatch: refuse to load and tell the user the skill needs an update;
+- missing field: assume current, but print a deprecation warning.
 
-## 破坏性变更流程
+## Breaking-change process
 
-1. 提 RFC（放在 `rfcs/` 下），写清楚：改什么、为什么、影响哪些 skill、怎么迁移；
-2. 至少 7 天讨论期；
-3. 实现时同时提供兼容层或迁移脚本；
-4. 发布时在 CHANGELOG 顶部给出"三步迁移指南"。
+1. Open an RFC under `rfcs/`: what changes, why, which skills are affected, how to migrate;
+2. at least 7 days of discussion;
+3. ship a compatibility shim or a migration script with the change;
+4. put a three-step migration guide at the top of the CHANGELOG entry.
 
-## 快照测试
+## Snapshot tests
 
-每个 skill 在 CI 里跑两件事：
+Every skill runs two checks in CI:
 
-- **预览快照**：固定输入必须产出固定计划（防止内核升级悄悄改变行为）；
-- **回滚测试**：执行后撤销，文件系统状态必须与执行前逐字节一致。
+- **preview snapshot** — fixed input must produce a fixed plan (a kernel upgrade must not silently change behaviour);
+- **rollback test** — apply then undo must return the filesystem to a byte-identical state.
 
-这是防止"内核升级把别人的 skill 搞坏"的最后一道闸。
+This is the last gate against "an upgrade broke someone else's skill".
 
-## 弃用策略
+## Deprecation
 
-- 标记 `@deprecated` 后至少保留两个 minor 版本；
-- 弃用期间运行时打印一次警告，不阻断；
-- 移除时必须提供 codemod 或迁移文档。
+- after `@deprecated`, keep the behaviour for at least two minor versions;
+- warn once at runtime during the deprecation window, never hard-fail;
+- removal requires a codemod or a migration document.
 
-## 目录约定
+## Layout
 
 ```
-rfcs/          提案
-docs/          对外文档（本站）
-CHANGELOG.md   变更记录
+rfcs/          proposals
+docs/          this site (English)
+docs/zh-CN/    Chinese translation
+CHANGELOG.md   release notes
 ```
 
-生态项目最贵的资产不是代码，是"别人敢不敢依赖你"。版本纪律就是这个资产本身。
+The most valuable asset of an ecosystem project is not the code — it is whether people dare depend on it. Version discipline *is* that asset.

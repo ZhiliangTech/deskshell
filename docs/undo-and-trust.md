@@ -1,73 +1,73 @@
-# 撤销与信任
+<p align="center"><img src="../brand/logo-mark.svg" width="72" alt=""></p>
 
-这个项目的成败不在"能不能操作电脑"，而在"操作完别人敢不敢再用"。撤销是这件事的地基。
+# Undo and trust
 
-## 撤销的语义
+The hard part of this project is not "can it operate the computer". It is "after it operates, would anyone dare use it again". Undo is the foundation of that.
 
-撤销不是"反向执行一遍差不多的事"，而是**精确恢复到任务开始前的状态**。
+## What undo means
 
-- 移动：移回原位，且不覆盖已存在的文件；
-- 新建目录：删除该目录（仅当为空）；
-- 写文件：如果文件原本不存在，删除；如果原本存在，写回原内容；
-- 无法撤销的动作（发邮件、调外部 API、真删除）：协议层标记 `undo: null`，内核拒绝执行。
+Undo is not "run something roughly opposite". It is **restoring the exact state before the task started**.
 
-## 失败即回滚
+- move: move it back, and refuse to overwrite an existing file;
+- mkdir: remove the directory, only if empty;
+- write: delete the file if it did not exist; otherwise write the previous content back;
+- actions with external effects (send email, call an API, hard delete): marked `undo: null` and rejected by the kernel.
 
-执行过程中任意一步失败，内核会：
+## Failure rolls back
 
-1. 停止后续步骤；
-2. **先撤销失败那一步自己可能已经产生的副作用**（写完文件才断言失败，文件必须删掉）；
-3. 再把已成功的步骤按**逆序**逐个撤销；
-4. 在审计日志里把它们标成 `rolled-back`；
-5. 返回失败原因。
+When any step fails, the kernel:
 
-第 2 步是 v0.1 修掉的一个真 bug：最初只回滚"之前成功的步骤"，于是"写完文件、断言失败"会留下一个孤儿文件，还会连带让上层目录删不掉（`ENOTEMPTY`）。
+1. stops the remaining steps;
+2. **undoes the failing action's own side effects** (a file written before its assertion failed must disappear);
+3. rolls back the successful steps in reverse order;
+4. marks them `rolled-back` in the journal;
+5. returns the failure reason.
 
-结果：任务要么完整成功，要么回到起点。不存在"改了一半"的中间态。
+Step 2 fixed a real bug in v0.1: originally only "previously successful steps" were rolled back, so "write file, then fail an assertion" left an orphan file — and that orphan then blocked removal of its parent directory with `ENOTEMPTY`.
 
-想亲眼看这个过程：
+The guarantee: a task either completes fully, or returns to its starting point. There is no "half-changed" state.
+
+Watch it happen:
 
 ```bash
 node bin/deskshell.ts story --fail
 ```
 
-它会在第三步故意制造断言失败，然后展示：
-
 ```
 ✓ 1-write-a
 ✓ 2-mkdir-sub
-✗ 3-write-b-断言必失败  后置断言失败：...
-回滚 3 步（含失败动作自身的副作用）；工作目录残留：0 项（空）
+✗ 3-write-b-assert-must-fail   post assertion failed: ...
+3 steps rolled back (including the failing action's own side effects); leftovers: 0
 ```
 
-## 为什么撤销要放在内核里
+## Why undo lives in the kernel
 
-如果撤销是每个 skill 自己实现的，就一定会有 skill 忘记写、写错、或者偷懒。
+If every skill implemented its own rollback, some would forget, some would get it wrong, and some would cheat.
 
-放在内核里有三个好处：
+In the kernel:
 
-- skill 作者不需要考虑回滚，只需要声明 `undo`；
-- 撤销逻辑只写一遍，所有 skill 共享；
-- 审计日志天然记录了撤销所需的信息，不需要额外埋点。
+- skill authors only declare `undo`, they don't write rollback code;
+- rollback logic exists once and is shared by every skill;
+- the journal already records everything needed to undo — no extra instrumentation.
 
-## 权限边界
+## Permission boundaries
 
-- 能力必须在 manifest 里声明，且必须落在作用域内；
-- 未授予的能力会导致整个任务被拒绝（不是跳过某一步）；
-- 用户的授权是"这次任务"级别的，不是永久授权。
+- capabilities must be declared, justified, and scoped;
+- an ungranted capability rejects the whole task (not "skip that step");
+- authorization is per task, not permanent.
 
-## 审计日志
+## The journal
 
-每次执行都会追加 JSONL：
+Every run appends JSONL:
 
 ```json
 {"ts":1793201985000,"taskId":"task-1793201984999","actionId":"move:a","kind":"fs.move","summary":"move a.txt → .../docs/a.txt","status":"ok","undo":{"kind":"fs.move","from":".../docs/a.txt","to":".../a.txt"}}
 ```
 
-它是三类人的工具：用户看"它到底做了什么"，开发者看"哪一步坏了"，审计看"谁在什么时候动了什么"。
+It serves three audiences: users asking "what did it actually do", developers asking "which step broke", auditors asking "who changed what, and when".
 
-## 已知边界
+## Known boundaries
 
-- 外部副作用无法撤销（例如已经发出的网络请求），这类动作必须走 `undo: null` 并被拒绝；
-- 文件内容在撤销期间被外部修改时，`fs.restore` 会覆盖，需要用户确认；
-- 跨卷移动在部分平台上不是原子操作，失败时依赖日志重试。
+- external side effects cannot be undone (an HTTP request already left); such actions are `undo: null` and rejected;
+- if a file changes underneath during undo, `fs.restore` overwrites it — that needs explicit confirmation;
+- cross-volume moves are not atomic on every platform; the journal is what makes retries possible.

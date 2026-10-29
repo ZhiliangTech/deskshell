@@ -108,7 +108,7 @@ node bin/deskshell.ts run my-skill --mode preview
 
 - [STATUS.md](STATUS.md)：每条能力配一条可复现命令与实测输出
 - [CHANGELOG.md](CHANGELOG.md)：0.1.0 归档与已知限制
-- [docs/](docs/)：协议、写 skill、撤销语义、录制器、驱动、版本策略、路线图
+- [docs/](docs/)：协议、写 skill、撤销语义、录制器、驱动、版本策略、路线图（**英文**；中文在 [docs/zh-CN](docs/zh-CN/)）
 - `node scripts/build-docs.ts` → `site/index.html`（本地文档站）
 
 ## 已知限制

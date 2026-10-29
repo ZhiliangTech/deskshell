@@ -1,50 +1,53 @@
-# 路线图
+<p align="center"><img src="../brand/logo-mark.svg" width="72" alt=""></p>
 
-按"是否需要用户拍板"分层：上面是已交付，下面是待定。
+# Roadmap
 
-## 已交付（0.1.0）
+Split by "does this need a decision from the owner". Everything above is shipped; everything below waits.
 
-| 能力 | 状态 |
+## Shipped (0.1.0)
+
+| Capability | Status |
 | --- | --- |
-| 协议 v0（能力/动作/断言/撤销/审计） | 完成 |
-| 内核：预览、执行、断言、回滚、审计 | 完成 |
-| Windows UIA 驱动 | 完成，已验证 |
-| macOS System Events 驱动 | 实验性，待真机验证 |
-| Mock 驱动 + 11 项契约测试 | 完成 |
-| 4 个可用 skill | 完成 |
-| 录制器（焦点/点击/新窗口）+ 草稿生成 | 完成 |
-| CLI 8 个命令 | 完成 |
-| 文档站 8 页 + JSON Schema | 完成 |
-| 回归 21 项 | 完成 |
+| Protocol v0 (capability / action / assertion / undo / journal) | done |
+| Kernel: preview, apply, assertions, rollback, audit | done |
+| Windows UIA driver | done, verified |
+| macOS Swift AX bridge | done, verified on hardware |
+| Mock driver + 11 contract tests | done |
+| 4 usable skills | done |
+| Recorder (focus / click / window-open) + draft generator | done |
+| 9 CLI commands | done |
+| Docs site (EN + zh-CN) + JSON Schema | done |
+| 22-check regression suite | done |
 
-## 下一步（不需要决策）
+## Next (no decision needed)
 
-**协议**
-- 能力授权的交互式确认（终端里逐条 y/n，而不是 `--grant` 全给）
-- 动作级 dry-run 差异预览（"这 312 个文件会变成这样"）
-- 撤销栈的时间轴视图（按时间点回滚到某个状态）
+**Protocol**
+- interactive capability consent in the terminal (y/n per capability, instead of `--grant`)
+- per-action dry-run diffs ("these 312 files would become this")
+- a timeline view of the undo stack (roll back to a point in time)
 
-**驱动**
-- macOS：Swift 辅助进程实现 AXUIElement 的 `AXPress` / `AXValue`
-- Linux：AT-SPI2 驱动
-- 多显示器与 DPI 缩放下的坐标换算
+**Drivers**
+- macOS coordinate clicks (bridge already exposes `click --x --y`)
+- Linux AT-SPI2 driver
+- coordinate mapping across multiple displays and DPI scaling
 
-**录制器**
-- UIA 事件钩子替代轮询
-- 拖拽、右键菜单、滚轮
-- 录制时自动生成 `window.rect` 断言（窗口尺寸变化也是一种"点击生效"）
+**Recorder**
+- UIA event hooks instead of polling
+- drag, right-click menus, wheel
+- infer `window.rect` assertions from recordings (geometry changes are another "the click worked" signal)
 
-**工程**
-- `deskshell run --parallel`（多 skill 并发，独立 journal）
-- 失败注入 `--fail-at` 已具备，扩成"随机故障注入"跑稳定性
-- 文档站加搜索
+**Engineering**
+- `deskshell run --parallel` (independent journals per skill)
+- random fault injection on top of `--fail-at`, to shake out flakiness
+- search in the docs site
 
-## 需要拍板才能推进
+## Needs a decision
 
-| 事项 | 需要你决定什么 |
+| Item | What you need to decide |
 | --- | --- |
-| 公开仓库 | 用哪个账号/组织、仓库名、是否现在就公开 |
-| 跨平台投入 | 是否投入 Swift AX 与 Linux 驱动；是否有可用的 Mac/Linux 测试机 |
-| 产品范围 | 继续做"工具集合"，还是开始做桌面壳（全局唤起 + 覆盖层） |
-| 安全策略 | 危险动作默认拦截的边界（删除/支付/发消息），是否加网络出口白名单 |
-| 模型接入 | 是否提供可选的"自然语言 → plan"插件（内核仍保持零依赖） |
+| Public repository | which account/org, repository name, when to publish |
+| Cross-platform investment | fund the Swift AX work and a Linux driver, or stay Windows-first |
+| Product scope | keep building tools, or start the desktop shell (global hotkey + overlay) |
+| Safety policy | where the "block dangerous actions" line sits; network egress allowlist? |
+| Model integration | ship an optional "natural language → plan" plugin (kernel stays dependency-free) |
+| Packaging | publish to npm / Homebrew, or keep "clone and run" |
