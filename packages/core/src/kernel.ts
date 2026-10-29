@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import type {
   Action,
+  ActionSummary,
   JournalEntry,
   RunOptions,
   RunReport,
@@ -50,7 +51,30 @@ export async function run(
       status: "skipped",
       detail: `${describe(a)}  [risk=${a.risk ?? "low"}, undoable=${a.undo !== null}]`,
     }));
-    return { mode: "preview", steps, journal: [], rolledBack: 0 };
+    const summary: ActionSummary = {
+      total: actions.length,
+      mkdir: 0,
+      move: 0,
+      delete: 0,
+      write: 0,
+      ui: 0,
+      window: 0,
+      undoable: 0,
+      notUndoable: 0,
+      risk: { low: 0, medium: 0, high: 0 },
+    };
+    for (const a of actions) {
+      if (a.kind === "fs.mkdir") summary.mkdir++;
+      else if (a.kind === "fs.move") summary.move++;
+      else if (a.kind === "fs.delete") summary.delete++;
+      else if (a.kind === "fs.write") summary.write++;
+      else if (a.kind === "window.move") summary.window++;
+      else summary.ui++;
+      if (a.undo === null || a.undo === undefined) summary.notUndoable++;
+      else summary.undoable++;
+      summary.risk[a.risk ?? "low"]++;
+    }
+    return { mode: "preview", steps, journal: [], rolledBack: 0, summary };
   }
 
   const taskId = `task-${Date.now()}`;

@@ -214,9 +214,25 @@ export interface RunOptions {
   journalPath: string;
 }
 
+/** 预览汇总：不执行，只看这批动作会改动什么 */
+export interface ActionSummary {
+  total: number;
+  mkdir: number;
+  move: number;
+  delete: number;
+  write: number;
+  ui: number;
+  window: number;
+  undoable: number;
+  notUndoable: number;
+  risk: { low: number; medium: number; high: number };
+}
+
 export interface RunReport {
   mode: RunOptions["mode"];
   steps: StepResult[];
   journal: JournalEntry[];
   rolledBack: number;
+  /** 仅在 preview 模式下填充 */
+  summary?: ActionSummary;
 }

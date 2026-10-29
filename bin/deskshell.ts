@@ -35,6 +35,7 @@ function usage(): void {
   deskshell history [--root DIR] [--json] 任务列表：skill / 步数 / 耗时 / 状态
   deskshell show [taskId] [--root DIR]    某个任务的时间线（默认最近一次）
   deskshell undo --task <id> [--root DIR]  撤销某个任务
+  deskshell undo --last <N> | --since <30m>  撤销最近 N 个任务 / 一段时间内的任务
   deskshell add <path> [--dir DIR] [--force]  安装外部 skill（默认 ~/.deskshell/skills）
 
 run 选项:
@@ -197,6 +198,7 @@ async function runSkill(
           granted,
           steps: report.steps,
           rolledBack: report.rolledBack,
+          summary: report.summary,
         }),
       );
     } else {
@@ -205,6 +207,22 @@ async function runSkill(
         out(`  ${mark} ${s.actionId}${s.detail ? "  " + s.detail : ""}`);
       }
       if (report.rolledBack) out(`  ↩ 回滚 ${report.rolledBack} 步`);
+      const sum = report.summary;
+      if (sum) {
+        const parts = [
+          sum.mkdir ? `新建 ${sum.mkdir}` : "",
+          sum.move ? `移动 ${sum.move}` : "",
+          sum.delete ? `删除 ${sum.delete}` : "",
+          sum.write ? `写入 ${sum.write}` : "",
+          sum.ui ? `UI ${sum.ui}` : "",
+          sum.window ? `窗口 ${sum.window}` : "",
+        ].filter(Boolean);
+        out(
+          `  汇总：${parts.join(" · ") || "无动作"} ｜ 可撤销 ${sum.undoable}/${sum.total}` +
+            ` ｜ 风险 low ${sum.risk.low} / medium ${sum.risk.medium} / high ${sum.risk.high}`,
+        );
+        if (sum.notUndoable > 0) out(`  ⚠ ${sum.notUndoable} 步不可撤销`);
+      }
     }
     return report.steps.some((s) => s.status === "failed") ? 1 : 0;
   } catch (err) {
@@ -473,31 +491,101 @@ switch (cmd) {
     break;
   }
   case "undo": {
-    const taskId = flags.task;
-    if (!taskId) {
-      console.error("用法: deskshell undo --task <taskId> [--root DIR]");
-      console.error("taskId 可以从 deskshell journal 的输出里拿");
+    const root = path.resolve(flags.root ?? ".demo/cli");
+    const journalPath = path.join(root, ".deskshell", "journal.jsonl");
+
+    /** 把 "30m / 2h / 1d" 解析成毫秒 */
+    const parseSpan = (raw: string): number | null => {
+      const m = /^(\d+)\s*([smhd])$/i.exec(raw.trim());
+      if (!m) return null;
+      const n = Number(m[1]);
+      const unit = m[2].toLowerCase();
+      const scale = unit === "s" ? 1e3 : unit === "m" ? 6e4 : unit === "h" ? 36e5 : 864e5;
+      return n * scale;
+    };
+
+    if (!flags.task && !flags.last && !flags.since) {
+      console.error("用法: deskshell undo --task <taskId> | --last <N> | --since <30m|2h|1d> [--root DIR]");
+      console.error("taskId 可以从 deskshell history 的输出里拿");
       process.exitCode = 2;
       break;
     }
-    const root = path.resolve(flags.root ?? ".demo/cli");
-    const report = await undoTask(taskId, {
-      mode: "undo",
-      root,
-      granted: [],
-      journalPath: path.join(root, ".deskshell", "journal.jsonl"),
-    });
-    if (flags.json === "true") {
-      console.log(JSON.stringify({ ok: true, taskId, steps: report.steps, rolledBack: report.rolledBack }));
-    } else {
-      if (report.rolledBack === 0) console.log(`没有可撤销的步骤：${taskId}`);
-      for (const s of report.steps) {
-        console.log(`  ${s.status === "ok" ? "↩" : "✗"} ${s.actionId}${s.detail ? "  " + s.detail : ""}`);
+
+    if (flags.task) {
+      const taskId = flags.task;
+      const report = await undoTask(taskId, { mode: "undo", root, granted: [], journalPath });
+      if (flags.json === "true") {
+        console.log(JSON.stringify({ ok: true, taskId, steps: report.steps, rolledBack: report.rolledBack }));
+      } else {
+        if (report.rolledBack === 0) console.log(`没有可撤销的步骤：${taskId}`);
+        for (const s of report.steps) {
+          console.log(`  ${s.status === "ok" ? "↩" : "✗"} ${s.actionId}${s.detail ? "  " + s.detail : ""}`);
+        }
+        if (report.rolledBack) console.log(`已撤销 ${report.rolledBack} 步`);
       }
-      if (report.rolledBack) console.log(`已撤销 ${report.rolledBack} 步`);
+      break;
     }
+
+    // --last / --since：按任务批量撤销
+    if (!fs.existsSync(journalPath)) {
+      console.log(`没有审计日志：${journalPath}`);
+      break;
+    }
+    const entries = load(journalPath).filter((e) => e.status === "ok");
+    const byTask = new Map<string, number>();
+    for (const e of entries) byTask.set(e.taskId, Math.min(byTask.get(e.taskId) ?? Infinity, e.ts));
+    const ordered = [...byTask.entries()].sort((a, b) => b[1] - a[1]).map(([taskId, ts]) => ({ taskId, ts }));
+
+    let targets = ordered;
+    if (flags.last) {
+      const n = Number(flags.last);
+      if (!Number.isFinite(n) || n <= 0) {
+        console.error("--last 需要一个正整数");
+        process.exitCode = 2;
+        break;
+      }
+      targets = ordered.slice(0, n);
+    } else if (flags.since) {
+      const span = parseSpan(flags.since);
+      if (span === null) {
+        console.error("--since 的格式是 30m / 2h / 1d");
+        process.exitCode = 2;
+        break;
+      }
+      const cutoff = Date.now() - span;
+      targets = ordered.filter((t) => t.ts >= cutoff);
+    }
+
+    if (targets.length === 0) {
+      console.log("没有匹配的任务可撤销");
+      break;
+    }
+
+    let totalSteps = 0;
+    const results: Array<{ taskId: string; rolledBack: number; failed: number }> = [];
+    for (const t of targets) {
+      const report = await undoTask(t.taskId, { mode: "undo", root, granted: [], journalPath });
+      const failed = report.steps.filter((x) => x.status === "failed").length;
+      totalSteps += report.rolledBack;
+      results.push({ taskId: t.taskId, rolledBack: report.rolledBack, failed });
+      if (flags.json !== "true") {
+        console.log(`${t.taskId}  ↩ ${report.rolledBack} 步${failed ? `  失败 ${failed} 步` : ""}`);
+        for (const s of report.steps.filter((x) => x.status === "failed")) {
+          console.log(`  ✗ ${s.actionId}${s.detail ? "  " + s.detail : ""}`);
+        }
+      }
+    }
+
+    if (flags.json === "true") {
+      console.log(JSON.stringify({ ok: results.every((r) => r.failed === 0), tasks: results, rolledBack: totalSteps }));
+    } else {
+      console.log(`
+共撤销 ${results.length} 个任务、${totalSteps} 步${results.some((r) => r.failed) ? "（有失败项）" : ""}`);
+    }
+    process.exitCode = results.some((r) => r.failed) ? 1 : 0;
     break;
   }
+
   case "add": {
     const src = positional[1];
     if (!src) {

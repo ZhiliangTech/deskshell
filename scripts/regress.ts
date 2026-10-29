@@ -95,6 +95,9 @@ run("snapshots", ["scripts/snapshot-test.ts"], (o) => o.includes("snapshots matc
 // 5) 新 skill：photo-sort / log-archive / rename-batch
 run("photo.sort", ["scripts/photo-sort-test.ts"], (o) => o.includes("PASS photo-sort"));
 run("policy.fuzz", ["scripts/policy-fuzz.ts"], (o) => o.includes("5/5 passed"));
+run("undo.range", ["scripts/undo-range-test.ts"], (o) => o.includes("6/6 passed"));
+run("journal.rotate", ["scripts/journal-rotate-test.ts"], (o) => o.includes("7/7 passed"));
+run("preview.summary", ["scripts/preview-summary-test.ts"], (o) => o.includes("9/9 passed"));
 run("undo.guard", ["scripts/undo-guard-test.ts"], (o) => o.includes("3/3 passed"));
 run("parallel", ["scripts/parallel-test.ts"], (o) => o.includes("7/7 passed"));
 run("new.skills", ["scripts/new-skills-test.ts"], (o) => o.includes("8/8 passed"));
