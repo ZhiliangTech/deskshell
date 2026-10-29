@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        这张表背后是 [outreach/GOOD-FIRST-ISSUES.zh-CN.md](https://github.com/ciceroyang/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.zh-CN.md)（英文：[GOOD-FIRST-ISSUES.md](https://github.com/ciceroyang/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.md)）。
-        每个任务都自带可跑的验收命令；认领前请先读过 [CONTRIBUTING.md](https://github.com/ciceroyang/deskshell/blob/main/CONTRIBUTING.md)。
+        这张表背后是 [outreach/GOOD-FIRST-ISSUES.zh-CN.md](https://github.com/ZhiliangTech/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.zh-CN.md)（英文：[GOOD-FIRST-ISSUES.md](https://github.com/ZhiliangTech/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.md)）。
+        每个任务都自带可跑的验收命令；认领前请先读过 [CONTRIBUTING.md](https://github.com/ZhiliangTech/deskshell/blob/main/CONTRIBUTING.md)。
         维护者承诺：首次响应 48 小时内，小 PR 72 小时内给结论。
 
   - type: dropdown

@@ -30,7 +30,7 @@ It should not. Paths are checked twice: lexically (`..` is rejected) and by real
 
 No. It samples focus, clicks, and new windows, then emits a skill draft with inferred assertions. Click assertions are left empty on purpose — only a human knows what "that click worked" means.
 
-## Why is `deskshell` published as `@ciceroyang/deskshell`?
+## Why is `deskshell` published as `@zhiliangtech/deskshell`?
 
 Because npmjs.com is unreachable from some networks (the website returns 403 while the registry API works), so the public unscoped package cannot be published yet. GitHub Packages works today. When the npm token becomes available, `deskshell` will be published unscoped as well.
 
@@ -47,4 +47,4 @@ Yes. Undo reads the JSONL journal on disk, not memory. `deskshell undo --task <i
 
 ## How do I verify claims in the docs?
 
-Every capability in [STATUS.md](https://github.com/ciceroyang/deskshell/blob/main/STATUS.md) is paired with a command and its real output, and `node scripts/regress.ts` runs 24 checks including contract, snapshot, benchmark and the three new skills.
+Every capability in [STATUS.md](https://github.com/ZhiliangTech/deskshell/blob/main/STATUS.md) is paired with a command and its real output, and `node scripts/regress.ts` runs 24 checks including contract, snapshot, benchmark and the three new skills.

@@ -4,10 +4,11 @@
 
 任务来自 [docs/roadmap.md](../docs/roadmap.md) 记录的缺口、[STATUS.md](../STATUS.md) 那张"没做到的"表，以及代码本身。如果某个功能的一部分已经上线，任务会**指名道姓说清哪部分做完了**（并给出可验证的文件），然后把范围往前推一步，避免你花一个周末重做已经存在的东西。板上没有编出来的活。
 
-- 仓库：`https://github.com/ciceroyang/deskshell` · MIT · Node `>=22.18`
+- 仓库：`https://github.com/ZhiliangTech/deskshell` · MIT · Node `>=22.18`
 - **零第三方运行时依赖**是硬约束，不是偏好。要加依赖，先走 RFC（见 [GOVERNANCE.md](GOVERNANCE.md)）。
 - 协议 v0 冻结在 `spec/protocol-v0.json`。改 action / assertion / undo 的语义必须走 RFC；本板上的任务都在 v0 之内。
 - 第一次提 PR 的路径（装环境应该 30 分钟内搞定）：[CONTRIBUTING.md](../CONTRIBUTING.md) → `node scripts/regress.ts` → 挑一个 → 带认领说明开 draft PR。
+- **`bounty` 是「可认领」，不是「有奖金」。** 这块板上没有任何现金：你拿到的是所有权、[CONTRIBUTORS.md](../CONTRIBUTORS.md) 里的署名、优先评审，以及两个 PR 合并后的 roadmap 投票权。写在最前面，免得有人冲着钱来认领。
 
 ## 怎么认领
 

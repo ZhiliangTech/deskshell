@@ -108,11 +108,27 @@
 | star 太少没人信 | 打开就关 | 用证据替代声量：39 项回归实测、真机验证、失败回滚日志截图 |
 | 中英文档漂移 | 两套文档不同步 | 英文为准，zh-CN 由贡献者认领；build-docs.ts 一次生成两站 |
 
-## 8. 需要业主拍板的 4 件事
+## 8. 业主已拍板（2026-10-30 定稿，不再翻案）
 
-1. 是否设**现金悬赏**（Linux 驱动 500-2000 元级别）？没钱也能招人，但驱动这类重活最好有。
-2. 是否**开 Discussions** 并把仓库迁到 org（长期更像项目）。
-3. 是否**公开 Roadmap 决策权**（给 3 个贡献者投票权）。
-4. 是否**发公共 npm**（npm i -g deskshell 装不到，是转化漏斗最大的漏点）。
+| 事项 | 决定 | 现状 |
+| --- | --- | --- |
+| 现金悬赏 | **不做**。`bounty` 标签只表示"可认领、有验收标准、有署名"，不涉及任何钱 | 已在两版任务板与 issue 模板里写明 |
+| Discussions | **已开** | 公告 [discussion #10](https://github.com/ZhiliangTech/deskshell/discussions/10)，路线图投票 [#11](https://github.com/ZhiliangTech/deskshell/discussions/11) |
+| Roadmap 决策权 | **已公开**：2 个合并 PR 即获得正式一票，投票在 Discussions 里公开计票 | 见 CONTRIBUTOR-LADDER 第 93 行、GOVERNANCE |
+| 迁到 org | **待办（卡在平台上）**：当前账号没有任何 org，GitHub REST 也不允许用个人账号建 org；需要先在网页建 org，再 `/repos/{owner}/{repo}/transfer` | 见下方"迁 org 的实际步骤" |
+| 公共 npm | **待办（卡在凭据上）**：本机无 npm CLI、`~/.npmrc` 无 token、环境变量里也没有 `NPM_TOKEN`；`scripts/publish-npm.ts` 已就绪 | 给一个 token 就能发，见下方命令 |
 
-> 这 4 项不影响今天就开始发消息；默认（不花钱、用 issue 代替 Discussions、Roadmap 只读、继续 GitHub Packages）先跑，等第一个外部 PR 再定。
+### 迁 org 的实际步骤（3 分钟）
+
+1. 打开 <https://github.com/account/organizations/new>，建一个免费 org（建议 `deskshell-dev` 或与你 GitHub 账号同名的 org）。
+2. 执行：`POST /repos/ZhiliangTech/deskshell/transfer`，body `{"new_owner":"<org>"}`（我有 token，说一声就发）。
+3. 转移后记得改这三处引用：README 里的徽章链接、`package.json` 的 `repository`/`homepage`、`install.ps1` 里的 raw 地址；npm 包名 `@zhiliangtech/deskshell` 可以保留不动。
+
+### 发公共 npm 的实际步骤（1 条命令）
+
+```bash
+NPM_TOKEN=npm_xxx node scripts/publish-npm.ts            # 先跑 --dry-run 看打包清单
+```
+
+> 需要的 token 类型：Automation token，权限 `read+write packages`。没有 token 之前，安装通道保持 `install.ps1` + GitHub Packages 两条，README 里已经写清。
+

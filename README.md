@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml"><img src="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml/badge.svg?branch=main" alt="ci"></a>
+  <a href="https://github.com/ZhiliangTech/deskshell/actions/workflows/ci.yml"><img src="https://github.com/ZhiliangTech/deskshell/actions/workflows/ci.yml/badge.svg?branch=main" alt="ci"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
   <img src="https://img.shields.io/badge/node-%E2%89%A522.18-339933" alt="node">
   <img src="https://img.shields.io/badge/model-zero%20dependency-FF7A59" alt="zero model dependency">
@@ -60,7 +60,7 @@ Requires Node **>=22.18** (or >=23.6) — the CLI runs TypeScript directly.
 **Installer** (works where `github.com` is blocked; it downloads through the GitHub API):
 
 ```powershell
-irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -OutFile install.ps1
+irm https://raw.githubusercontent.com/ZhiliangTech/deskshell/main/install.ps1 -OutFile install.ps1
 .\install.ps1
 ```
 
@@ -69,18 +69,18 @@ It checks Node/npm, fetches the latest release asset, installs it, and runs `des
 **GitHub Packages** (needs a token with `read:packages`):
 
 ```bash
-npm config set @ciceroyang:registry https://npm.pkg.github.com
-npm i -g @ciceroyang/deskshell
+npm config set @zhiliangtech:registry https://npm.pkg.github.com
+npm i -g @zhiliangtech/deskshell
 ```
 
 **From source:**
 
 ```bash
-git clone https://github.com/ciceroyang/deskshell && cd deskshell
+git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> npmjs.com is unreachable from some networks (website 403, registry API fine), so the public unscoped package is still pending a token. Detailed install notes, including the failure table, are in [docs/install.md](docs/install.md).
+> npmjs.com's website 403s from some networks while the registry API stays fine — that is why the installer downloads through the API. If you need npm, install straight from Git: `npm i -g github:ZhiliangTech/deskshell`. Publishing without the website (legacy registry auth + unscoped package) is covered in [docs/install.md](docs/install.md).
 
 ## Quick start
 
@@ -158,6 +158,10 @@ Three hard rules: every action needs a `post` assertion; every action needs an `
 3. Capabilities must be declared, justified in plain language, and scoped.
 4. The kernel has no model dependency; models may only live behind two replaceable interfaces: perceive and plan.
 
+## Docs
+
+Read the protocol, quick start and design invariants as a site: <https://zhiliangtech.github.io/deskshell/>.
+
 ## Build it with us
 
 deskshell is a protocol first, a product second — and the hard parts are still unowned:
@@ -169,6 +173,6 @@ deskshell is a protocol first, a product second — and the hard parts are still
 | Dry-run diffs · undo timeline · docs search | scoped issues, kernel + docs site |
 | **New skills** | `node scripts/new-skill.ts --name x`, then only `plan()` |
 
-Every task ships with a fixture, a failing test, and a 48-hour first response. Bounty board, contributor ladder, governance and the outreach playbook live in [`outreach/`](outreach/). Merged work lands in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+Every task ships with a fixture, a failing test, and a 48-hour first response. Bounty board, contributor ladder, governance and the outreach playbook live in [`outreach/`](outreach/). Merged work lands in [CONTRIBUTORS.md](CONTRIBUTORS.md). Questions and roadmap votes happen in [Discussions](https://github.com/ZhiliangTech/deskshell/discussions).
 
 MIT License.

@@ -38,7 +38,7 @@ const npmCli = await fetchNpm();
 const npmrc = path.join(work, ".npmrc");
 fs.writeFileSync(
   npmrc,
-  dry ? "" : `//npm.pkg.github.com/:_authToken=${githubToken()}\n@ciceroyang:registry=https://npm.pkg.github.com\n`,
+  dry ? "" : `//npm.pkg.github.com/:_authToken=${githubToken()}\n@zhiliangtech:registry=https://npm.pkg.github.com\n`,
   "utf8",
 );
 

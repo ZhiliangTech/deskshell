@@ -73,3 +73,12 @@
 {"ts":1793293656498,"label":"regress 全量回归","kind":"test"}
 {"ts":1793293699774,"label":"M06 完成 + 0.8.0","kind":"manual"}
 {"ts":1793293703536,"label":"push to GitHub","kind":"ship"}
+{"ts":1793293824221,"label":"regress 全量回归","kind":"test"}
+{"ts":1793294144022,"label":"regress 全量回归","kind":"test"}
+{"ts":1793294987844,"label":"M07 桌面壳","kind":"milestone"}
+{"ts":1793295002877,"label":"regress 全量回归","kind":"test"}
+{"ts":1793295024087,"label":"regress 全量回归","kind":"test"}
+{"ts":1793295082271,"label":"regress 全量回归","kind":"test"}
+{"ts":1793295101396,"label":"regress 全量回归","kind":"test"}
+{"ts":1793295131529,"label":"M07 桌面壳完成","kind":"milestone"}
+{"ts":1793295131673,"label":"push to GitHub","kind":"ship"}

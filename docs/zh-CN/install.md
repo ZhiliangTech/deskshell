@@ -7,7 +7,7 @@
 ## 1. 安装脚本（推荐）
 
 ```powershell
-irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -OutFile install.ps1
+irm https://raw.githubusercontent.com/ZhiliangTech/deskshell/main/install.ps1 -OutFile install.ps1
 .\install.ps1
 ```
 
@@ -26,8 +26,8 @@ irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -Out
 ## 2. GitHub Packages
 
 ```bash
-npm config set @ciceroyang:registry https://npm.pkg.github.com
-npm i -g @ciceroyang/deskshell
+npm config set @zhiliangtech:registry https://npm.pkg.github.com
+npm i -g @zhiliangtech/deskshell
 ```
 
 需要带 `read:packages` 的 GitHub token 写进 `~/.npmrc`。已经给 npm 配好 GitHub 的人走这条。
@@ -35,11 +35,51 @@ npm i -g @ciceroyang/deskshell
 ## 3. 从源码
 
 ```bash
-git clone https://github.com/ciceroyang/deskshell && cd deskshell
+git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
 没有构建步骤：CLI 就是 TypeScript，靠 Node 的类型擦除直接跑。
+
+## 4. 直接从 Git 装（完全不经过 registry）
+
+`registry.npmjs.org` 慢、或者包还没发布时，npm 可以直接从仓库装：
+
+```bash
+npm i -g github:ZhiliangTech/deskshell
+npx github:ZhiliangTech/deskshell doctor      # 一次性跑，不装全局
+```
+
+走的是 `github.com` + Git，不是 npm registry。发行版附件同理：
+
+```bash
+npm i -g https://github.com/ZhiliangTech/deskshell/releases/download/v0.8.0/ciceroyang-deskshell-0.8.0.tgz
+```
+
+## 5. 维护者：www.npmjs.com 打不开时怎么发布
+
+npm 的**网站**被墙时，**registry API** 往往是通的。别猜，先测：
+
+```bash
+node scripts/npm-token.ts --dry-run     # 打印 registry ping 状态
+```
+
+ping 是 200，就可以**不开网页**拿到 token（legacy 登录接口）：
+
+```bash
+NPM_USER=你的用户名 NPM_PASS=*** NPM_EMAIL=you@example.com [NPM_OTP=123456] node scripts/npm-token.ts
+```
+
+它把 `//registry.npmjs.org/:_authToken` 写进 `~/.npmrc`（权限 600），只打印 token 前 8 位。然后：
+
+```bash
+node scripts/publish-npm.ts              # 带 scope：@<你的 npm 用户名>/deskshell
+node scripts/publish-npm-unscoped.ts     # 无 scope：deskshell（临时副本发布，仓库不动）
+```
+
+两个脚本都会自己从 registry 拉一份 npm CLI，本机不需要装 npm。截至 2026-10-30，无 scope 的 `deskshell` 名字是空的，这才是 `npm i -g deskshell` 能成立的前提。
+
+如果 registry 也不通，走上面的 Git 通道、GitHub Packages（§2）或安装脚本（§1）。`.github/workflows/publish.yml` 会在每个 `v*` tag 上发 GitHub Packages，只有仓库里配了 `NPM_TOKEN` secret 时才发公共 npm。
 
 ## "装好了"长什么样
 

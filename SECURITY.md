@@ -19,7 +19,7 @@ We are pre-1.0. The protocol is `v0`. Breaking changes bump the minor version (`
 
 Use GitHub's private advisory form:
 
-👉 https://github.com/ciceroyang/deskshell/security/advisories/new
+👉 https://github.com/ZhiliangTech/deskshell/security/advisories/new
 
 That channel is private between you and the maintainers, gives us a place to develop and review a fix, and lets us credit you in the published advisory.
 

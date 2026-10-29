@@ -4,10 +4,11 @@ Twelve tasks that are **already scoped**, **already unblocked**, and **each end 
 
 Everything below is derived from the gaps recorded in [docs/roadmap.md](../docs/roadmap.md), the honest-limits table in [STATUS.md](../STATUS.md), and the code itself. Where part of a feature already shipped, the task names the shipped part precisely (with the file to prove it) and moves one step further, so you never spend a weekend rebuilding what exists. There is no invented work on this board.
 
-- Repo: `https://github.com/ciceroyang/deskshell` · MIT · Node `>=22.18`
+- Repo: `https://github.com/ZhiliangTech/deskshell` · MIT · Node `>=22.18`
 - Zero third-party runtime dependencies — an invariant, not a preference. A PR that adds a dependency needs an RFC first (see [GOVERNANCE.md](GOVERNANCE.md)).
 - Protocol v0 is frozen in `spec/protocol-v0.json`. Changing action / assertion / undo semantics needs an RFC. Everything on this board fits inside v0.
 - First PR path (under 30 minutes of setup): [CONTRIBUTING.md](../CONTRIBUTING.md) → `node scripts/regress.ts` → pick a task → open a draft PR with the claim comment.
+- **`bounty` means claimable, not paid.** No cash changes hands on this board — what you get is ownership, credit in [CONTRIBUTORS.md](../CONTRIBUTORS.md), priority review, and a roadmap vote after two merged PRs. Said plainly here so nobody claims a task expecting money.
 
 ## How to claim
 

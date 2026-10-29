@@ -30,7 +30,7 @@
 
 不是。它采样焦点、点击和新建窗口，然后产出带推断断言的 skill 草稿。点击类断言故意留空——只有人知道"这一下点成功了"意味着什么。
 
-## 为什么包名是 `@ciceroyang/deskshell`？
+## 为什么包名是 `@zhiliangtech/deskshell`？
 
 因为部分网络访问不了 npmjs.com（网页 403，registry API 正常），无作用域的公共包暂时发不出去。GitHub Packages 现在可用；等 token 到位会补发无作用域的 `deskshell`。
 
@@ -47,4 +47,4 @@
 
 ## 怎么验证文档里的说法？
 
-[STATUS.md](https://github.com/ciceroyang/deskshell/blob/main/STATUS.md) 里每条能力都配了命令与真实输出；`node scripts/regress.ts` 跑 24 项检查，含契约、快照、基准和三个新 skill。
+[STATUS.md](https://github.com/ZhiliangTech/deskshell/blob/main/STATUS.md) 里每条能力都配了命令与真实输出；`node scripts/regress.ts` 跑 24 项检查，含契约、快照、基准和三个新 skill。

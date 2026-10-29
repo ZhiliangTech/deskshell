@@ -1,0 +1,39 @@
+name: publish
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  github-packages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+      - run: node scripts/regress.ts
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 公共 npm：只在仓库里配了 NPM_TOKEN secret 时运行。
+  # token 不需要 www.npmjs.com：本地跑 node scripts/npm-token.ts 就能拿到，再贴进 Secret。
+  npm-public:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.NPM_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - run: node scripts/regress.ts
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

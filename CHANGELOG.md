@@ -2,6 +2,30 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.9.0 — 2026-10-30
+
+M07：桌面壳 MVP —— Ctrl+Alt+Space 一句话，先看账单，再决定动不动手。
+
+### Added
+
+- **`apps/shell/core.ts`** —— 壳的核心逻辑（与 UI 无关）：技能扫描、一句话匹配（名字/描述关键词打分，中文按两字片段弱命中）、`preview`（只读）、`apply`、`cancel`（显式什么都不做）。
+- **`apps/shell/cli.ts`** —— JSON 胶水：`skills / match / preview / apply / cancel`，一行一个 JSON。
+- **`apps/shell/ui.ps1`** —— WinForms 面板：`RegisterHotKey(Ctrl+Alt+Space)`，输入一句话 → 候选列表 → 能力申请单 + 步骤 + 汇总 → 执行 / 取消。没有匹配时直接说没有，并列出可用技能。
+- **`scripts/shell-test.ts`** —— 14 条：命中 / 名字直输 / 歧义多候选 / 不相关不瞎猜 / 预览出能力单 / 取消零变化 / 预览不写日志 / 执行有变化 / 撤销回原状。
+- **`scripts/shell-ui-selftest.ts`** —— 9 条真机自检：起窗、注册热键、匹配、预览、取消，然后断言夹具目录没多也没少、没有 `.deskshell` 日志。非 Windows 明确 skip。
+- 文档新增 `docs/shell.md` 与中文镜像。
+
+### Changed
+
+- 回归从 39 项扩到 **41 项**（新增 shell.core、shell.ui）。
+
+### Evidence
+
+    regress 41/41
+    shell core 14/14
+    shell ui 9/9（真机：hotkey=True、10 个技能、preview 4 步、2 项能力、cancel=True）
+    文档站 30 页（15 EN + 15 中文）
+
 ## 0.8.0 — 2026-10-30
 
 M06：Linux 从"计划中"变成"CI 实测能用"。
@@ -171,9 +195,9 @@ The "make it a real project" release: bilingual docs, brand, packaging, and macO
 - **Generated Skills page** — built from `packages/skills/*/skill.json` (name, version, description, capabilities with reasons, platforms). Internal test fixtures are hidden but counted.
 - **Sidebar search** on the docs site — 18 lines of vanilla JS, no dependencies.
 - **macOS coordinate clicks** — `MacDriver.clickAt(x, y)` posts CGEvent mouse events; `click()` now falls back to clicking the element's centre when AXPress is refused. Verified on hardware: Calculator `7 × 8 = 56` via coordinate clicks, plus a fallback case where AXPress is rejected and the synthetic click still lands on centre.
-- **Packaging** — scoped name `@ciceroyang/deskshell`, `files` allowlist, `repository`/`homepage`/`bugs`, `bin/deskshell.mjs`, a launcher that works around Node's refusal to strip types under `node_modules`. `npm pack`: 47 files, 46 kB.
+- **Packaging** — scoped name `@zhiliangtech/deskshell`, `files` allowlist, `repository`/`homepage`/`bugs`, `bin/deskshell.mjs`, a launcher that works around Node's refusal to strip types under `node_modules`. `npm pack`: 47 files, 46 kB.
 - **Community files** — `SECURITY.md` (scope statement: an agent deleting files after `fs.write` is granted is expected behaviour, not a vulnerability), `CODE_OF_CONDUCT.md`, `.editorconfig`, Dependabot config.
-- **Distribution channels** — published to GitHub Packages (`@ciceroyang/deskshell@0.2.0`, verified by a real `npm install` + `deskshell version`), and a release tarball for auth-free installs. npmjs.com is unreachable from some networks (website 403, registry API fine), so the public registry publish is pending a token.
+- **Distribution channels** — published to GitHub Packages (`@zhiliangtech/deskshell@0.2.0`, verified by a real `npm install` + `deskshell version`), and a release tarball for auth-free installs. npmjs.com is unreachable from some networks (website 403, registry API fine), so the public registry publish is pending a token.
 - **CI matrix** — Node 22 and 24, `cancel-in-progress` concurrency, 10-minute timeout, read-only permissions.
 
 ### Changed

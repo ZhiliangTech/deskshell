@@ -25,13 +25,13 @@
 ## 统一条目文案（三行以内，别加形容词）
 
 ```markdown
-- [deskshell](https://github.com/ciceroyang/deskshell) - Protocol-first desktop automation kernel: every action declares a post-assertion and an undo, preview is the default, and every step lands in a JSONL audit journal. No model in the kernel. MIT, TypeScript.
+- [deskshell](https://github.com/ZhiliangTech/deskshell) - Protocol-first desktop automation kernel: every action declares a post-assertion and an undo, preview is the default, and every step lands in a JSONL audit journal. No model in the kernel. MIT, TypeScript.
 ```
 
 中文版（用于中文列表）：
 
 ```markdown
-- [deskshell](https://github.com/ciceroyang/deskshell) - 协议优先的桌面操作内核：每个动作必须声明后置断言与撤销，默认只预览，全过程写入 JSONL 审计日志，内核不依赖任何模型。MIT，TypeScript。
+- [deskshell](https://github.com/ZhiliangTech/deskshell) - 协议优先的桌面操作内核：每个动作必须声明后置断言与撤销，默认只预览，全过程写入 JSONL 审计日志，内核不依赖任何模型。MIT，TypeScript。
 ```
 
 ## 提交流程（每个仓库都这么做）
@@ -48,7 +48,7 @@ Adds deskshell, a protocol-first desktop automation kernel.
 - Kernel has no model dependency (models live behind see()/plan() inside skills).
 - MIT, TypeScript, Node >= 22.18. Windows (UIA) and macOS (AX) drivers verified; Linux has window-level support via xdotool/wmctrl.
 
-Real output, not a mockup: https://github.com/ciceroyang/deskshell#what-it-looks-like
+Real output, not a mockup: https://github.com/ZhiliangTech/deskshell#what-it-looks-like
 ```
 
 4. **等**：7 天没动静就礼貌 ping 一次（"happy to adjust the wording or drop it if it does not fit"），然后不再追。

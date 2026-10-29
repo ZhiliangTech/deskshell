@@ -20,7 +20,7 @@
 
 GitHub has no API for this; it must be uploaded once:
 
-1. Open `https://github.com/ciceroyang/deskshell/settings`
+1. Open `https://github.com/ZhiliangTech/deskshell/settings`
 2. Scroll to **Social preview** → **Edit** → **Upload an image**
 3. Choose `brand/social-preview.png` (1280×640, under 1 MB)
 

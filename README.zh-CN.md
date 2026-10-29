@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml"><img src="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml/badge.svg?branch=main" alt="ci"></a>
+  <a href="https://github.com/ZhiliangTech/deskshell/actions/workflows/ci.yml"><img src="https://github.com/ZhiliangTech/deskshell/actions/workflows/ci.yml/badge.svg?branch=main" alt="ci"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
   <img src="https://img.shields.io/badge/node-%E2%89%A522.18-339933" alt="node">
   <img src="https://img.shields.io/badge/model-zero%20dependency-FF7A59" alt="zero model dependency">
@@ -60,7 +60,7 @@
 **安装脚本**（`github.com` 打不开的网络也能用，它走 GitHub API 下载）：
 
 ```powershell
-irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -OutFile install.ps1
+irm https://raw.githubusercontent.com/ZhiliangTech/deskshell/main/install.ps1 -OutFile install.ps1
 .\install.ps1
 ```
 
@@ -69,18 +69,18 @@ irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -Out
 **GitHub Packages**（需要带 `read:packages` 的 token）：
 
 ```bash
-npm config set @ciceroyang:registry https://npm.pkg.github.com
-npm i -g @ciceroyang/deskshell
+npm config set @zhiliangtech:registry https://npm.pkg.github.com
+npm i -g @zhiliangtech/deskshell
 ```
 
 **从源码：**
 
 ```bash
-git clone https://github.com/ciceroyang/deskshell && cd deskshell
+git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> 部分网络访问不了 npmjs.com（网页 403，registry API 正常），所以无作用域的公共包还差一个 token。安装细节和失败对照表见 [docs/zh-CN/install.md](docs/zh-CN/install.md)。
+> 部分网络打不开 npmjs.com 的网页（403），但 registry API 是通的——安装脚本因此走 API 下载。想用 npm 的话可以绕过 registry：`npm i -g github:ZhiliangTech/deskshell`。不开网页也能发布的完整做法见 [docs/zh-CN/install.md](docs/zh-CN/install.md)。
 
 ## 30 秒跑起来
 
@@ -154,6 +154,10 @@ node bin/deskshell.ts run my-skill --mode preview
 3. 能力必须声明、必须带人话理由、必须落在作用域内。
 4. 内核不依赖任何模型；模型只允许出现在"理解屏幕"和"拆解任务"两个可替换接口后面。
 
+## 文档站
+
+协议、快速开始、设计红线都有网页版：<https://zhiliangtech.github.io/deskshell/>。
+
 ## 一起把它做出来
 
 deskshell 先是协议，其次才是产品——最硬的部分还没人认领：
@@ -165,6 +169,6 @@ deskshell 先是协议，其次才是产品——最硬的部分还没人认领�
 | dry-run diff · 撤销时间线 · 文档站搜索 | 已拆成带验收标准的 issue |
 | **新 skill** | `node scripts/new-skill.ts --name x`，然后只改 `plan()` |
 
-每个任务都自带 fixture、一个会失败的测试，和 48 小时内的首次响应。悬赏板、贡献者阶梯、治理与拉人手册在 [`outreach/`](outreach/)，已合并的贡献记在 [CONTRIBUTORS.md](CONTRIBUTORS.md)。
+每个任务都自带 fixture、一个会失败的测试，和 48 小时内的首次响应。任务板、贡献者阶梯、治理与拉人手册在 [`outreach/`](outreach/)，已合并的贡献记在 [CONTRIBUTORS.md](CONTRIBUTORS.md)；提问和路线图投票在 [Discussions](https://github.com/ZhiliangTech/deskshell/discussions)。注意：`bounty` 只表示「可认领」，没有现金。
 
 MIT License.

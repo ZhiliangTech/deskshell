@@ -18,6 +18,7 @@ const ORDER = [
   "undo-and-trust",
   "recording",
   "drivers",
+  "shell",
   "internals",
   "versioning",
   "roadmap",

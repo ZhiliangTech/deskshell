@@ -33,7 +33,7 @@ const execFileAsync = promisify(execFile);
 const API = 'https://api.github.com';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SELF_AUTHOR = 'ciceroyang';           // 本仓库作者，排除
-const SELF_REPO = 'ciceroyang/deskshell';   // 本仓库，排除
+const SELF_REPO = 'ZhiliangTech/deskshell';   // 本仓库，排除
 
 const LIMITS = {
   searchMinGapMs: 2200,     // 搜索接口 30 req/min

@@ -33,7 +33,7 @@ Hi abrichr — OpenAdapt replays a demonstration, but when step 5 fails you are 
 
 I built deskshell for exactly that: every action declares a post-assertion and an undo, preview is the default, and a failed assertion rolls the task back into a JSONL journal. The driver interface is frozen (6 required methods), protocol v0 is frozen too.
 
-I would value your read on it — your recorder sees the same events mine does. If the model is wrong, tell me where. https://github.com/ciceroyang/deskshell
+I would value your read on it — your recorder sees the same events mine does. If the model is wrong, tell me where. https://github.com/ZhiliangTech/deskshell
 ```
 
 跟进（5 天后，只发一次）：`One more thing worth your 2 minutes: the Linux window-level driver shipped last week, control tree still missing — that is the part I suspect you would do differently.`
@@ -45,7 +45,7 @@ Hi AmrDab — clawdcursor gives agents desktop control with a permission gate, w
 
 deskshell makes that a protocol question: every action declares a post-assertion and an undo, preview is the default, failures roll back, and the journal records even the failures. Kernel has no model in it.
 
-Your MCP surface and my kernel are complementary — I would like your critique of the tool contract before I ship an adapter. https://github.com/ciceroyang/deskshell
+Your MCP surface and my kernel are complementary — I would like your critique of the tool contract before I ship an adapter. https://github.com/ZhiliangTech/deskshell
 ```
 
 ## 3. PM-Shawn（Abu-Cowork）
@@ -55,7 +55,7 @@ Hi PM-Shawn — "describe the result and it does it" is the right UX, but the mo
 
 deskshell is that layer: skills only declare intent, every action must prove success and carry an undo, preview is the default, and one failed assertion rolls the whole task back. Windows/macOS drivers verified; Linux window-level shipped.
 
-If you want, take downloads-cleanup and photo-sort as references — 30 minutes, `node bin/deskshell.ts doctor`. https://github.com/ciceroyang/deskshell
+If you want, take downloads-cleanup and photo-sort as references — 30 minutes, `node bin/deskshell.ts doctor`. https://github.com/ZhiliangTech/deskshell
 ```
 
 ## 4. ayuayue（PiDeck，中文）
@@ -65,7 +65,7 @@ ayuayue 你好。PiDeck 把 PI / DSH 的会话收在一个桌面工作台里，�
 
 我做的是这层：skill 只声明意图，每个动作必须有 post 断言和 undo，默认只预览，断言失败先自撤再逆序回滚，全过程写 JSONL 审计。内核零模型依赖，Windows/macOS 已验证，Linux 窗口层刚落地。
 
-想请你看一眼协议（spec/protocol-v0.json）够不够接住你的会话面板；如果愿意，认领一个 skill 最快。https://github.com/ciceroyang/deskshell
+想请你看一眼协议（spec/protocol-v0.json）够不够接住你的会话面板；如果愿意，认领一个 skill 最快。https://github.com/ZhiliangTech/deskshell
 ```
 
 ## 5. gnh1201（WelsonJS）
@@ -75,7 +75,7 @@ Hi gnh1201 — WelsonJS runs automation inside industrial Windows setups, where 
 
 deskshell requires every action to declare a post-assertion and an undo, previews by default, rolls back on the first failed assertion, and journals every step including failures. Protocol v0 is frozen; the driver interface is six methods.
 
-The Windows driver is verified on UIA, but my recorder still misses right-click, wheel and drag. You have seen more Windows input than I have — is that worth an hour of your time? https://github.com/ciceroyang/deskshell
+The Windows driver is verified on UIA, but my recorder still misses right-click, wheel and drag. You have seen more Windows input than I have — is that worth an hour of your time? https://github.com/ZhiliangTech/deskshell
 ```
 
 ## 6. lukemarsden（helix）
@@ -85,7 +85,7 @@ Hi Luke — helix gives each agent its own GPU desktop. That is a fleet of machi
 
 deskshell is a transaction layer for exactly that: preview by default, post-assertion per action, rollback on failure, JSONL journal per task, kernel with no model dependency. MIT, TypeScript, ~1 day old and honest about it.
 
-I would like your critique of one design question: when an agent owns a whole desktop, where should the undo boundary sit? https://github.com/ciceroyang/deskshell
+I would like your critique of one design question: when an agent owns a whole desktop, where should the undo boundary sit? https://github.com/ZhiliangTech/deskshell
 ```
 
 ## 7–10（B 档，短版，回信后再扩写）

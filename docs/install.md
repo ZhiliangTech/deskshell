@@ -7,7 +7,7 @@ Three ways in, in order of "least likely to fail on a hostile network".
 ## 1. Installer (recommended)
 
 ```powershell
-irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 -OutFile install.ps1
+irm https://raw.githubusercontent.com/ZhiliangTech/deskshell/main/install.ps1 -OutFile install.ps1
 .\install.ps1
 ```
 
@@ -26,8 +26,8 @@ Useful flags: `-Prefix C:\tools\ds` installs into a directory instead of globall
 ## 2. GitHub Packages
 
 ```bash
-npm config set @ciceroyang:registry https://npm.pkg.github.com
-npm i -g @ciceroyang/deskshell
+npm config set @zhiliangtech:registry https://npm.pkg.github.com
+npm i -g @zhiliangtech/deskshell
 ```
 
 Needs a GitHub token with `read:packages` in `~/.npmrc`. This is the channel to use if you already have npm configured for GitHub.
@@ -35,11 +35,51 @@ Needs a GitHub token with `read:packages` in `~/.npmrc`. This is the channel to 
 ## 3. From source
 
 ```bash
-git clone https://github.com/ciceroyang/deskshell && cd deskshell
+git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
 No build step: the CLI is TypeScript run directly by Node's type stripping.
+
+## 4. From Git, no registry at all
+
+If `registry.npmjs.org` itself is slow or the package is not published yet, npm can install straight from the repo:
+
+```bash
+npm i -g github:ZhiliangTech/deskshell
+npx github:ZhiliangTech/deskshell doctor      # one-shot, nothing installed globally
+```
+
+This uses `github.com` + Git, not the npm registry. Same for a release asset:
+
+```bash
+npm i -g https://github.com/ZhiliangTech/deskshell/releases/download/v0.8.0/ciceroyang-deskshell-0.8.0.tgz
+```
+
+## 5. Maintainers: publishing when www.npmjs.com is unreachable
+
+The npm **website** can be blocked while the **registry API** is fine. That is the normal case on some networks — check it instead of guessing:
+
+```bash
+node scripts/npm-token.ts --dry-run     # prints registry ping status
+```
+
+If the ping is 200, you can log in and get a token **without opening the website** (legacy registry auth):
+
+```bash
+NPM_USER=you NPM_PASS=*** NPM_EMAIL=you@example.com [NPM_OTP=123456] node scripts/npm-token.ts
+```
+
+It writes `//registry.npmjs.org/:_authToken` into `~/.npmrc` (mode 600) and prints only the first 8 characters. Then:
+
+```bash
+node scripts/publish-npm.ts              # scoped: @<your-npm-user>/deskshell
+node scripts/publish-npm-unscoped.ts     # unscoped: deskshell (repo untouched, temp copy)
+```
+
+Both scripts bootstrap an npm CLI from the registry, so no local npm install is needed. The unscoped name `deskshell` is free as of 2026-10-30, which is what makes `npm i -g deskshell` possible.
+
+If the registry is down too, use the Git channel above, GitHub Packages (§2), or the installer (§1). `.github/workflows/publish.yml` publishes to GitHub Packages on every `v*` tag, and to public npm only when the `NPM_TOKEN` secret exists.
 
 ## What "it works" looks like
 

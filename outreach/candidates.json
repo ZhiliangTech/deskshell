@@ -2,7 +2,7 @@
   "meta": {
     "generated_at": "2026-10-29T17:00:06.838Z",
     "author_excluded": "ciceroyang",
-    "repo_excluded": "ciceroyang/deskshell",
+    "repo_excluded": "ZhiliangTech/deskshell",
     "token_source": "dsh local settings (~/.dsh/storages/dsh-github/settings.json)",
     "requests": 207,
     "repo_queries": [

@@ -1,6 +1,6 @@
 ﻿# deskshell installer for Windows
 #
-#   irm https://raw.githubusercontent.com/ciceroyang/deskshell/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/ZhiliangTech/deskshell/main/install.ps1 | iex
 #   .\install.ps1                # 或本地直接运行
 #   .\install.ps1 -Prefix C:\tmp\ds   # 装到指定目录（干净环境验收用）
 #
@@ -15,7 +15,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$repo = "ciceroyang/deskshell"
+$repo = "ZhiliangTech/deskshell"
 
 function Fail($msg) {
   Write-Host ""
