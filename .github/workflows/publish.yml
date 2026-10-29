@@ -5,12 +5,13 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   github-packages:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,18 +23,31 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # 公共 npm：只在仓库里配了 NPM_TOKEN secret 时运行。
-  # token 不需要 www.npmjs.com：本地跑 node scripts/npm-token.ts 就能拿到，再贴进 Secret。
+  # 公共 npm 只在配了 NPM_TOKEN secret 时真正发布；没配就整段跳过。
+  # job 级 if 读不到 secrets，所以用 gate step 先判断再决定后续步骤跑不跑。
   npm-public:
     runs-on: ubuntu-latest
-    if: ${{ secrets.NPM_TOKEN != '' }}
     steps:
+      - id: gate
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "NPM_TOKEN 未配置，跳过公共 npm 发布"
+          fi
       - uses: actions/checkout@v4
+        if: steps.gate.outputs.ok == 'true'
       - uses: actions/setup-node@v4
+        if: steps.gate.outputs.ok == 'true'
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
       - run: node scripts/regress.ts
+        if: steps.gate.outputs.ok == 'true'
       - run: npm publish --access public
+        if: steps.gate.outputs.ok == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
