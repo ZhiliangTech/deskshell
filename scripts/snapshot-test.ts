@@ -15,8 +15,14 @@ execFileSync(process.execPath, ["scripts/make-fixture.ts", path.join(root, "down
   stdio: "ignore",
 });
 
-const norm = (v: unknown): unknown =>
-  JSON.parse(JSON.stringify(v).split(JSON.stringify(root).slice(1, -1)).join("<root>"));
+// 归一化根路径，并把分隔符统一成 /：否则 Windows 与 Linux 生成的快照无法互相比较
+const norm = (v: unknown): unknown => {
+  const json = JSON.stringify(v)
+    .split(JSON.stringify(root).slice(1, -1))
+    .join("<root>")
+    .replace(/\\\\/g, "/");
+  return JSON.parse(json);
+};
 
 const cases: Array<{ name: string; file: string; input: Record<string, unknown>; driver?: MockDriver }> = [
   {

@@ -2,227 +2,227 @@
   {
     "id": "mkdir:.trash",
     "kind": "fs.mkdir",
-    "path": "<root>\\downloads\\.trash",
+    "path": "<root>/downloads/.trash",
     "risk": "low",
     "undo": {
       "kind": "fs.rmdir",
-      "path": "<root>\\downloads\\.trash"
+      "path": "<root>/downloads/.trash"
     }
   },
   {
     "id": "mkdir:代码",
     "kind": "fs.mkdir",
-    "path": "<root>\\downloads\\代码",
+    "path": "<root>/downloads/代码",
     "risk": "low",
     "undo": {
       "kind": "fs.rmdir",
-      "path": "<root>\\downloads\\代码"
+      "path": "<root>/downloads/代码"
     }
   },
   {
     "id": "mkdir:其他",
     "kind": "fs.mkdir",
-    "path": "<root>\\downloads\\其他",
+    "path": "<root>/downloads/其他",
     "risk": "low",
     "undo": {
       "kind": "fs.rmdir",
-      "path": "<root>\\downloads\\其他"
+      "path": "<root>/downloads/其他"
     }
   },
   {
     "id": "mkdir:压缩包",
     "kind": "fs.mkdir",
-    "path": "<root>\\downloads\\压缩包",
+    "path": "<root>/downloads/压缩包",
     "risk": "low",
     "undo": {
       "kind": "fs.rmdir",
-      "path": "<root>\\downloads\\压缩包"
+      "path": "<root>/downloads/压缩包"
     }
   },
   {
     "id": "mkdir:图片",
     "kind": "fs.mkdir",
-    "path": "<root>\\downloads\\图片",
+    "path": "<root>/downloads/图片",
     "risk": "low",
     "undo": {
       "kind": "fs.rmdir",
-      "path": "<root>\\downloads\\图片"
+      "path": "<root>/downloads/图片"
     }
   },
   {
     "id": "mkdir:文档",
     "kind": "fs.mkdir",
-    "path": "<root>\\downloads\\文档",
+    "path": "<root>/downloads/文档",
     "risk": "low",
     "undo": {
       "kind": "fs.rmdir",
-      "path": "<root>\\downloads\\文档"
+      "path": "<root>/downloads/文档"
     }
   },
   {
     "id": "mkdir:音视频",
     "kind": "fs.mkdir",
-    "path": "<root>\\downloads\\音视频",
+    "path": "<root>/downloads/音视频",
     "risk": "low",
     "undo": {
       "kind": "fs.rmdir",
-      "path": "<root>\\downloads\\音视频"
+      "path": "<root>/downloads/音视频"
     }
   },
   {
     "id": "move:IMG_2041.jpg",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\IMG_2041.jpg",
-    "to": "<root>\\downloads\\图片\\IMG_2041.jpg",
+    "from": "<root>/downloads/IMG_2041.jpg",
+    "to": "<root>/downloads/图片/IMG_2041.jpg",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\图片\\IMG_2041.jpg",
-      "to": "<root>\\downloads\\IMG_2041.jpg"
+      "from": "<root>/downloads/图片/IMG_2041.jpg",
+      "to": "<root>/downloads/IMG_2041.jpg"
     }
   },
   {
     "id": "trash:IMG_2042.jpg",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\IMG_2042.jpg",
-    "to": "<root>\\downloads\\.trash\\IMG_2042.jpg",
+    "from": "<root>/downloads/IMG_2042.jpg",
+    "to": "<root>/downloads/.trash/IMG_2042.jpg",
     "risk": "medium",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\.trash\\IMG_2042.jpg",
-      "to": "<root>\\downloads\\IMG_2042.jpg"
+      "from": "<root>/downloads/.trash/IMG_2042.jpg",
+      "to": "<root>/downloads/IMG_2042.jpg"
     }
   },
   {
     "id": "move:app.ts",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\app.ts",
-    "to": "<root>\\downloads\\代码\\app.ts",
+    "from": "<root>/downloads/app.ts",
+    "to": "<root>/downloads/代码/app.ts",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\代码\\app.ts",
-      "to": "<root>\\downloads\\app.ts"
+      "from": "<root>/downloads/代码/app.ts",
+      "to": "<root>/downloads/app.ts"
     }
   },
   {
     "id": "move:archive.zip",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\archive.zip",
-    "to": "<root>\\downloads\\压缩包\\archive.zip",
+    "from": "<root>/downloads/archive.zip",
+    "to": "<root>/downloads/压缩包/archive.zip",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\压缩包\\archive.zip",
-      "to": "<root>\\downloads\\archive.zip"
+      "from": "<root>/downloads/压缩包/archive.zip",
+      "to": "<root>/downloads/archive.zip"
     }
   },
   {
     "id": "move:data.json",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\data.json",
-    "to": "<root>\\downloads\\代码\\data.json",
+    "from": "<root>/downloads/data.json",
+    "to": "<root>/downloads/代码/data.json",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\代码\\data.json",
-      "to": "<root>\\downloads\\data.json"
+      "from": "<root>/downloads/代码/data.json",
+      "to": "<root>/downloads/data.json"
     }
   },
   {
     "id": "move:demo.mp4",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\demo.mp4",
-    "to": "<root>\\downloads\\音视频\\demo.mp4",
+    "from": "<root>/downloads/demo.mp4",
+    "to": "<root>/downloads/音视频/demo.mp4",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\音视频\\demo.mp4",
-      "to": "<root>\\downloads\\demo.mp4"
+      "from": "<root>/downloads/音视频/demo.mp4",
+      "to": "<root>/downloads/demo.mp4"
     }
   },
   {
     "id": "trash:notes-copy.txt",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\notes-copy.txt",
-    "to": "<root>\\downloads\\.trash\\notes-copy.txt",
+    "from": "<root>/downloads/notes-copy.txt",
+    "to": "<root>/downloads/.trash/notes-copy.txt",
     "risk": "medium",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\.trash\\notes-copy.txt",
-      "to": "<root>\\downloads\\notes-copy.txt"
+      "from": "<root>/downloads/.trash/notes-copy.txt",
+      "to": "<root>/downloads/notes-copy.txt"
     }
   },
   {
     "id": "move:notes.txt",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\notes.txt",
-    "to": "<root>\\downloads\\文档\\notes.txt",
+    "from": "<root>/downloads/notes.txt",
+    "to": "<root>/downloads/文档/notes.txt",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\文档\\notes.txt",
-      "to": "<root>\\downloads\\notes.txt"
+      "from": "<root>/downloads/文档/notes.txt",
+      "to": "<root>/downloads/notes.txt"
     }
   },
   {
     "id": "move:readme.md",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\readme.md",
-    "to": "<root>\\downloads\\文档\\readme.md",
+    "from": "<root>/downloads/readme.md",
+    "to": "<root>/downloads/文档/readme.md",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\文档\\readme.md",
-      "to": "<root>\\downloads\\readme.md"
+      "from": "<root>/downloads/文档/readme.md",
+      "to": "<root>/downloads/readme.md"
     }
   },
   {
     "id": "move:screenshot.png",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\screenshot.png",
-    "to": "<root>\\downloads\\图片\\screenshot.png",
+    "from": "<root>/downloads/screenshot.png",
+    "to": "<root>/downloads/图片/screenshot.png",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\图片\\screenshot.png",
-      "to": "<root>\\downloads\\screenshot.png"
+      "from": "<root>/downloads/图片/screenshot.png",
+      "to": "<root>/downloads/screenshot.png"
     }
   },
   {
     "id": "trash:合同-终稿(1).pdf",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\合同-终稿(1).pdf",
-    "to": "<root>\\downloads\\.trash\\合同-终稿(1).pdf",
+    "from": "<root>/downloads/合同-终稿(1).pdf",
+    "to": "<root>/downloads/.trash/合同-终稿(1).pdf",
     "risk": "medium",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\.trash\\合同-终稿(1).pdf",
-      "to": "<root>\\downloads\\合同-终稿(1).pdf"
+      "from": "<root>/downloads/.trash/合同-终稿(1).pdf",
+      "to": "<root>/downloads/合同-终稿(1).pdf"
     }
   },
   {
     "id": "move:合同-终稿.pdf",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\合同-终稿.pdf",
-    "to": "<root>\\downloads\\文档\\合同-终稿.pdf",
+    "from": "<root>/downloads/合同-终稿.pdf",
+    "to": "<root>/downloads/文档/合同-终稿.pdf",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\文档\\合同-终稿.pdf",
-      "to": "<root>\\downloads\\合同-终稿.pdf"
+      "from": "<root>/downloads/文档/合同-终稿.pdf",
+      "to": "<root>/downloads/合同-终稿.pdf"
     }
   },
   {
     "id": "move:未命名文件",
     "kind": "fs.move",
-    "from": "<root>\\downloads\\未命名文件",
-    "to": "<root>\\downloads\\其他\\未命名文件",
+    "from": "<root>/downloads/未命名文件",
+    "to": "<root>/downloads/其他/未命名文件",
     "risk": "low",
     "undo": {
       "kind": "fs.move",
-      "from": "<root>\\downloads\\其他\\未命名文件",
-      "to": "<root>\\downloads\\未命名文件"
+      "from": "<root>/downloads/其他/未命名文件",
+      "to": "<root>/downloads/未命名文件"
     }
   }
 ]
