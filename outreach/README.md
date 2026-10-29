@@ -13,6 +13,7 @@
 | [CONTRIBUTOR-LADDER.md](CONTRIBUTOR-LADDER.md) | 五级贡献者阶梯、权利、评审 SLA | 有人问“长期怎么参与”时 |
 | [GOVERNANCE.md](GOVERNANCE.md) | 决策权、RFC、冲突处理 | 有人问“谁说了算”时 |
 | [SEND-QUEUE.md](SEND-QUEUE.md) | 首发 10 人 + 已填好的私信正文（换名字即可发） | 今天就开始发时 |
+| [STATE.md](STATE.md) | **对外唯一口径**：仓库/站点/安装渠道/能说什么（每次迁移或发布后更新） | 写任何对外文案之前 |
 | [HOURLY.md](HOURLY.md) | 每小时账号运营手册（回信 → 配额 → 跟进 → 收尾） | 每小时那一轮，或新开一个会话时 |
 | [AWESOME-LISTS.md](AWESOME-LISTS.md) | 值得投稿的 awesome list、真实收录规则、PR 文案 | 每周铺外链时 |
 | [TRACKER.csv](TRACKER.csv) | 触达流水（一人一行，含跟进日期与结果） | 每天收工前更新 |

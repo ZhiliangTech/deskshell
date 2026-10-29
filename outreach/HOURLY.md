@@ -7,6 +7,8 @@
 
 ## 0. 先看状态（2 分钟）
 
+先读 [STATE.md](STATE.md)（对外唯一口径：仓库地址、安装渠道、能说什么），再跑状态脚本：
+
 ```bash
 node scripts/outreach-hour.ts            # 到期/逾期/今日配额/待回复，一次列清
 node scripts/outreach-hour.ts --json     # 给脚本用
