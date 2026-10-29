@@ -1,0 +1,6 @@
+{"ts":1793281709253,"type":"focus","window":"无标题 - Notepad","windowPid":47356,"controlType":"Document","name":"文本编辑器","automationId":"","value":"","x":"-1","y":"-1"}
+{"ts":1793281709290,"type":"window-open","window":"无标题 - Notepad","windowPid":47356,"controlType":"Window","name":"无标题 - Notepad","automationId":"","value":null,"x":"-1","y":"-1"}
+{"ts":1793281712173,"type":"click","window":"无标题 - Notepad","windowPid":47356,"controlType":"Document","name":"文本编辑器","automationId":"","value":"","x":1920,"y":1080}
+{"ts":1793281712787,"type":"focus","window":"Windows 输入体验","windowPid":12444,"controlType":"ListItem","name":"typed","automationId":"","value":null,"x":"-1","y":"-1"}
+{"ts":1793281712790,"type":"focus","window":"Windows 输入体验","windowPid":12444,"controlType":"ListItem","name":"typed","automationId":"","value":null,"x":"-1","y":"-1"}
+{"ts":1793281713423,"type":"click","window":"*clickede - Notepad","windowPid":47356,"controlType":"Document","name":"文本编辑器","automationId":"","value":"clickede","x":1920,"y":1140}

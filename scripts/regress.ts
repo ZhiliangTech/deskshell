@@ -89,6 +89,7 @@ run("fail.story", ["apps/cli-demo/fail-story.ts"], (o) => o.includes("PASS"));
 run("journal.failed", ["bin/deskshell.ts", "journal", "--root", ".demo/fail-story"], (o) => o.includes("失败 1 步"));
 
 // 4) 驱动契约（内存驱动，验证内核对平台无感）
+run("m04.loop", ["scripts/m04-loop-test.ts"], (o) => o.includes("9/9 passed"));
 run("capability.ask", ["scripts/ask-test.ts"], (o) => o.includes("8/8 passed"));
 run("undo.coverage", ["scripts/undo-coverage-test.ts"], (o) => o.includes("5/5 passed"));
 run("protocol.freeze", ["scripts/protocol-freeze-test.ts"], (o) => o.includes("24/24 passed"));

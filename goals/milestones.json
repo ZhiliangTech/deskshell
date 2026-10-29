@@ -32,7 +32,7 @@
       "check": "deskshell run --ask；regress 中 rollback 覆盖率 100%",
       "done": true,
       "doneAt": "2026-10-29",
-      "evidence": ""
+      "evidence": "run --ask 8/8（拒绝即停、零副作用）；undo-coverage 5/5 逐字节一致，2 个 GUI 类带理由跳过；regress 37/37"
     },
     {
       "id": "M04",
@@ -40,7 +40,10 @@
       "from": 120,
       "to": 160,
       "accept": "录一次真实工作流，草稿补完断言后能重复执行三次结果一致",
-      "check": "录制→draft→手工补断言→连跑 3 次，diff 为空"
+      "check": "录制→draft→手工补断言→连跑 3 次，diff 为空",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "真录制样本→草稿（含 plan.json）→补完断言→MockDriver 回放三次一致，9/9；限制：未在用户真实窗口上回放（窗口不属于测试夹具）"
     },
     {
       "id": "M05",

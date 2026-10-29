@@ -39,3 +39,8 @@
 {"ts":1793291744602,"label":"regress 全量回归","kind":"test"}
 {"ts":1793291787702,"label":"M03 完成 + 0.6.0 发版","kind":"manual"}
 {"ts":1793291787849,"label":"push to GitHub","kind":"ship"}
+{"ts":1793291836901,"label":"修时钟取值与里程碑口径","kind":"manual"}
+{"ts":1793291846689,"label":"M04 录制闭环","kind":"milestone"}
+{"ts":1793291946492,"label":"regress 全量回归","kind":"test"}
+{"ts":1793291968333,"label":"M04 完成","kind":"milestone"}
+{"ts":1793291968523,"label":"push to GitHub","kind":"ship"}

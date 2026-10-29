@@ -192,6 +192,52 @@ export default skill;
 `;
 fs.writeFileSync(path.join(dir, "index.ts"), source, "utf8");
 
+// 机器可读版本：草稿的代码是给人改的，这份是给脚本补断言/做回放测试用的
+const planJson = collapsed.map((e, i) => {
+  const selector = {
+    controlType: e.controlType,
+    ...(e.name ? { name: e.name } : {}),
+    ...(e.automationId ? { automationId: e.automationId } : {}),
+  };
+  const window = stableWindow(e.window);
+  if (e.type === "click") {
+    const opened = openedWindowAfter(e);
+    const focused = opened ? undefined : focusAfter(e);
+    return {
+      id: `step-${i + 1}`,
+      kind: "ui.click",
+      window,
+      selector,
+      post: opened
+        ? [{ kind: "window.exists", window: stableWindow(opened.window), timeoutMs: 2000 }]
+        : focused
+          ? [
+              {
+                kind: "ui.exists",
+                window: stableWindow(focused.window),
+                selector: {
+                  controlType: focused.controlType,
+                  ...(focused.name ? { name: focused.name } : {}),
+                  ...(focused.automationId ? { automationId: focused.automationId } : {}),
+                },
+              },
+            ]
+          : [],
+      todo: opened || focused ? null : "点击后应该出现什么？",
+    };
+  }
+  return {
+    id: `step-${i + 1}`,
+    kind: "ui.type",
+    window,
+    selector,
+    text: e.value ?? "",
+    post: [{ kind: "ui.value", window, selector, equals: e.value ?? "" }],
+    todo: null,
+  };
+});
+fs.writeFileSync(path.join(dir, "plan.json"), JSON.stringify({ steps: planJson }, null, 2) + "\n", "utf8");
+
 console.log(`[草稿] ${dir}/index.ts`);
 console.log(`  · 采样事件 ${events.length} → 有效 ${meaningful.length} → 合并后 ${collapsed.length} 步`);
 console.log(`  · 点击 ${clicks.length} 次，其中 ${inferred} 次通过"新窗口出现"自动推断出断言`);

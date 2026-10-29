@@ -28,8 +28,12 @@ function loadMilestones(): { goalHours: number; milestones: Milestone[] } | null
 const argv = process.argv.slice(2);
 const cmd = argv[0] ?? "status";
 const flag = (name: string, fallback?: string): string | undefined => {
+  const eq = argv.find((a) => a.startsWith(`--${name}=`));
+  if (eq) return eq.slice(name.length + 3);
   const i = argv.indexOf(`--${name}`);
-  return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : fallback;
+  if (i < 0) return fallback;
+  // 值可能以 -- 开头（例如证据文本），只要后面还有内容就接受
+  return argv[i + 1] ?? fallback;
 };
 const fmtTime = (ts: number): string =>
   new Date(ts).toLocaleString("zh-CN", {
@@ -120,12 +124,14 @@ if (s.length > 1) {
 const plan = loadMilestones();
 const msLines: string[] = [];
 if (plan) {
-  const cur = plan.milestones.find((m) => activeHours >= m.from && activeHours < m.to) ??
-    plan.milestones[plan.milestones.length - 1];
+  // 已验收的跳过：当前里程碑 = 第一个没验收的（小时数只是预算，不是进度）
+  const cur =
+    plan.milestones.find((m) => !m.done) ?? plan.milestones[plan.milestones.length - 1];
+  const doneCount0 = plan.milestones.filter((m) => m.done).length;
   const intoHours = Math.max(0, activeHours - cur.from);
   const spanHours = cur.to - cur.from;
   const pct = Math.min(100, (intoHours / spanHours) * 100);
-  const doneCount = plan.milestones.filter((m) => m.done).length;
+  const doneCount = doneCount0;
   lines.push(`当前里程碑：${cur.id} ${cur.title}（${intoHours.toFixed(1)}/${spanHours} h，${pct.toFixed(0)}%）`);
   lines.push(`已验收里程碑：${doneCount}/${plan.milestones.length}`);
 
