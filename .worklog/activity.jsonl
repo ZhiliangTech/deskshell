@@ -1,0 +1,18 @@
+{"ts":1793261162380,"label":"brand/social-preview.png","kind":"backfill"}
+{"ts":1793261698024,"label":"CODE_OF_CONDUCT.md","kind":"backfill"}
+{"ts":1793261768905,"label":"SECURITY.md","kind":"backfill"}
+{"ts":1793278917778,"label":"packages/skills/photo-sort/index.ts","kind":"backfill"}
+{"ts":1793280862881,"label":"scripts/status-evidence.ts","kind":"backfill"}
+{"ts":1793281081459,"label":"scripts/parallel-test.ts","kind":"backfill"}
+{"ts":1793281193275,"label":"docs/internals.md","kind":"backfill"}
+{"ts":1793281453468,"label":"packages/core/src/journal.ts","kind":"backfill"}
+{"ts":1793281774708,"label":"docs/undo-and-trust.md","kind":"backfill"}
+{"ts":1793281792664,"label":"CHANGELOG.md","kind":"backfill"}
+{"ts":1793281821758,"label":"STATUS.md","kind":"backfill"}
+{"ts":1793282010627,"label":"scripts/recorder-mode-test.ts","kind":"backfill"}
+{"ts":1793284328130,"label":"clock 机制上线","kind":"manual"}
+{"ts":1793284345371,"label":"写 clock 机制","kind":"manual"}
+{"ts":1793284345964,"label":"regress 全量回归","kind":"test"}
+{"ts":1793284360830,"label":"probe","kind":"test"}
+{"ts":1793284366155,"label":"生成 WORKLOG + 推送","kind":"manual"}
+{"ts":1793284369274,"label":"push to GitHub","kind":"ship"}

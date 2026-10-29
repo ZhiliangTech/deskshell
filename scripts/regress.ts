@@ -1,7 +1,9 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import { tick } from "./lib/clock-store.ts";
 
 const NODE = process.execPath;
+tick("regress 全量回归", "test");
 const results: Array<{ name: string; ok: boolean; detail: string }> = [];
 
 function run(

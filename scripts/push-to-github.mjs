@@ -3,7 +3,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { tick } from "./lib/clock-store.ts";
 
+tick("push to GitHub", "ship");
 const args = Object.fromEntries(
   process.argv.slice(2).reduce((acc, cur, i, arr) => {
     if (cur.startsWith("--")) acc.push([cur.slice(2), arr[i + 1] ?? ""]);
