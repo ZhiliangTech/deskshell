@@ -48,7 +48,7 @@ async function call(url, method = "GET", body) {
   return json;
 }
 
-const SKIP = new Set([".git", ".demo", ".tmp", "site", "node_modules", ".build"]);
+const SKIP = new Set([".git", ".demo", ".tmp", "site", "node_modules", ".build", ".worklog", ".deskshell"]);
 const files = [];
 (function walk(dir) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

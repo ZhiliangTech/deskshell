@@ -73,7 +73,10 @@
       "from": 240,
       "to": 280,
       "accept": "全局热键唤起、输入一句话、看到预览面板再决定执行；关掉面板不产生任何副作用",
-      "check": "手动验收 + 面板单测"
+      "check": "手动验收 + 面板单测",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "shell core 14/14（取消零变化/预览不写日志/执行后撤销回原状）；UI 真机自检 9/9（hotkey=True、10 技能、preview 4 步、2 项能力、cancel=True，夹具无残留）；regress 41/41"
     },
     {
       "id": "M08",
