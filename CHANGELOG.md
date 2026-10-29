@@ -1,51 +1,71 @@
 # CHANGELOG
 
-本项目遵循语义化版本；`0.x` 期间破坏性变更会写在这里，并给出迁移说明。
+This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
+
+## 0.2.0 — 2026-10-29
+
+The "make it a real project" release: bilingual docs, brand, packaging, and macOS click parity.
+
+### Added
+
+- **Docs site is now bilingual**, English first: `docs/*.md` (10 pages, including a generated Skills catalog) and `docs/zh-CN/*.md`. Every page carries a language switch; `site/index.html` redirects to `/en/`.
+- **Generated Skills page** — built from `packages/skills/*/skill.json` (name, version, description, capabilities with reasons, platforms). Internal test fixtures are hidden but counted.
+- **Sidebar search** on the docs site — 18 lines of vanilla JS, no dependencies.
+- **macOS coordinate clicks** — `MacDriver.clickAt(x, y)` posts CGEvent mouse events; `click()` now falls back to clicking the element's centre when AXPress is refused. Verified on hardware: Calculator `7 × 8 = 56` via coordinate clicks, plus a fallback case where AXPress is rejected and the synthetic click still lands on centre.
+- **Packaging** — `files` allowlist, `repository`/`homepage`/`bugs`, `publishConfig.access: public`, and `bin/deskshell.mjs`, a launcher that works around Node's refusal to strip types under `node_modules`. `npm pack`: 47 files, 46 kB.
+- **Community files** — `SECURITY.md` (scope statement: an agent deleting files after `fs.write` is granted is expected behaviour, not a vulnerability), `CODE_OF_CONDUCT.md`, `.editorconfig`, Dependabot config.
+- **CI matrix** — Node 22 and 24, `cancel-in-progress` concurrency, 10-minute timeout, read-only permissions.
+
+### Changed
+
+- `engines` is now truthful: `>=22.18.0 <23.0.0 || >=23.6.0` (type stripping is unflagged only from those versions).
+- README (EN and zh-CN) gained an Install section and dropped the "no coordinate clicks on macOS" limitation.
+
+### Fixed
+
+- Docs described macOS coordinate clicks as unimplemented long after the bridge shipped `click --x --y`.
+
+### Known limits
+
+- No Linux driver (AT-SPI2) yet.
+- Recorder polls at 300 ms and captures left clicks only.
+- `deskshell add` installs into the runtime mirror when run from an installed package, not into the project directory.
 
 ## 0.1.0 — 2026-10-29
 
-首个可用版本：协议 + 内核 + 驱动 + skill + CLI + 文档站 + 回归套件。
+First usable version: protocol v0 + kernel + drivers + CLI + docs + regression suite.
 
-### 协议 v0
+### Protocol v0
 
-- 能力（Capability）：声明式申请，带作用域与人话理由；未授予则整体拒绝。
-- 动作（Action）：`fs.mkdir` / `fs.move` / `fs.delete` / `fs.write` / `ui.invoke` / `ui.click` / `ui.type` / `window.move`。
-- 断言（Assertion）：`path.exists` / `path.absent` / `file.count` / `ui.value` / `window.rect` / `window.exists` / `ui.exists`。
-- 撤销（UndoAction）：`fs.move` / `fs.rmdir` / `fs.restore` / `window.move` / `noop`。
-- 审计（Journal）：JSONL，只追加；记录成功、撤销、失败三种状态。
-- 不变式：路径不越界、动作必须可撤销、失败必须回滚、内核零模型依赖、动作必须被声明的能力覆盖。
+- Capabilities (scope + plain-language reason); an ungranted capability rejects the whole task.
+- Actions: `fs.mkdir` / `fs.move` / `fs.delete` / `fs.write` / `ui.invoke` / `ui.click` / `ui.type` / `window.move`.
+- Assertions: `path.exists` / `path.absent` / `file.count` / `ui.value` / `window.rect` / `window.exists` / `ui.exists`.
+- Undo: `fs.move` / `fs.rmdir` / `fs.restore` / `window.move` / `noop`.
+- Journal: append-only JSONL with `ok` / `rolled-back` / `failed`.
+- Invariants: no path escape, every action undoable, failure rolls back, zero model dependency, every action covered by a declared capability.
 
-### 内核
+### Kernel
 
-- `preview / apply / undo` 三种模式；`undo` 分"撤销上一次"、"撤销指定任务"、"撤销全部"。
-- 失败即回滚：先撤失败动作自身的副作用，再按 LIFO 回滚已成功步骤。
-- 失败步骤写入审计日志（`status: "failed"` + `detail`）。
-- 回滚与撤销走同一套 `applyUndo(undo, ctx)`，动作类型与撤销类型对称。
+- `preview / apply / undo / undoAll / undoTask`.
+- On failure: undo the failing action's own side effects first, then roll back completed steps in reverse.
+- Failures are recorded in the journal (`status: "failed"` + `detail`).
 
-### 驱动
+### Drivers
 
-- Windows：UI Automation 读控件树、ValuePattern 写入、Invoke/Select、坐标点击、窗口矩形读写、`WH_MOUSE_LL` 点击捕获。
-- macOS：原生 Swift AX 桥（`axbridge`）——窗口枚举 36ms、控件树、聚焦、Unicode 输入（绕开输入法）、AXPress 点击、窗口移动与还原；无桥时回落 System Events。
-- macOS 实测坑位：AppleScript 枚举窗口 19–23s、`keystroke` 受输入法影响、进程名本地化导致 -1719、计算器按钮无标题只能靠 AXIdentifier。
-- Mock：纯内存驱动，用于契约测试与平台无关性验证。
+- Windows: UIA control tree, ValuePattern, Invoke/Select, coordinate click, window geometry, `WH_MOUSE_LL` click capture.
+- macOS: native Swift AX bridge (36 ms window enumeration), control tree, focus, Unicode typing, AXPress, window move; `osascript` fallback when the bridge is absent.
+- Mock: in-memory driver behind 11 contract tests.
 
-### Skill 与工具
+### Skills and tools
 
-- `downloads-cleanup`：按类型整理下载目录，重复文件移入 `.trash`。
-- `browser-tabs`：读取浏览器标签页并生成可撤销的归档清单。
-- `tile-windows`：窗口平铺，逐窗可撤销。
-- 录制器：聚焦 + 鼠标点击 + 新窗口出现三类事件；草稿生成器自动推断 `ui.value` / `window.exists` / `ui.exists` 断言。
-- `deskshell` CLI：`list / run / story / journal / undo / add / verify / doctor`。
-- 文档站 8 页 + JSON Schema + 预览快照测试 + 21 项回归。
+- `downloads-cleanup`, `browser-tabs`, `tile-windows`, plus a scaffold example.
+- Recorder: focus + mouse clicks + window-open events → draft skills with inferred assertions.
+- `deskshell` CLI: `list / run / story / journal / undo / add / verify / doctor / version`.
+- Docs site, JSON Schema, preview snapshots, 22-check regression suite.
 
-### 已知限制
+### Known limits
 
-- macOS 驱动未在真机验证；`verify` 与 `doctor` 是验证入口。
-- Linux 驱动未实现。
-- macOS 不支持按选择器点击与 invoke。
-- 录制器为轮询采样（300ms），快速切换可能漏采；只捕获左键。
-- 撤销语义覆盖文件与窗口几何；网络请求等外部副作用不可撤销。
-
-## 迁移说明
-
-`0.1.0` 之前无公开版本，无迁移负担。
+- macOS driver was unverified at release time.
+- Linux driver not implemented.
+- Recorder polls at 300 ms; left clicks only.
+- Undo covers files and window geometry; external side effects are rejected (`undo: null`).

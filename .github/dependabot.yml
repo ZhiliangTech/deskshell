@@ -1,0 +1,51 @@
+# Dependabot: keep the two moving parts current.
+#
+# The kernel itself has zero runtime dependencies on purpose (see CONTRIBUTING.md);
+# what actually drifts is the toolchain around it and the actions the CI depends on.
+# Grouping keeps the noise at one PR per ecosystem per week instead of one per bump.
+version: 2
+
+updates:
+  # npm — there is no runtime dependency tree, but devDependencies and the lockfile
+  # still need to keep moving, and package.json declares an engines floor we must respect.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      npm-minor-and-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions — the supply-chain edge that actually matters for this repo.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:15"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      actions-minor-and-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

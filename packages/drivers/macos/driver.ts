@@ -83,6 +83,23 @@ function osa(script: string, timeoutMs = 20000): Promise<string> {
 
 const esc = (s: string): string => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
+/** 桥 `press` / `rect` 的共同返回体：命中元素时总带屏幕绝对矩形 */
+interface ElementHit {
+  ok: boolean;
+  error?: string;
+  role?: string;
+  title?: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  cx?: number;
+  cy?: number;
+}
+
+const describe = (s: UiSelector): string =>
+  [s.controlType, s.name, s.automationId].filter(Boolean).join(" ") || "(未指定选择器)";
+
 export class MacDriver implements UiDriver {
   async windows(): Promise<WindowInfo[]> {
     if (hasBridge()) {
@@ -249,21 +266,63 @@ end tell`, 30000);
     await osa(`tell application "System Events" to keystroke "${esc(text)}"`);
   }
 
-  async invoke(ref: WindowRef, selector: UiSelector): Promise<void> {
+  /** 调桥定位元素：press 会顺带执行 AXPress，rect 只返回矩形 */
+  private async locate(ref: WindowRef, selector: UiSelector, cmd: "press" | "rect"): Promise<ElementHit> {
     const win = await this.resolve(ref);
-    if (!hasBridge()) throw new Error("macOS invoke 需要编译 AX 桥：packages/drivers/macos/build.sh");
-    const args = ["press", "--pid", String(win.pid)];
+    if (!hasBridge()) throw new Error(`macOS ${cmd} 需要编译 AX 桥：packages/drivers/macos/build.sh`);
+    const args = [cmd, "--pid", String(win.pid)];
     if (selector.controlType) args.push("--role", selector.controlType);
     if (selector.name) args.push("--name", selector.name);
     if (selector.automationId) args.push("--id", selector.automationId);
-    const res = await bridge<{ ok: boolean; title?: string }>(args, 20000);
-    if (!res.ok) throw new Error(`AXPress 未成功：${selector.controlType ?? ""} ${selector.name ?? ""}`);
+    return bridge<ElementHit>(args, 20000);
+  }
+
+  /** 元素矩形（屏幕绝对坐标），不触发任何动作 */
+  async rectOf(ref: WindowRef, selector: UiSelector): Promise<Rect> {
+    const res = await this.locate(ref, selector, "rect");
+    if (!res.ok) throw new Error(`找不到元素：${describe(selector)}`);
+    return { x: Math.round(res.x), y: Math.round(res.y), w: Math.round(res.w), h: Math.round(res.h) };
+  }
+
+  /**
+   * 真实坐标点击：CGEvent 鼠标 down/up（桥 `click --x --y`）。
+   * 坐标是屏幕绝对坐标，左上角为原点，与 AX 矩形同一坐标系。
+   */
+  async clickAt(x: number, y: number): Promise<void> {
+    if (!hasBridge()) throw new Error("macOS clickAt 需要编译 AX 桥：packages/drivers/macos/build.sh");
+    const px = Math.round(x);
+    const py = Math.round(y);
+    const res = await bridge<{ ok: boolean; x: number; y: number; error?: string }>(
+      ["click", "--x", String(px), "--y", String(py)],
+      15000,
+    );
+    if (!res.ok) throw new Error(`坐标点击失败 (${px}, ${py})：${res.error ?? "未知原因"}`);
+  }
+
+  /** 当前鼠标位置（屏幕绝对坐标）；调试与坐标点击落点验证用 */
+  async cursor(): Promise<{ x: number; y: number }> {
+    if (!hasBridge()) throw new Error("macOS cursor 需要编译 AX 桥：packages/drivers/macos/build.sh");
+    return bridge<{ x: number; y: number }>(["cursor"], 10000);
+  }
+
+  async invoke(ref: WindowRef, selector: UiSelector): Promise<void> {
+    const res = await this.locate(ref, selector, "press");
+    if (!res.ok) throw new Error(`AXPress 未成功：${describe(selector)}`);
   }
 
   async click(ref: WindowRef, selector: UiSelector): Promise<void> {
-    // macOS 上"按选择器点击"等价于对元素执行 AXPress；
-    // 需要真实坐标点击时用坐标版（roadmap）。
-    await this.invoke(ref, selector);
+    // 首选 AXPress（快、不依赖窗口位置）；元素不支持 AXPress 时
+    // （自绘控件、容器等），回退到元素矩形中心的真实坐标点击。
+    const res = await this.locate(ref, selector, "press");
+    if (res.ok) return;
+    const rect =
+      res.w > 0 && res.h > 0 ? { x: res.x, y: res.y, w: res.w, h: res.h } : await this.rectOf(ref, selector);
+    try {
+      await this.focus(ref); // 坐标点击要求窗口在前台；聚焦失败不阻断（坐标是绝对的）
+    } catch {
+      /* 聚焦失败时仍尝试点击 */
+    }
+    await this.clickAt(rect.x + rect.w / 2, rect.y + rect.h / 2);
   }
 
   async bounds(ref: WindowRef): Promise<Rect> {

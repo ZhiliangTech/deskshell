@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml"><img src="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml/badge.svg?branch=main" alt="ci"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
-  <img src="https://img.shields.io/badge/node-%E2%89%A522-339933" alt="node">
+  <img src="https://img.shields.io/badge/node-%E2%89%A522.18-339933" alt="node">
   <img src="https://img.shields.io/badge/model-zero%20dependency-FF7A59" alt="zero model dependency">
 </p>
 
@@ -52,6 +52,17 @@
 - **Skill** 只描述意图（`plan() → Action[]`），不碰系统 API、不写回滚逻辑；
 - **Kernel** 负责权限、预览、执行、断言、回滚、审计——接口冻结的那一层；
 - **Driver** 按平台实现（Windows UIA / macOS AX / Mock），可整体替换。
+
+## 安装
+
+```bash
+git clone https://github.com/ciceroyang/deskshell && cd deskshell
+node bin/deskshell.ts doctor
+```
+
+需要 Node **>=22.18**（或 >=23.6）：CLI 直接运行 TypeScript，只有这些版本起类型擦除才默认开启。
+
+打包已就绪（`npm pack` 实测 47 个文件 / 46 kB，另有启动器解决 `node_modules` 下不能擦除类型的限制），但**尚未发布到 npm**——暂时不要用 `npm i -g`。
 
 ## 30 秒跑起来
 
@@ -113,7 +124,6 @@ node bin/deskshell.ts run my-skill --mode preview
 
 ## 已知限制
 
-- **macOS 未实现坐标点击**：只能按 AX 元素点击，点不了空白处或画布。
 - **Linux 驱动未实现**：文件类 skill 不受影响。
 - **录制器是 300ms 轮询**，快速切换可能漏采；只捕获左键。
 - **撤销覆盖文件与窗口几何**；网络请求等外部副作用不可撤销（协议层会拒绝 `undo: null` 的动作）。

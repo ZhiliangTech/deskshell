@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml"><img src="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml/badge.svg?branch=main" alt="ci"></a>
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
-  <img src="https://img.shields.io/badge/node-%E2%89%A522-339933" alt="node">
+  <img src="https://img.shields.io/badge/node-%E2%89%A522.18-339933" alt="node">
   <img src="https://img.shields.io/badge/model-zero%20dependency-FF7A59" alt="zero model dependency">
 </p>
 
@@ -52,6 +52,17 @@ Three scenarios, one undo — file moves, a UI-driven export, and window geometr
 - **Skill** — declares intent only (`plan() → Action[]`). No system APIs, no rollback code.
 - **Kernel** — permissions, preview, execution, assertions, rollback, journal. The part with a frozen interface.
 - **Driver** — platform-specific (Windows UIA / macOS AX / Mock), fully replaceable.
+
+## Install
+
+```bash
+git clone https://github.com/ciceroyang/deskshell && cd deskshell
+node bin/deskshell.ts doctor
+```
+
+Requires Node **>=22.18** (or >=23.6): the CLI runs TypeScript directly, and type stripping is only unflagged from those versions.
+
+Packaging is verified (`npm pack` → 47 files, 46 kB; a launcher handles the `node_modules` type-stripping restriction), but the package is **not published to npm yet** — no `npm i -g` until that happens.
 
 ## Quick start
 
@@ -113,7 +124,6 @@ Three hard rules: every action needs a `post` assertion; every action needs an `
 
 ## Known limits
 
-- **No coordinate clicks on macOS** yet: only AX-element presses, not empty canvas areas.
 - **No Linux driver** yet; file-based skills are unaffected.
 - **Recorder polls at 300 ms**, may miss fast switches; left clicks only.
 - **Undo covers file and window-geometry changes**; external side effects (network calls) are not undoable — the protocol rejects actions with `undo: null`.

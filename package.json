@@ -1,15 +1,35 @@
 {
   "name": "deskshell",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "bin": {
-    "deskshell": "./bin/deskshell.ts"
-  },
+  "version": "0.2.0",
   "description": "AI computer shell: protocol-first kernel with preview, verification, undo and audit",
   "license": "MIT",
+  "type": "module",
+  "bin": {
+    "deskshell": "./bin/deskshell.mjs"
+  },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18.0 <23.0.0 || >=23.6.0"
+  },
+  "files": [
+    "bin/",
+    "packages/",
+    "schema/",
+    "scripts/doctor.ts",
+    "scripts/new-skill.ts",
+    "scripts/verify-driver.ts",
+    "scripts/make-fixture.ts",
+    "apps/cli-demo/story.ts",
+    "apps/cli-demo/fail-story.ts",
+    "CHANGELOG.md",
+    "STATUS.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ciceroyang/deskshell.git"
+  },
+  "homepage": "https://github.com/ciceroyang/deskshell#readme",
+  "bugs": {
+    "url": "https://github.com/ciceroyang/deskshell/issues"
   },
   "keywords": [
     "agent",
@@ -27,5 +47,8 @@
     "demo:fs": "node apps/cli-demo/main.ts --mode preview",
     "demo:ui": "node apps/cli-demo/ui.ts --root .demo/archive --window Edge --mode preview",
     "story": "node apps/cli-demo/story.ts"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -27,7 +27,6 @@ Split by "does this need a decision from the owner". Everything above is shipped
 - a timeline view of the undo stack (roll back to a point in time)
 
 **Drivers**
-- macOS coordinate clicks (bridge already exposes `click --x --y`)
 - Linux AT-SPI2 driver
 - coordinate mapping across multiple displays and DPI scaling
 

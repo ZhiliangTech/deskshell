@@ -1,0 +1,22 @@
+# https://editorconfig.org
+# One style, enforced by the editor instead of by review comments.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Source, data, docs and CI config: 2 spaces, stated explicitly so the intent
+# is readable without having to work out what [*] contributes.
+# There is deliberately no 4-space rule anywhere in this repo.
+[*.{ts,tsx,js,mjs,json,jsonl,md,yml,yaml,html,css,svg,sh}]
+indent_style = space
+indent_size = 2
+
+# .gitattributes pins PowerShell to CRLF; keep the editor from fighting it.
+[*.ps1]
+end_of_line = crlf

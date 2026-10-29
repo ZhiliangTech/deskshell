@@ -28,7 +28,7 @@ interface UiDriver {
 
 - 技术栈：原生 Swift AX 桥（`axbridge`）+ `osascript` 兜底
 - 已验证（macOS 26.6 / arm64）：窗口枚举（20 个 36ms）、控件树（181 节点）、聚焦、Unicode 输入、**AXPress 点击**（计算器 7×8=56）、**窗口移动与还原**（TextEdit 逐像素还原）
-- 未实现：按坐标点击（`click --x --y` 桥里已有，驱动层还没接）
+- 坐标点击：AXPress 被拒时自动回退为点击元素矩形中心（`clickAt`），真机验证通过
 - 必须编译桥：`packages/drivers/macos/build.sh`（需要 Xcode Command Line Tools）
 - 前置条件：系统设置 → 隐私与安全性 → 辅助功能，给终端授权
 

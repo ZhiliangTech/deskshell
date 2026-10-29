@@ -6,6 +6,9 @@
 // 用法:
 //   axbridge windows
 //   axbridge tree --pid <pid> [--depth 6]
+//   axbridge press --pid <pid> [--role AXButton] [--name 标题] [--id 标识]
+//   axbridge rect  --pid <pid> [--role AXButton] [--name 标题] [--id 标识]
+//   axbridge click --x <屏幕坐标> --y <屏幕坐标>
 //
 // 输出: 单行 JSON
 
@@ -135,6 +138,42 @@ func windowElement(_ pid: pid_t) -> AXUIElement? {
     return nil
 }
 
+func emit(_ obj: Any) {
+    let d = try! JSONSerialization.data(withJSONObject: obj, options: [])
+    FileHandle.standardOutput.write(d)
+}
+
+func fail(_ msg: String, code: Int32 = 2) -> Never {
+    emit(["ok": false, "error": msg])
+    exit(code)
+}
+
+/// 按 --pid/--role/--name/--id 定位元素；press / rect 共用这套参数。
+func locateElement() -> AXUIElement? {
+    let pid = pid_t(flag("--pid") ?? "0") ?? 0
+    let role = flag("--role").map { $0.hasPrefix("AX") ? $0 : "AX" + $0 }
+    let app = AXUIElementCreateApplication(pid)
+    var budget = 6000
+    return findElement(app, role: role, name: flag("--name"), ident: flag("--id"), depth: 0, maxDepth: 24, budget: &budget)
+}
+
+/// 元素矩形（屏幕绝对坐标，左上角原点）+ 中心点，供坐标点击直接使用。
+func elementJSON(_ el: AXUIElement) -> [String: Any] {
+    let r = rectOf(el)
+    let x = r["x"]!
+    let y = r["y"]!
+    let w = r["w"]!
+    let h = r["h"]!
+    return [
+        "ok": true,
+        "role": text(el, kAXRoleAttribute),
+        "title": text(el, kAXTitleAttribute),
+        "x": x, "y": y, "w": w, "h": h,
+        "cx": x + w / 2,
+        "cy": y + h / 2,
+    ]
+}
+
 var output: Any
 switch args.count > 1 ? args[1] : "windows" {
 case "windows":
@@ -146,30 +185,27 @@ case "tree":
     var budget = 1200
     output = node(app, depth: 0, maxDepth: depth, budget: &budget)
 case "press":
-    let pid = pid_t(flag("--pid") ?? "0") ?? 0
-    let role = flag("--role").map { $0.hasPrefix("AX") ? $0 : "AX" + $0 }
-    let app = AXUIElementCreateApplication(pid)
-    var budget = 6000
-    guard let el = findElement(app, role: role, name: flag("--name"), ident: flag("--id"), depth: 0, maxDepth: 24, budget: &budget) else {
-        output = ["ok": false, "error": "element not found"]
-        let d = try! JSONSerialization.data(withJSONObject: output, options: [])
-        FileHandle.standardOutput.write(d)
-        exit(2)
-    }
+    guard let el = locateElement() else { fail("element not found") }
     let err = AXUIElementPerformAction(el, kAXPressAction as CFString)
-    let rect = rectOf(el)
-    output = [
-        "ok": err == .success,
-        "action": "AXPress",
-        "role": text(el, kAXRoleAttribute),
-        "title": text(el, kAXTitleAttribute),
-        "x": rect["x"]!, "y": rect["y"]!, "w": rect["w"]!, "h": rect["h"]!,
-    ]
+    // 即使 AXPress 不支持，也把矩形带回去：上层据此回退到坐标点击。
+    var res = elementJSON(el)
+    res["ok"] = err == .success
+    res["action"] = "AXPress"
+    if err != .success { res["error"] = "AXPress unsupported (raw \(err.rawValue))" }
+    output = res
+case "rect":
+    // 只查矩形，不触发任何动作。
+    guard let el = locateElement() else { fail("element not found") }
+    output = elementJSON(el)
 case "click":
     let x = Double(flag("--x") ?? "0") ?? 0
     let y = Double(flag("--y") ?? "0") ?? 0
     clickAt(x, y)
     output = ["ok": true, "x": x, "y": y]
+case "cursor":
+    // 当前鼠标位置（屏幕绝对坐标，点单位）；用于验证坐标点击确实落点。
+    let loc = CGEvent(source: nil)?.location ?? .zero
+    output = ["x": Double(loc.x), "y": Double(loc.y)]
 case "move":
     let pid = pid_t(flag("--pid") ?? "0") ?? 0
     let x = Double(flag("--x") ?? "0") ?? 0

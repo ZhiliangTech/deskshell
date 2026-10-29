@@ -30,8 +30,7 @@ interface UiDriver {
 **macOS — verified on hardware (macOS 26.6, arm64)**
 
 - Stack: a native Swift AX bridge (`axbridge`) with an `osascript` fallback.
-- Verified: window enumeration (20 windows in 36 ms), control tree (181 nodes), focus, Unicode typing, AXPress (Calculator: 7 × 8 = 56), window move and pixel-exact restore.
-- Not implemented: coordinate clicks (the bridge has `click --x --y`; the driver layer does not call it yet).
+- Verified: window enumeration (20 windows in 36 ms), control tree (181 nodes), focus, Unicode typing, AXPress (Calculator: 7 × 8 = 56), **coordinate clicks with automatic fallback** (press the element centre when AXPress is refused), window move and pixel-exact restore.
 - Build the bridge first: `packages/drivers/macos/build.sh` (Xcode Command Line Tools).
 - Grant accessibility permission: System Settings → Privacy & Security → Accessibility.
 

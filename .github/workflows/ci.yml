@@ -4,16 +4,41 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+# One run per ref. A push that supersedes an in-flight run cancels it: the old
+# result is already obsolete, and runners are a shared, finite resource.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Read-only by default; nothing here needs to write back to the repo.
+permissions:
+  contents: read
 
 jobs:
   regress:
+    name: regress (node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    # The whole suite is seconds of filesystem work. Ten minutes means "something
+    # is wedged", not "the machine is slow" — fail loudly instead of burning an hour.
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
+
+      - name: Node version
+        run: node --version
+
       - name: 回归套件（文件场景，无需 GUI）
         run: node scripts/regress.ts
+
       - name: 文档站可构建
         run: node scripts/build-docs.ts
