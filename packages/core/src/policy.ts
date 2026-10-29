@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import type { Action, CapabilityId, CapabilityRequest, Risk } from "./types.ts";
 
@@ -27,6 +28,30 @@ export function checkCapabilities(
   return { allowed: reasons.length === 0, reasons };
 }
 
+/** 解析真实路径；不存在时沿最近的存在祖先解析，避免"目标还不存在"就跳过检查 */
+function realOrSelf(p: string): string {
+  try {
+    return fs.realpathSync.native(p);
+  } catch {
+    const parent = path.dirname(p);
+    if (parent === p) return p;
+    return path.join(realOrSelf(parent), path.basename(p));
+  }
+}
+
+/**
+ * 符号链接逃逸检查。
+ * - followFinal=false：只看父目录真实路径（用于 move 的源，避免"搬走一个快捷方式"被误拒）
+ * - followFinal=true ：目标自身存在时解析它（防止写到 root 内一个指向外部的软链接）
+ */
+export function isInsideReal(root: string, target: string, followFinal = true): boolean {
+  const realRoot = realOrSelf(root);
+  if (followFinal && fs.existsSync(target)) {
+    return isInside(realRoot, realOrSelf(target));
+  }
+  return isInside(realRoot, realOrSelf(path.dirname(target)));
+}
+
 /** 动作 → 必需能力：skill 声明的能力必须覆盖它产出的动作 */
 const ACTION_CAPABILITY: Record<string, CapabilityId> = {
   "fs.mkdir": "fs.write",
@@ -47,10 +72,12 @@ export function checkAction(
 ): PolicyDecision {
   const reasons: string[] = [];
   const touched: string[] = [];
+  const sources: string[] = [];
 
   switch (action.kind) {
     case "fs.move":
-      touched.push(action.from, action.to);
+      sources.push(action.from);
+      touched.push(action.to);
       break;
     case "fs.mkdir":
     case "fs.delete":
@@ -62,8 +89,16 @@ export function checkAction(
       break;
   }
 
-  for (const p of touched) {
+  for (const p of sources) {
     if (!isInside(root, p)) reasons.push(`路径越界：${p}`);
+    else if (!isInsideReal(root, p, false)) reasons.push(`路径经符号链接逃逸：${p}`);
+  }
+  for (const p of touched) {
+    if (!isInside(root, p)) {
+      reasons.push(`路径越界：${p}`);
+    } else if (!isInsideReal(root, p)) {
+      reasons.push(`路径经符号链接逃逸：${p}`);
+    }
   }
   if (action.kind === "fs.delete" && action.undo === null) {
     reasons.push(`不可撤销的删除被拒绝：${action.path}`);

@@ -235,6 +235,67 @@ await check("rollback.self", async () => {
   return report.steps[0]?.status === "failed" && !fs.existsSync(target) && report.rolledBack === 1;
 }, "失败动作自身的副作用没有回滚");
 
+// 12) 符号链接逃逸：root 内的 junction / 文件软链接不能把写入带出去
+await check("symlink.escape", async () => {
+  const base = path.join(root, "linkroot");
+  const outside = path.join(root, "outside");
+  fs.rmSync(base, { recursive: true, force: true });
+  fs.rmSync(outside, { recursive: true, force: true });
+  fs.mkdirSync(base, { recursive: true });
+  fs.mkdirSync(outside, { recursive: true });
+
+  const junction = path.join(base, "jump");
+  fs.symlinkSync(outside, junction, "junction");
+
+  // 注意：能力作用域必须绑定到 base，用外层 root 会在能力检查阶段就先失败，
+  // 那样测不到符号链接这一层。
+  const write = (target: string): Skill => ({
+    manifest: {
+      name: "symlink-probe",
+      version: "0.0.0",
+      description: "probe",
+      entry: "./index.ts",
+      capabilities: [{ id: "fs.write", scope: base, reason: "probe" }],
+    },
+    async plan() {
+      return [{ id: "w", kind: "fs.write", path: target, content: "x", post: [], undo: null } as Action];
+    },
+  });
+
+  const attempt = async (target: string): Promise<boolean> => {
+    const skill = write(target);
+    try {
+      await run(
+        skill,
+        { root: base },
+        { mode: "apply", root: base, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: path.join(base, "j.jsonl") },
+        {},
+      );
+      return false; // 没被拒绝
+    } catch (err) {
+      return /符号链接/.test(String(err));
+    }
+  };
+
+  const dirEscapeBlocked = await attempt(path.join(junction, "pwn.txt"));
+
+  // 文件级别软链接在 Windows 上需要额外权限；没有权限就跳过这一半
+  let fileEscapeBlocked = true;
+  try {
+    const outsideFile = path.join(outside, "target.txt");
+    fs.writeFileSync(outsideFile, "orig");
+    const fileLink = path.join(base, "file-link");
+    fs.symlinkSync(outsideFile, fileLink, "file");
+    fileEscapeBlocked = await attempt(fileLink);
+    if (fs.readFileSync(outsideFile, "utf8") !== "orig") fileEscapeBlocked = false;
+  } catch {
+    fileEscapeBlocked = true; // 无权限建软链接，跳过
+  }
+
+  const leaked = fs.existsSync(path.join(outside, "pwn.txt"));
+  return dirEscapeBlocked && fileEscapeBlocked && !leaked;
+}, "符号链接逃逸没有被拦截");
+
 for (const r of results) {
   const dbg = r.name === "window.move+undo" ? (globalThis as Record<string, unknown>).__moveDebug : undefined;
   console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name.padEnd(22)} ${r.detail}${dbg ? " " + JSON.stringify(dbg) : ""}`);

@@ -1,0 +1,272 @@
+[
+  {
+    "id": "mkdir:2026-03",
+    "kind": "fs.mkdir",
+    "path": "<root>/photos/2026-03",
+    "risk": "low",
+    "undo": {
+      "kind": "fs.rmdir",
+      "path": "<root>/photos/2026-03"
+    }
+  },
+  {
+    "id": "mkdir:2026-04",
+    "kind": "fs.mkdir",
+    "path": "<root>/photos/2026-04",
+    "risk": "low",
+    "undo": {
+      "kind": "fs.rmdir",
+      "path": "<root>/photos/2026-04"
+    }
+  },
+  {
+    "id": "mkdir:2026-05",
+    "kind": "fs.mkdir",
+    "path": "<root>/photos/2026-05",
+    "risk": "low",
+    "undo": {
+      "kind": "fs.rmdir",
+      "path": "<root>/photos/2026-05"
+    }
+  },
+  {
+    "id": "move:IMG_0001.jpg",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0001.jpg",
+    "to": "<root>/photos/2026-03/IMG_0001.jpg",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0001.jpg"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-03/IMG_0001.jpg"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-03/IMG_0001.jpg",
+      "to": "<root>/photos/IMG_0001.jpg"
+    }
+  },
+  {
+    "id": "move:IMG_0002.jpg",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0002.jpg",
+    "to": "<root>/photos/2026-03/IMG_0002.jpg",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0002.jpg"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-03/IMG_0002.jpg"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-03/IMG_0002.jpg",
+      "to": "<root>/photos/IMG_0002.jpg"
+    }
+  },
+  {
+    "id": "move:IMG_0003.png",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0003.png",
+    "to": "<root>/photos/2026-03/IMG_0003.png",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0003.png"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-03/IMG_0003.png"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-03/IMG_0003.png",
+      "to": "<root>/photos/IMG_0003.png"
+    }
+  },
+  {
+    "id": "move:IMG_0004.jpg",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0004.jpg",
+    "to": "<root>/photos/2026-04/IMG_0004.jpg",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0004.jpg"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-04/IMG_0004.jpg"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-04/IMG_0004.jpg",
+      "to": "<root>/photos/IMG_0004.jpg"
+    }
+  },
+  {
+    "id": "move:IMG_0005.heic",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0005.heic",
+    "to": "<root>/photos/2026-04/IMG_0005.heic",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0005.heic"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-04/IMG_0005.heic"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-04/IMG_0005.heic",
+      "to": "<root>/photos/IMG_0005.heic"
+    }
+  },
+  {
+    "id": "move:IMG_0006.webp",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0006.webp",
+    "to": "<root>/photos/2026-04/IMG_0006.webp",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0006.webp"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-04/IMG_0006.webp"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-04/IMG_0006.webp",
+      "to": "<root>/photos/IMG_0006.webp"
+    }
+  },
+  {
+    "id": "move:IMG_0007.jpg",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0007.jpg",
+    "to": "<root>/photos/2026-05/IMG_0007.jpg",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0007.jpg"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-05/IMG_0007.jpg"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-05/IMG_0007.jpg",
+      "to": "<root>/photos/IMG_0007.jpg"
+    }
+  },
+  {
+    "id": "move:IMG_0008.jpg",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0008.jpg",
+    "to": "<root>/photos/2026-05/IMG_0008.jpg",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0008.jpg"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-05/IMG_0008.jpg"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-05/IMG_0008.jpg",
+      "to": "<root>/photos/IMG_0008.jpg"
+    }
+  },
+  {
+    "id": "move:IMG_0009.jpeg",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0009.jpeg",
+    "to": "<root>/photos/2026-05/IMG_0009.jpeg",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0009.jpeg"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-05/IMG_0009.jpeg"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-05/IMG_0009.jpeg",
+      "to": "<root>/photos/IMG_0009.jpeg"
+    }
+  },
+  {
+    "id": "move:IMG_0010.gif",
+    "kind": "fs.move",
+    "from": "<root>/photos/IMG_0010.gif",
+    "to": "<root>/photos/2026-05/IMG_0010.gif",
+    "risk": "low",
+    "pre": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/IMG_0010.gif"
+      }
+    ],
+    "post": [
+      {
+        "kind": "path.exists",
+        "path": "<root>/photos/2026-05/IMG_0010.gif"
+      }
+    ],
+    "undo": {
+      "kind": "fs.move",
+      "from": "<root>/photos/2026-05/IMG_0010.gif",
+      "to": "<root>/photos/IMG_0010.gif"
+    }
+  }
+]

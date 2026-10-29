@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import type {
   Action,
   JournalEntry,
@@ -7,6 +8,7 @@ import type {
   SkillContext,
   SkillInput,
   StepResult,
+  UndoAction,
 } from "./types.ts";
 import { checkAction, checkCapabilities, maxRisk } from "./policy.ts";
 import { append, load, markRolledBack } from "./journal.ts";
@@ -56,13 +58,16 @@ export async function run(
   const execCtx = { ...ctx, root: opts.root };
 
   for (const action of actions) {
+    let phase: "pre" | "exec" | "post" = "pre";
     try {
       for (const pre of action.pre ?? []) {
         if (!(await checkAssertion(pre, execCtx))) {
           throw new Error(`前置条件不满足：${JSON.stringify(pre)}`);
         }
       }
+      phase = "exec";
       await execute(action, execCtx);
+      phase = "post";
       for (const post of action.post ?? []) {
         if (!(await checkAssertion(post, execCtx))) {
           throw new Error(`后置断言失败：${JSON.stringify(post)}`);
@@ -99,7 +104,9 @@ export async function run(
       // 关键：失败的动作本身可能已经产生了副作用（比如写完文件才断言失败），
       // 必须先撤掉它自己的改动，再按 LIFO 回滚之前成功的步骤。
       let selfUndone = 0;
-      if (action.undo) {
+      // 前置条件失败意味着"一行都没执行"，此时自撤反而会破坏现场：
+      // move 的 undo 是 move(to→from)，会把本来就在 to 上的文件搬走甚至覆盖 from。
+      if (action.undo && phase !== "pre" && selfUndoSafe(action.undo)) {
         try {
           await applyUndo(action.undo, execCtx);
           selfUndone = 1;
@@ -124,6 +131,23 @@ export async function run(
   }
 
   return { mode: "apply", steps, journal: done, rolledBack: 0 };
+}
+
+
+/** 自撤前确认"这个动作确实生效了"，避免 undo 作用在别人的数据上 */
+function selfUndoSafe(undo: UndoAction): boolean {
+  switch (undo.kind) {
+    case "fs.move":
+      return fs.existsSync(undo.from) && !fs.existsSync(undo.to);
+    case "fs.rmdir":
+    case "fs.restore":
+      return fs.existsSync(undo.path);
+    case "window.move":
+    case "noop":
+      return true;
+    default:
+      return true;
+  }
 }
 
 async function undoLastTask(opts: RunOptions, ctx: SkillContext): Promise<RunReport> {

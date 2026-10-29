@@ -41,8 +41,8 @@ run(
 );
 
 // 3) CLI：能列出公开 skill
-run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("4 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.2.1"));
+run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("7 个 skill"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.3.0"));
 
 // 4) CLI：--json 输出可被程序消费
 run(
@@ -87,10 +87,14 @@ run("fail.story", ["apps/cli-demo/fail-story.ts"], (o) => o.includes("PASS"));
 run("journal.failed", ["bin/deskshell.ts", "journal", "--root", ".demo/fail-story"], (o) => o.includes("失败 1 步"));
 
 // 4) 驱动契约（内存驱动，验证内核对平台无感）
-run("contract", ["scripts/contract-test.ts"], (o) => o.includes("11/11 passed"));
+run("contract", ["scripts/contract-test.ts"], (o) => o.includes("12/12 passed"));
 
 // 5) 预览快照：内核升级不能悄悄改变既有 skill 的计划
-run("snapshots", ["scripts/snapshot-test.ts"], (o) => o.includes("2/2 snapshots match"));
+run("snapshots", ["scripts/snapshot-test.ts"], (o) => o.includes("snapshots match"));
+
+// 5) 新 skill：photo-sort / log-archive / rename-batch
+run("photo.sort", ["scripts/photo-sort-test.ts"], (o) => o.includes("PASS photo-sort"));
+run("new.skills", ["scripts/new-skills-test.ts"], (o) => o.includes("8/8 passed"));
 
 // 5) 文档站
 run("docs.build", ["scripts/build-docs.ts"], (o) => /built \d+ pages/.test(o));

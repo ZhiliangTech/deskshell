@@ -1,0 +1,10 @@
+{
+  "name": "log-archive",
+  "version": "0.1.0",
+  "description": "把超过 30 天的 .log 归档到 archive/YYYY-MM，默认不删除任何文件",
+  "entry": "./index.ts",
+  "capabilities": [
+    { "id": "fs.read", "scope": "{{root}}", "reason": "读取日志目录与文件时间" },
+    { "id": "fs.write", "scope": "{{root}}", "reason": "创建归档目录并移动日志" }
+  ]
+}

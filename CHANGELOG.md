@@ -2,6 +2,31 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.3.0 — 2026-10-29
+
+Hardening and reach: symlink escapes are blocked, three new skills ship with tests, and the kernel gets a performance baseline.
+
+### Security
+
+- **Symlink / junction escape is now rejected.** Path checks run twice: lexically (`..` rejected) and by real path. A junction or symlink inside the task root that points outside is refused before execution. `isInsideReal()` resolves the nearest existing ancestor, so the target does not need to exist to be checked.
+- New contract test `symlink.escape` creates a junction to an outside directory, attempts a write, and asserts both refusal and that nothing leaked outside.
+
+### Fixed
+
+- **A failing action no longer destroys neighbouring data.** The kernel used to run the failing action's own undo unconditionally. When the failure happened at the pre-assertion stage, that undo (`move(to → from)`) would move a pre-existing destination file out of the way — data loss. Now self-undo only runs when the action actually entered its execution phase, and only when its effect is verifiably present (`selfUndoSafe`). Covered by `rename-batch` collision test.
+
+### Added — three skills
+
+- **`photo-sort`** — archives images into `YYYY-MM` folders by mtime (no EXIF dependency). 12-file fixture: 3 month folders, undo restores all 12 and removes the folders. Snapshot included.
+- **`log-archive`** — moves `.log` files older than 30 days into `archive/YYYY-MM/`; nothing is deleted. Supports `now` / `maxAgeDays` for deterministic runs.
+- **`rename-batch`** — zero-padded sequential renames with a `path.absent` pre-assertion, so a name collision fails the batch and rolls it back instead of overwriting.
+
+### Added — tooling and docs
+
+- **`scripts/bench.ts`** — 1000-file benchmark. Measured: plan 44 ms (1002 steps), apply 737 ms (0.7 ms/step), undo 727 ms, journal 387 KB (396 B/step), heap +7 MB.
+- **Docs**: `recipes` page (five runnable scenarios with real output) and `faq` page, in English with Chinese mirrors. Docs site is now 12 pages per language.
+- `scripts/photo-sort-test.ts`, `scripts/new-skills-test.ts` (8 assertions), `scripts/make-photo-fixture.ts` wired into the regression suite — now **24 checks**.
+
 ## 0.2.0 — 2026-10-29
 
 The "make it a real project" release: bilingual docs, brand, packaging, and macOS click parity.

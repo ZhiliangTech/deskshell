@@ -1,6 +1,6 @@
 {
   "name": "@ciceroyang/deskshell",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "AI computer shell: protocol-first kernel with preview, verification, undo and audit",
   "license": "MIT",
   "type": "module",

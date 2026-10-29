@@ -1,0 +1,10 @@
+{
+  "name": "photo-sort",
+  "version": "0.1.0",
+  "description": "按拍摄月份（文件修改时间）把照片归档到 YYYY-MM 子目录",
+  "entry": "./index.ts",
+  "capabilities": [
+    { "id": "fs.read", "scope": "{{root}}", "reason": "读取照片目录与文件时间" },
+    { "id": "fs.write", "scope": "{{root}}", "reason": "创建月份目录并移动照片" }
+  ]
+}

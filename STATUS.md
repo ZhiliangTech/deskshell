@@ -3,9 +3,9 @@
 写这份文件的目的：让任何人（包括三个月后的我们）在**五分钟内**判断这个项目值不值得继续投入。
 每条能力都配一条可复现命令，输出是当天真跑出来的，不是设计意图。
 
-- 版本：`deskshell 0.1.0`（协议 v0）
+- 版本：`deskshell 0.3.0`（协议 v0）
 - 环境：Windows 11 / Node 24.21.0 / 2026-10-29
-- 规模：TypeScript + PowerShell 共 4,254 行，38 个 TS 文件，8 个 skill，9 页文档
+- 规模：TypeScript + PowerShell 共 4,254 行，45 个 TS 文件，11 个 skill（7 公开 / 4 内部），12 页文档（中英各 12）
 
 ---
 
@@ -14,7 +14,7 @@
 ```bash
 node bin/deskshell.ts version    # 版本与平台
 node bin/deskshell.ts doctor     # 环境自检（Node/驱动/权限/清单/可写）
-node scripts/regress.ts          # 22 项回归
+node scripts/regress.ts          # 24 项回归
 node bin/deskshell.ts story      # 三场景 + 整体撤销
 ```
 

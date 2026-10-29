@@ -3,6 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { execFileSync } from "node:child_process";
 import { MockDriver } from "../packages/drivers/mock/driver.ts";
+import { makePhotoFixture } from "./make-photo-fixture.ts";
 import type { Skill } from "../packages/core/src/types.ts";
 
 const root = path.resolve(".demo/snapshot");
@@ -14,6 +15,7 @@ fs.rmSync(root, { recursive: true, force: true });
 execFileSync(process.execPath, ["scripts/make-fixture.ts", path.join(root, "downloads")], {
   stdio: "ignore",
 });
+makePhotoFixture(path.join(root, "photos"));
 
 // 归一化根路径，并把分隔符统一成 /：否则 Windows 与 Linux 生成的快照无法互相比较
 const norm = (v: unknown): unknown => {
@@ -30,6 +32,11 @@ const cases: Array<{ name: string; file: string; input: Record<string, unknown>;
     file: "packages/skills/tile-windows/index.ts",
     input: { root, limit: 2, area: { x: 0, y: 0, w: 1440, h: 900 } },
     driver: new MockDriver(),
+  },
+  {
+    name: "photo-sort",
+    file: "packages/skills/photo-sort/index.ts",
+    input: { root: path.join(root, "photos") },
   },
   {
     name: "downloads-cleanup",

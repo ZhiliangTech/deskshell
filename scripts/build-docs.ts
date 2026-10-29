@@ -13,11 +13,13 @@ const ORDER = [
   "protocol",
   "writing-a-skill",
   SKILLS_SLUG,
+  "recipes",
   "undo-and-trust",
   "recording",
   "drivers",
   "versioning",
   "roadmap",
+  "faq",
 ];
 
 /** 站点文案的每语言字典：表格表头、搜索框、技能页文案都走这里 */
