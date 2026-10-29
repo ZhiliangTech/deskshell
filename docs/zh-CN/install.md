@@ -53,7 +53,7 @@ npx github:ZhiliangTech/deskshell doctor      # 一次性跑，不装全局
 走的是 `github.com` + Git，不是 npm registry。发行版附件同理：
 
 ```bash
-npm i -g https://github.com/ZhiliangTech/deskshell/releases/download/v0.8.0/ciceroyang-deskshell-0.8.0.tgz
+npm i -g https://github.com/ZhiliangTech/deskshell/releases/download/v0.9.0/zhiliangtech-deskshell-0.9.0.tgz
 ```
 
 ## 5. 维护者：www.npmjs.com 打不开时怎么发布

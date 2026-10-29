@@ -53,7 +53,7 @@ npx github:ZhiliangTech/deskshell doctor      # one-shot, nothing installed glob
 This uses `github.com` + Git, not the npm registry. Same for a release asset:
 
 ```bash
-npm i -g https://github.com/ZhiliangTech/deskshell/releases/download/v0.8.0/ciceroyang-deskshell-0.8.0.tgz
+npm i -g https://github.com/ZhiliangTech/deskshell/releases/download/v0.9.0/zhiliangtech-deskshell-0.9.0.tgz
 ```
 
 ## 5. Maintainers: publishing when www.npmjs.com is unreachable
