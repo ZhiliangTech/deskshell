@@ -1,0 +1,19 @@
+{
+  "name": "notepad-demo",
+  "version": "0.1.0",
+  "description": "由录制生成：3 步（1 次点击）",
+  "entry": "./index.ts",
+  "capabilities": [
+    {
+      "id": "ui.read",
+      "scope": "recorded",
+      "reason": "回放录制时的界面观察"
+    },
+    {
+      "id": "ui.input",
+      "scope": "recorded",
+      "reason": "回放录制时的点击与输入"
+    }
+  ],
+  "internal": true
+}

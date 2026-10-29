@@ -1,0 +1,38 @@
+name: skill 提案
+description: 提一个新 skill（要做什么、怎么验证、怎么撤销）
+title: "[skill] "
+labels: ["skill"]
+body:
+  - type: input
+    id: scenario
+    attributes:
+      label: 场景
+      description: 一句话说明要解决什么真实问题
+      placeholder: 把下载文件夹里重复的安装包归档
+    validations:
+      required: true
+  - type: textarea
+    id: actions
+    attributes:
+      label: 计划做什么
+      description: 大致步骤，以及每一步的"成功"长什么样
+      placeholder: |
+        1. 扫描目录
+        2. 按扩展名分组
+        3. 移动文件
+    validations:
+      required: true
+  - type: textarea
+    id: verify
+    attributes:
+      label: 怎么验证
+      description: 机器可判的验收条件（文件存在、控件值、数量）
+    validations:
+      required: true
+  - type: textarea
+    id: undo
+    attributes:
+      label: 怎么撤销
+      description: 如果做到一半失败，怎么回到起点
+    validations:
+      required: true

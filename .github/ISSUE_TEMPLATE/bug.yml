@@ -1,0 +1,36 @@
+name: bug
+description: 内核、驱动或文档的问题
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: 区域
+      options:
+        - kernel（权限/执行/断言/回滚）
+        - driver-windows
+        - driver-macos
+        - driver-linux
+        - docs
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 发生了什么
+      description: 实际行为，以及你期望的行为
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+      description: 能贴出命令最好；UI 问题请附窗口类型与控件信息
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: 环境
+      placeholder: Windows 11 24H2 / Node 24.21 / deskshell 0.1.0

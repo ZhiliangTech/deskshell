@@ -1,0 +1,21 @@
+{
+  "name": "tile-windows",
+  "version": "0.1.0",
+  "description": "把可见窗口平铺到网格，可整体撤销回原位置",
+  "entry": "./index.ts",
+  "capabilities": [
+    {
+      "id": "ui.read",
+      "scope": "desktop",
+      "reason": "枚举可见窗口及其位置"
+    },
+    {
+      "id": "ui.input",
+      "scope": "desktop",
+      "reason": "移动窗口位置"
+    }
+  ],
+  "platforms": [
+    "win32"
+  ]
+}

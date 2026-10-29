@@ -1,0 +1,19 @@
+{
+  "name": "assertion-fail",
+  "version": "0.1.0",
+  "description": "负向测试：写入后断言一个错误的值，必须失败并阻断后续步骤",
+  "entry": "./index.ts",
+  "capabilities": [
+    {
+      "id": "ui.read",
+      "scope": "test",
+      "reason": "读取记事本内容以校验断言"
+    },
+    {
+      "id": "ui.input",
+      "scope": "test",
+      "reason": "向记事本写入测试文本"
+    }
+  ],
+  "internal": true
+}

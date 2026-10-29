@@ -1,0 +1,18 @@
+{
+  "name": "first-skill",
+  "version": "0.1.0",
+  "description": "把 root 里的文件按扩展名列一个清单",
+  "entry": "./index.ts",
+  "capabilities": [
+    {
+      "id": "fs.read",
+      "scope": "{{root}}",
+      "reason": "读取目录，按扩展名分组"
+    },
+    {
+      "id": "fs.write",
+      "scope": "{{root}}",
+      "reason": "把清单写入 report.md"
+    }
+  ]
+}

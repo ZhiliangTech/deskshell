@@ -1,0 +1,10 @@
+{
+  "name": "downloads-cleanup",
+  "version": "0.1.0",
+  "description": "按类型整理下载文件夹，重复文件移入 .trash（不真删）",
+  "entry": "./index.ts",
+  "capabilities": [
+    { "id": "fs.read", "scope": "{{root}}", "reason": "扫描下载文件夹，识别文件类型与重复项" },
+    { "id": "fs.write", "scope": "{{root}}", "reason": "在下载文件夹内新建分类目录并移动文件" }
+  ]
+}

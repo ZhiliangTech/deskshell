@@ -1,0 +1,22 @@
+{
+  "name": "browser-tabs",
+  "version": "0.1.0",
+  "description": "读取浏览器窗口的标签页，生成可撤销的归档清单",
+  "entry": "./index.ts",
+  "capabilities": [
+    {
+      "id": "ui.read",
+      "scope": "browser",
+      "reason": "读取浏览器窗口的控件树以获得标签页标题"
+    },
+    {
+      "id": "fs.write",
+      "scope": "{{root}}",
+      "reason": "把标签页归档清单写入指定目录"
+    }
+  ],
+  "platforms": [
+    "win32",
+    "darwin"
+  ]
+}
