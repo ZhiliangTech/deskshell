@@ -3,9 +3,8 @@
 </p>
 
 <p align="center">
-  <b>让 AI 操作电脑，但每一步都能预览、验证、撤销、审计。</b><br>
-  不是"会点鼠标的脚本"，是一套带事务语义的协议内核。<br>
-  <sub>吉祥物是一只把窗口当壳的寄居蟹——它住在你的电脑里，但不乱动东西。</sub>
+  <b>AI can drive your computer — but every action should be previewed, verified, undoable, and auditable.</b><br>
+  Not "a script that clicks things": a protocol-first kernel with transactional semantics.
 </p>
 
 <p align="center">
@@ -15,114 +14,116 @@
   <img src="https://img.shields.io/badge/model-zero%20dependency-FF7A59" alt="zero model dependency">
 </p>
 
-## 一句话说清它和别的方案的区别
+<p align="center">
+  <b>English</b> · <a href="README.zh-CN.md">简体中文</a>
+</p>
 
-| | 普通自动化 / agent 脚本 | deskshell |
+## How it differs
+
+| | Typical agent / automation script | deskshell |
 | --- | --- | --- |
-| 动手前 | 直接开干，你不知道它会做什么 | `preview` 先给计划，标出风险与是否可撤销 |
-| 动手后 | "应该成功了吧" | 每步执行后跑断言，失败即停 |
-| 出错时 | 留下半个烂摊子 | 先撤失败动作自身，再逆序回滚全部已成功步骤 |
-| 事后 | 没人知道发生了什么 | JSONL 审计：谁、何时、改了什么、怎么撤 |
-| 模型 | 绑死某个模型 | **内核零模型依赖**，模型只是 skill 内部的可替换件 |
+| Before acting | Just does it — you don't know what will happen | `preview` shows the plan, risk level, and whether each step is undoable |
+| After acting | "It probably worked" | Every step runs a post-assertion; failure stops the run |
+| On failure | Leaves a half-modified mess | Undoes the failing action's own side effects, then rolls back everything else in reverse |
+| Afterwards | Nobody knows what happened | JSONL journal: who, when, what changed, how to undo |
+| Model | Locked to one vendor | **Zero model dependency in the kernel** — a swappable part inside skills |
 
-## 实际跑起来是这样
+## What it looks like
 
 ![deskshell demo](docs/assets/hero.gif)
 
-<sub>动图由真实命令输出生成（`scripts/make-assets.py`），不是手绘示意图。</sub>
+<sub>Rendered from real command output (`scripts/make-assets.py`), not a mockup.</sub>
 
-## 三个场景，一次撤销
-
-文件整理 + 标签归档 + 窗口平铺，三类副作用走同一个事务：
+Three scenarios, one undo — file moves, a UI-driven export, and window geometry all inside the same transaction:
 
 ![story](docs/assets/story.png)
 
 ```
-[撤销] 22 步回滚，失败 0 步
-       文件 0 → 13（起点 13）
-       标签清单 0 份
-       窗口 627,551 2880x1538     ← 逐像素还原
+[undo] 22 steps rolled back, 0 failures
+       files 0 → 13 (started at 13)
+       tab index 0 files
+       window 627,551 2880x1538      ← restored pixel-for-pixel
 ```
 
-## 架构：协议在上，平台在下
+## Architecture
 
 ![architecture](docs/assets/architecture.svg)
 
-- **Skill** 只描述意图（`plan() → Action[]`），不碰系统 API、不写回滚逻辑；
-- **Kernel** 负责权限、预览、执行、断言、回滚、审计——唯一不许随便改的部分；
-- **Driver** 按平台实现（Windows UIA / macOS AX / Mock），可整体替换。
+- **Skill** — declares intent only (`plan() → Action[]`). No system APIs, no rollback code.
+- **Kernel** — permissions, preview, execution, assertions, rollback, journal. The part with a frozen interface.
+- **Driver** — platform-specific (Windows UIA / macOS AX / Mock), fully replaceable.
 
-## 30 秒跑起来
+## Quick start
 
 ```bash
-node bin/deskshell.ts doctor                        # 环境自检
-node scripts/make-fixture.ts                        # 造 13 个文件的下载目录
-node bin/deskshell.ts run downloads-cleanup --root .demo/downloads              # 预览，不动手
+node bin/deskshell.ts doctor                        # environment self-check
+node scripts/make-fixture.ts                        # create a 13-file downloads folder
+node bin/deskshell.ts run downloads-cleanup --root .demo/downloads              # preview only
 node bin/deskshell.ts run downloads-cleanup --root .demo/downloads --mode apply
 node bin/deskshell.ts run downloads-cleanup --root .demo/downloads --mode undo
 ```
 
-不需要 API key，不需要联网，不需要模型。
+No API key. No network. No model.
 
-想亲眼看失败回滚：
+Watch a failure roll back:
 
 ```bash
 node bin/deskshell.ts story --fail
 ```
 
-## 命令
+## Commands
 
-| 命令 | 用途 |
+| Command | Purpose |
 | --- | --- |
-| `deskshell list` | 列出可用 skill |
-| `deskshell run <name>` | 预览 / 执行 / 撤销（默认预览） |
-| `deskshell story` | 三场景跑一遍并整体撤销 |
-| `deskshell journal` | 审计日志时间线 |
-| `deskshell undo --task <id>` | 撤销某一次任务（幂等） |
-| `deskshell add <path>` | 安装外部 skill（先打印它要的能力） |
-| `deskshell verify` | 检查平台驱动能力 |
-| `deskshell doctor` | 环境自检 |
-| `deskshell version` | 版本信息 |
+| `deskshell list` | List installed skills |
+| `deskshell run <name>` | Preview / apply / undo (preview is the default) |
+| `deskshell story` | Run three scenarios and undo them all |
+| `deskshell journal` | Render the audit trail |
+| `deskshell undo --task <id>` | Undo one specific task (idempotent) |
+| `deskshell add <path>` | Install an external skill (prints requested capabilities first) |
+| `deskshell verify` | Check driver capabilities on this platform |
+| `deskshell doctor` | Environment self-check |
+| `deskshell version` | Version info |
 
-## 平台
+## Platforms
 
-| 平台 | 状态 | 验证方式 |
+| Platform | Status | Verify with |
 | --- | --- | --- |
-| Windows | 已验证（UIA） | `deskshell doctor` |
-| macOS | 已验证（原生 Swift AX 桥，窗口枚举 36ms） | `deskshell doctor` |
-| Linux | 计划中（AT-SPI2） | — |
+| Windows | Verified (UI Automation) | `deskshell doctor` |
+| macOS | Verified (native Swift AX bridge, 20 windows in 36 ms) | `deskshell doctor` |
+| Linux | Planned (AT-SPI2) | — |
 
-macOS 需要先编译桥：`packages/drivers/macos/build.sh`（Xcode Command Line Tools），并在「系统设置 → 隐私与安全性 → 辅助功能」给终端授权。
+macOS requires building the bridge first: `packages/drivers/macos/build.sh` (Xcode Command Line Tools), plus granting Terminal accessibility permission.
 
-## 写一个 skill
+## Write a skill
 
 ```bash
 node scripts/new-skill.ts --name my-skill
 node bin/deskshell.ts run my-skill --mode preview
 ```
 
-三条硬规则：每步都要有 `post` 断言；每步都要有 `undo`；skill 里不准直接调系统 API。
+Three hard rules: every action needs a `post` assertion; every action needs an `undo`; skills never call system APIs directly.
 
-## 更多
+## Learn more
 
-- [STATUS.md](STATUS.md)：每条能力配一条可复现命令与实测输出
-- [CHANGELOG.md](CHANGELOG.md)：0.1.0 归档与已知限制
-- [docs/](docs/)：协议、写 skill、撤销语义、录制器、驱动、版本策略、路线图
-- `node scripts/build-docs.ts` → `site/index.html`（本地文档站）
+- [STATUS.md](STATUS.md) — every capability paired with a reproducible command and its actual output
+- [CHANGELOG.md](CHANGELOG.md) — 0.1.0 scope and known limits
+- [docs/](docs/) — protocol, writing skills, undo semantics, recorder, drivers, versioning, roadmap (Chinese)
+- `node scripts/build-docs.ts` → `site/index.html` for a local docs site
 
-## 已知限制
+## Known limits
 
-- **macOS 未实现坐标点击**：只能按 AX 元素点击，点不了空白处或画布。
-- **Linux 驱动未实现**：文件类 skill 不受影响。
-- **录制器是 300ms 轮询**，快速切换可能漏采；只捕获左键。
-- **撤销覆盖文件与窗口几何**；网络请求等外部副作用不可撤销（协议层会拒绝 `undo: null` 的动作）。
-- 项目处于 `0.x`，破坏性变更走 RFC 并在 CHANGELOG 给迁移说明。
+- **No coordinate clicks on macOS** yet: only AX-element presses, not empty canvas areas.
+- **No Linux driver** yet; file-based skills are unaffected.
+- **Recorder polls at 300 ms**, may miss fast switches; left clicks only.
+- **Undo covers file and window-geometry changes**; external side effects (network calls) are not undoable — the protocol rejects actions with `undo: null`.
+- Pre-1.0: breaking changes go through an RFC and ship with migration notes in the CHANGELOG.
 
-## 设计红线
+## Design invariants
 
-1. skill 不准直接调用系统 API，只能产出 `Action`。
-2. 每个 `Action` 必须有 `post` 断言；不可撤销的动作必须显式标记，内核会拒绝。
-3. 能力必须声明、必须带人话理由、必须落在作用域内。
-4. 内核不依赖任何模型；模型只允许出现在"理解屏幕"和"拆解任务"两个可替换接口后面。
+1. Skills never call system APIs; they only produce `Action`s.
+2. Every `Action` must declare a `post` assertion; non-undoable actions must be marked and will be rejected.
+3. Capabilities must be declared, justified in plain language, and scoped.
+4. The kernel has no model dependency; models may only live behind two replaceable interfaces: perceive and plan.
 
 MIT License.

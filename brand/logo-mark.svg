@@ -1,34 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <rect width="256" height="256" rx="60" fill="#0B0F14"/>
-  <rect x="1" y="1" width="254" height="254" rx="59" fill="none" stroke="#1F2630" stroke-width="2"/>
+  <rect width="256" height="256" rx="58" fill="#0B0F14"/>
+  <rect x="1" y="1" width="254" height="254" rx="57" fill="none" stroke="#1F2630" stroke-width="2"/>
 
-  <!-- 壳：一个窗口 -->
-  <g transform="rotate(-5 128 96)">
-    <rect x="52" y="38" width="152" height="106" rx="12" fill="#F2E9DC"/>
-    <path d="M52 50 a12 12 0 0 1 12-12 h128 a12 12 0 0 1 12 12 v16 h-152 z" fill="#FF7A59"/>
-    <circle cx="70" cy="52" r="4" fill="#0B0F14" opacity="0.55"/>
-    <circle cx="84" cy="52" r="4" fill="#0B0F14" opacity="0.35"/>
-    <circle cx="98" cy="52" r="4" fill="#0B0F14" opacity="0.2"/>
-    <path d="M88 94 l15 13 l-15 13" fill="none" stroke="#0B0F14" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M114 120 h20" stroke="#0B0F14" stroke-width="8" stroke-linecap="round"/>
-  </g>
+  <!-- 后层：珊瑚色的"壳"，微微倾斜 -->
+  <rect x="64" y="64" width="140" height="140" rx="26" fill="#FF7A59" transform="rotate(-9 134 134)"/>
 
-  <!-- 寄居蟹：把窗口当壳 -->
-  <g stroke="#FF7A59" stroke-width="7" stroke-linecap="round">
-    <path d="M120 164 L117 152"/>
-    <path d="M138 164 L141 152"/>
-    <path d="M104 206 L90 222"/>
-    <path d="M118 210 L110 228"/>
-    <path d="M154 206 L168 222"/>
-    <path d="M140 210 L148 228"/>
-  </g>
-  <g fill="#FF7A59">
-    <ellipse cx="129" cy="188" rx="42" ry="26"/>
-    <ellipse cx="84" cy="182" rx="17" ry="13"/>
-    <ellipse cx="174" cy="182" rx="17" ry="13"/>
-  </g>
-  <circle cx="117" cy="149" r="7.5" fill="#F2E9DC"/>
-  <circle cx="141" cy="149" r="7.5" fill="#F2E9DC"/>
-  <circle cx="118" cy="150" r="3.2" fill="#0B0F14"/>
-  <circle cx="142" cy="150" r="3.2" fill="#0B0F14"/>
+  <!-- 前层：窗面 -->
+  <rect x="46" y="52" width="148" height="148" rx="26" fill="#F2E9DC"/>
+
+  <!-- 提示符 -->
+  <path d="M82 108 l24 20 l-24 20" fill="none" stroke="#0B0F14" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M120 150 h30" stroke="#0B0F14" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- 验证通过 -->
+  <circle cx="72" cy="176" r="8.5" fill="#3FB950"/>
 </svg>
