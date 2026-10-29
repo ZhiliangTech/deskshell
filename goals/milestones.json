@@ -95,7 +95,10 @@
       "from": 320,
       "to": 360,
       "accept": "教程、FAQ、故障排查、一段 3 分钟演示视频；新人按文档不提问能完成一次真实任务",
-      "check": "找 1 位外部读者按文档操作，记录卡点并修完"
+      "check": "找 1 位外部读者按文档操作，记录卡点并修完",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "onboarding 17/17：真装 tarball 后只照文档跑通 new→改→list→preview→apply→undo；修掉 new 写错目录、undo --last 裸用两个坑；regress 43/43"
     },
     {
       "id": "M10",

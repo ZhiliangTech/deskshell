@@ -2,6 +2,26 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.11.0 — 2026-10-30
+
+M09：把「外人 15 分钟写出第一个 skill」变成一条被测过的路径。
+
+### Fixed — 两个只有"真装一遍"才会撞到的坑
+
+- **`deskshell new` 往仓库里写**：以前它固定写 `./packages/skills/<name>`，装好包的用户根本没有仓库，结果文件散落在自己的目录里。现在默认写 `~/.deskshell/skills/<name>`（`DESKSHELL_SKILLS_DIR` 可覆盖），给本仓库贡献时才用 `--in-repo`。生成后直接打印下一步命令。
+- **`deskshell undo --last` 报「需要一个正整数」**：新人最自然的写法反而不成立。现在 `--last` 不带值 = 撤销最近 1 个任务，`--last 3` 行为不变；错误提示也改成用法说明。
+
+### Added
+
+- **`scripts/onboarding-test.ts`** —— 干净环境实测：`npm pack` → 装进临时 prefix（离线）→ 在空目录里只照文档跑 `new → 改一处 → list → preview → apply → undo --last`，并验证「预览不写日志」「撤销后文件消失」「跑不存在的 skill 退出码非零且提示 list」。17 条断言。
+- 文档新增「15 分钟写出第一个 skill」清单（中英），含预期输出与三个常见坑的对照表。
+
+### Evidence
+
+    regress 43/43
+    onboarding 17/17（真装 tarball，真跑 CLI）
+    文档站 30 页
+
 ## 0.10.0 — 2026-10-30
 
 M08：一句话不只是挑个技能，而是带着参数进 plan。
