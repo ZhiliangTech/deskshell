@@ -76,7 +76,9 @@ if (platform === "darwin") {
 }
 
 // 5) skill 清单合法性
-const skillsDir = path.resolve("packages/skills");
+// 包被全局安装后 cwd 不是包根目录，所以一律从本文件位置推导
+const ROOT = path.resolve(import.meta.dirname, "..");
+const skillsDir = path.join(ROOT, "packages", "skills");
 const bad: string[] = [];
 let count = 0;
 if (fs.existsSync(skillsDir)) {
@@ -108,8 +110,16 @@ try {
 }
 
 // 7) 文档站与快照是否就位（提示性）
-add("docs", fs.existsSync("scripts/build-docs.ts") ? "PASS" : "WARN", "构建脚本就位");
-add("snapshots", fs.existsSync("snapshots") ? "PASS" : "WARN", "快照目录就位");
+add(
+  "runtime",
+  fs.existsSync(path.join(ROOT, "bin", "deskshell.ts")) ? "PASS" : "FAIL",
+  fs.existsSync(path.join(ROOT, "bin", "deskshell.ts")) ? "内核与 bin 就位" : "找不到 bin/deskshell.ts",
+);
+add(
+  "package",
+  fs.existsSync(path.join(ROOT, "package.json")) ? "PASS" : "WARN",
+  fs.existsSync(path.join(ROOT, "package.json")) ? "package.json 就位" : "缺少 package.json",
+);
 
 const wantJson = process.argv.includes("--json");
 
