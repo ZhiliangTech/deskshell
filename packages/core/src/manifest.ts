@@ -40,6 +40,15 @@ export function validateManifest(raw: unknown): ManifestCheck {
     }
   };
 
+  // 协议版本：缺省视为 v0；写了别的值就拒绝，避免"以为自己在跑 v1"
+  if (m.protocol !== undefined) {
+    if (typeof m.protocol !== "string") {
+      problems.push({ field: "protocol", message: "必须是字符串" });
+    } else if (m.protocol !== "0") {
+      problems.push({ field: "protocol", message: `暂只支持协议 0，收到 ${m.protocol}` });
+    }
+  }
+
   str("name");
   str("version");
   str("description");

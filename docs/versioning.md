@@ -35,6 +35,12 @@ The kernel checks `protocol` on load:
 3. ship a compatibility shim or a migration script with the change;
 4. put a three-step migration guide at the top of the CHANGELOG entry.
 
+## The protocol is frozen as data
+
+`spec/protocol-v0.json` is the contract: action kinds, required fields, assertion kinds, undo kinds, capability ids, journal fields, manifest fields and the five invariants. `packages/core/src/protocol.ts` holds the same lists as runtime constants, and `scripts/protocol-freeze-test.ts` fails if either side drifts — including "added a kind but forgot to bump the version".
+
+`spec/fixtures/v0-legacy-sample.json` is a golden action sequence written at freeze time; `scripts/compat-test.ts` runs it, undoes it, and asserts the filesystem returns to empty. Any kernel change that breaks it is a breaking change by definition.
+
 ## Snapshot tests
 
 Every skill runs two checks in CI:

@@ -53,7 +53,7 @@ export function isInsideReal(root: string, target: string, followFinal = true): 
 }
 
 /** 动作 → 必需能力：skill 声明的能力必须覆盖它产出的动作 */
-const ACTION_CAPABILITY: Record<string, CapabilityId> = {
+export const ACTION_CAPABILITY: Record<string, CapabilityId> = {
   "fs.mkdir": "fs.write",
   "fs.move": "fs.write",
   "fs.delete": "fs.write",

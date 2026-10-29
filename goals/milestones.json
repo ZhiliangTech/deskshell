@@ -18,7 +18,10 @@
       "from": 40,
       "to": 80,
       "accept": "五个类型与不变式写死；新增一条\"旧 skill 在新内核上仍可运行\"的兼容测试",
-      "check": "node scripts/compat-test.ts（待建）"
+      "check": "node scripts/compat-test.ts（待建）",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "spec/protocol-v0.json 冻结 + protocol-freeze-test 24/24 + compat-test 7/7（v0 黄金样本执行与撤销）"
     },
     {
       "id": "M03",

@@ -1,0 +1,30 @@
+{
+  "protocol": "0",
+  "frozen": "2026-10-30",
+  "note": "冻结之后新增字段只能向后兼容；删除或改语义必须走 RFC 并升协议版本。",
+  "actionKinds": ["fs.mkdir", "fs.move", "fs.delete", "fs.write", "ui.invoke", "ui.click", "ui.type", "window.move"],
+  "actionRequired": {
+    "fs.mkdir": ["path"],
+    "fs.move": ["from", "to"],
+    "fs.delete": ["path"],
+    "fs.write": ["path", "content"],
+    "ui.invoke": ["window", "selector"],
+    "ui.click": ["window", "selector"],
+    "ui.type": ["window", "selector", "text"],
+    "window.move": ["window", "rect"]
+  },
+  "actionCommon": ["id", "risk", "pre", "post", "undo"],
+  "assertionKinds": ["path.exists", "path.absent", "file.count", "ui.value", "window.rect", "window.exists", "ui.exists"],
+  "undoKinds": ["fs.move", "fs.rmdir", "fs.restore", "window.move", "noop"],
+  "capabilityIds": ["fs.read", "fs.write", "fs.delete", "ui.read", "ui.input", "process.exec", "net.http"],
+  "journalFields": ["ts", "taskId", "skill", "actionId", "kind", "summary", "status", "hash", "detail", "undo"],
+  "journalStatus": ["ok", "failed", "rolled-back"],
+  "manifestRequired": ["name", "version", "description", "entry", "capabilities"],
+  "invariants": [
+    "任何动作都不得逃出 task root（词法 + 真实路径双重检查）",
+    "除显式确认外，每个动作都必须可撤销",
+    "任何失败都必须把任务回滚到起始状态",
+    "内核不得依赖任何模型",
+    "每个动作都必须被 skill 声明的能力覆盖"
+  ]
+}

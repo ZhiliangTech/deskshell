@@ -89,6 +89,8 @@ run("fail.story", ["apps/cli-demo/fail-story.ts"], (o) => o.includes("PASS"));
 run("journal.failed", ["bin/deskshell.ts", "journal", "--root", ".demo/fail-story"], (o) => o.includes("失败 1 步"));
 
 // 4) 驱动契约（内存驱动，验证内核对平台无感）
+run("protocol.freeze", ["scripts/protocol-freeze-test.ts"], (o) => o.includes("24/24 passed"));
+run("compat.v0", ["scripts/compat-test.ts"], (o) => o.includes("7/7 passed"));
 run("contract", ["scripts/contract-test.ts"], (o) => o.includes("13/13 passed"));
 
 // 5) 预览快照：内核升级不能悄悄改变既有 skill 的计划

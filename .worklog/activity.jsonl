@@ -30,3 +30,7 @@
 {"ts":1793288667851,"label":"M01 端到端安装验收","kind":"milestone"}
 {"ts":1793288679483,"label":"M01 验收完成","kind":"milestone"}
 {"ts":1793288679627,"label":"push to GitHub","kind":"ship"}
+{"ts":1793291461237,"label":"M02 协议冻结","kind":"milestone"}
+{"ts":1793291516525,"label":"regress 全量回归","kind":"test"}
+{"ts":1793291531377,"label":"M02 完成","kind":"milestone"}
+{"ts":1793291531520,"label":"push to GitHub","kind":"ship"}

@@ -33,6 +33,12 @@
 3. 实现时同时提供兼容层或迁移脚本；
 4. 发布时在 CHANGELOG 顶部给出"三步迁移指南"。
 
+## 协议以数据形式冻结
+
+`spec/protocol-v0.json` 是契约：动作种类、必填字段、断言种类、撤销种类、能力清单、日志字段、清单字段，以及五条不变式。`packages/core/src/protocol.ts` 里是同一份清单的运行时常量，`scripts/protocol-freeze-test.ts` 只要发现两边不一致就报错——包括"加了一个 kind 却忘了升版本"。
+
+`spec/fixtures/v0-legacy-sample.json` 是冻结当天写下的黄金动作序列；`scripts/compat-test.ts` 会执行它、撤销它，并断言目录回到空。任何让这条测试失败的内核改动，按定义就是破坏性变更。
+
 ## 快照测试
 
 每个 skill 在 CI 里跑两件事：

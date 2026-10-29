@@ -1,0 +1,50 @@
+{
+  "note": "协议 v0 的黄金样本：这份动作序列在 v0 冻结时写下，任何内核改动都必须让它继续通过。",
+  "manifest": {
+    "name": "legacy-v0-sample",
+    "version": "0.1.0",
+    "description": "冻结于 2026-10-30 的 v0 兼容样本",
+    "entry": "./index.ts",
+    "capabilities": [
+      { "id": "fs.read", "scope": "{{root}}", "reason": "读取目录" },
+      { "id": "fs.write", "scope": "{{root}}", "reason": "写入与移动" }
+    ]
+  },
+  "actions": [
+    {
+      "id": "mkdir-a",
+      "kind": "fs.mkdir",
+      "path": "{{root}}/a",
+      "post": [{ "kind": "path.exists", "path": "{{root}}/a" }],
+      "undo": { "kind": "fs.rmdir", "path": "{{root}}/a" }
+    },
+    {
+      "id": "write-x",
+      "kind": "fs.write",
+      "path": "{{root}}/a/x.txt",
+      "content": "hello v0",
+      "pre": [{ "kind": "path.absent", "path": "{{root}}/a/x.txt" }],
+      "post": [
+        { "kind": "path.exists", "path": "{{root}}/a/x.txt" },
+        { "kind": "file.count", "dir": "{{root}}/a", "equals": 1 }
+      ],
+      "undo": { "kind": "fs.restore", "path": "{{root}}/a/x.txt", "content": null }
+    },
+    {
+      "id": "move-x",
+      "kind": "fs.move",
+      "from": "{{root}}/a/x.txt",
+      "to": "{{root}}/a/y.txt",
+      "pre": [{ "kind": "path.exists", "path": "{{root}}/a/x.txt" }],
+      "post": [
+        { "kind": "path.exists", "path": "{{root}}/a/y.txt" },
+        { "kind": "path.absent", "path": "{{root}}/a/x.txt" }
+      ],
+      "undo": { "kind": "fs.move", "from": "{{root}}/a/y.txt", "to": "{{root}}/a/x.txt" }
+    }
+  ],
+  "expect": {
+    "afterApply": { "files": ["a/y.txt"], "content": "hello v0" },
+    "afterUndo": { "files": [] }
+  }
+}
