@@ -42,7 +42,7 @@ run(
 
 // 3) CLI：能列出公开 skill
 run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("7 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.4.0"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.5.0"));
 
 // 4) CLI：--json 输出可被程序消费
 run(
@@ -105,6 +105,7 @@ run("new.skills", ["scripts/new-skills-test.ts"], (o) => o.includes("8/8 passed"
 // 5) 文档站
 run("cli.history", ["bin/deskshell.ts", "history", "--root", ".demo/downloads"], (o) => o.includes("任务数"));
 run("cli.show", ["bin/deskshell.ts", "show", "--root", ".demo/downloads"], (o) => o.includes("步"));
+run("recorder.mode", ["scripts/recorder-mode-test.ts"], (o) => o.includes("8/8 passed"));
 run("docs.build", ["scripts/build-docs.ts"], (o) => /built \d+ pages/.test(o));
 
 console.log("");

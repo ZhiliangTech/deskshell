@@ -66,6 +66,35 @@ Every run appends JSONL:
 
 It serves three audiences: users asking "what did it actually do", developers asking "which step broke", auditors asking "who changed what, and when".
 
+
+## Batch undo
+
+```bash
+deskshell undo --task <taskId>     # one task
+deskshell undo --last 3            # the 3 most recent tasks
+deskshell undo --since 30m         # everything started in the last 30 minutes (30m / 2h / 1d)
+```
+
+Batch modes undo newest-first and print one line per task. If an undo fails — for example a file changed — that task stays un-rolled-back, the others still roll back, and the exit code is non-zero. Partial success is reported, never hidden.
+
+## When the file changed since
+
+Every `fs.write` step records the sha256 of what it wrote. Before restoring, undo compares that hash with the file on disk:
+
+```
+✗ write-note 文件在任务之后被修改，拒绝覆盖：…/note.txt（可用 deskshell undo --force 强制）
+```
+
+The refused step is **not** marked `rolled-back` in the journal — the audit trail never claims a rollback that did not happen. Restoring someone's newer content over their edit is the kind of silent data loss this guard exists to prevent.
+
+## Long-lived journals
+
+The journal grows by roughly 400 bytes per step (measured: 387 KB for 1000 steps). When the file passes 5 MiB it is renamed to `journal-<timestamp>.jsonl` and a fresh one starts.
+
+- `load()` reads every rotated file plus the current one, sorted by time;
+- undo rewrites only the file that contains the affected entries, so statuses stay consistent without duplicating rows;
+- `DESKSHELL_JOURNAL_MAX_BYTES` overrides the threshold (tests use 600 bytes).
+
 ## Known boundaries
 
 - external side effects cannot be undone (an HTTP request already left); such actions are `undo: null` and rejected;

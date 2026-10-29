@@ -12,9 +12,20 @@ node apps/recorder/main.ts --seconds 15 --out .demo/recordings/rec.jsonl
 
 Operate the computer normally while it runs. It captures three kinds of events:
 
-- **focus** — every 300 ms, the focused UIA element (window, control type, name, AutomationId, current value);
+- **focus** — the focused UIA element, delivered by `Automation.AddAutomationFocusChangedEventHandler` (no polling);
 - **click** — every left-button press, via a `WH_MOUSE_LL` hook, with `AutomationElement.FromPoint` resolving the element under the cursor;
-- **window-open** — a new top-level window appeared (keyed by title + pid).
+- **window-open** — a new top-level window appeared, delivered by `AddStructureChangedEventHandler` on `RootElement` and de-duplicated by title + pid.
+
+## Modes
+
+| Mode | How | Cost |
+| --- | --- | --- |
+| events (default) | UIA focus + structure callbacks, drained through `Application.DoEvents()` | 8 events in a 15 s session where polling would emit ~50 identical focus rows |
+| poll (`-Poll`) | 300 ms sampling of focus + top-level windows | fallback when event registration fails; also handy on locked-down machines |
+
+If registering the UIA handlers throws, the recorder prints the reason to stderr and falls back to polling by itself — a recording session never dies because of an event API problem.
+
+Only three event kinds are written, and they are the ones that carry meaning: focus changes, top-level windows appearing, and left clicks (with the element under the cursor).
 
 ## Draft a skill
 

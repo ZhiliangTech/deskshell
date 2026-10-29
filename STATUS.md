@@ -4,22 +4,22 @@
 每条能力都配一条可复现命令，下面的输出全部由 `node scripts/status-evidence.ts --write` 当场跑出来，不是设计意图。
 
 <!-- EVIDENCE:START（由 scripts/status-evidence.ts 生成，勿手改） -->
-- 版本：`deskshell 0.4.0`（协议 v0）
+- 版本：`deskshell 0.5.0`（协议 v0）
 - 环境：win32 / Node 24.21.0 / 2026-10-29
-- 规模：55 个 TS 文件，11 个 skill（7 公开 / 4 内部），12 页文档 × 2 语言
+- 规模：59 个 TS 文件，11 个 skill（7 公开 / 4 内部），12 页文档 × 2 语言
 
 | 能力 | 命令 | 实测输出 |
 | --- | --- | --- |
-| 版本与平台 | `deskshell version` | `deskshell 0.4.0  (protocol v0, node 24.21.0, win32)` |
+| 版本与平台 | `deskshell version` | `deskshell 0.5.0  (protocol v0, node 24.21.0, win32)` |
 | 环境自检 | `deskshell doctor` | `7 passed, 0 warning, 0 failed` |
 | 驱动自检 | `scripts/verify-driver.ts` | `4 passed, 0 failed` |
 | 驱动契约（内存驱动） | `scripts/contract-test.ts` | `13/13 passed` |
 | 预览快照 | `scripts/snapshot-test.ts` | `3/3 snapshots match` |
-| 全量回归 | `scripts/regress.ts` | `29/29 passed` |
+| 全量回归 | `scripts/regress.ts` | `33/33 passed` |
 | 照片按月份归档 | `scripts/photo-sort-test.ts` | `files 12 → 2 → 12（原始 12）` |
 | 日志归档 + 批量改名 | `scripts/new-skills-test.ts` | `8/8 passed` |
 | 指定任务撤销（幂等） | `scripts/undo-test.ts` | `PASS（第二次撤销 0 步）` |
-| 性能基准（1000 文件） | `scripts/bench.ts 1000` | `plan 42 ms · apply 938 ms（0.9 ms/步）` |
+| 性能基准（1000 文件） | `scripts/bench.ts 1000` | `plan 43 ms · apply 793 ms（0.8 ms/步）` |
 | 文档站构建 | `scripts/build-docs.ts` | `built 26 pages` |
 <!-- EVIDENCE:END -->
 

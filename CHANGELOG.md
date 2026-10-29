@@ -2,6 +2,35 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.5.0 — 2026-10-29
+
+Operating a system you can leave running: batch undo, a journal that survives growth, previews that state the cost, and a recorder driven by events instead of polling.
+
+### Added
+
+- **`deskshell undo --last N` / `--since 30m|2h|1d`** — batch undo, newest first. One line per task, one exit code; a failed undo stops that task only.
+- **Journal rotation** — past 5 MiB the journal becomes `journal-<timestamp>.jsonl` and a fresh one starts. `load()` reads rotated files plus the current one in time order; undo rewrites only the file holding the affected entries, so statuses stay right without duplicating rows. Override with `DESKSHELL_JOURNAL_MAX_BYTES`.
+- **Preview summary** — before touching anything, `run` prints what the plan costs:
+
+  ```
+  汇总：新建 3 · 移动 10 ｜ 可撤销 13/13 ｜ 风险 low 13 / medium 0 / high 0
+  ```
+
+  Non-undoable steps are counted and warned about separately. Available as `summary` in `--json`.
+- **Recorder is event-driven** — focus comes from `AddAutomationFocusChangedEventHandler`, window opens from `AddStructureChangedEventHandler`, clicks from the existing `WH_MOUSE_LL` hook, all pumped through `Application.DoEvents()`. A 15-second session produced 8 meaningful events where polling emitted ~50 duplicate focus rows. `-Poll` forces the old behaviour, and event-registration failure falls back automatically.
+- **Draft skills get a real window scope** — the generator now writes the recorded window names (e.g. `Notepad`) instead of the `recorded` placeholder, so a draft actually passes the policy layer and can be previewed.
+
+### Fixed
+
+- Recorder `.ps1` files are written as UTF-8 **with BOM**; PowerShell 5.1 reads BOM-less scripts as ANSI, which silently corrupted non-ASCII comments and produced parser errors.
+- Duplicate window-open rows: structure events fire several times per window, now de-duplicated by title + pid.
+
+### Evidence
+
+- `scripts/regress.ts` → 33 checks
+- undo range 6/6 · journal rotation 7/7 · preview summary 9/9 · recorder modes 8/8
+- Real session: 15 s recording → 8 events (5 focus / 3 window-open) → 2 clicks → draft with 2 steps → `--mode preview` accepted
+
 ## 0.4.0 — 2026-10-29
 
 Hardening the guarantees, plus the operational surface a real user needs.

@@ -104,6 +104,10 @@ function focusAfter(click: Sample): Sample | undefined {
 const stableWindow = (w: string): string => w.split(" - ").pop() ?? w;
 const escapeRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+// 能力作用域必须是真实窗口名：占位符会被策略层拒绝，草稿也就跑不起来
+const windowScopes = [...new Set(collapsed.map((e) => stableWindow(e.window)))].filter(Boolean);
+const scope = windowScopes.length ? windowScopes.map(escapeRegex).join("|") : ".*";
+
 const steps = collapsed.map((e, i) => {
   const selector = {
     controlType: e.controlType,
@@ -164,8 +168,8 @@ const manifest = {
   description: `由录制生成：${collapsed.length} 步（${clicks.length} 次点击，${inferred} 条断言自动推断）`,
   entry: "./index.ts",
   capabilities: [
-    { id: "ui.read", scope: "recorded", reason: "回放录制时的界面观察" },
-    { id: "ui.input", scope: "recorded", reason: "回放录制时的点击与输入" },
+    { id: "ui.read", scope, reason: "回放录制时的界面观察" },
+    { id: "ui.input", scope, reason: "回放录制时的点击与输入" },
   ],
 };
 fs.writeFileSync(path.join(dir, "skill.json"), JSON.stringify(manifest, null, 2) + "\n", "utf8");
