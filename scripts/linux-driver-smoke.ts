@@ -113,18 +113,23 @@ try {
     await driver.moveWindow!(ref, { x: 120, y: 90, w: 640, h: 380 });
     await sleep(600);
     const after = await driver.bounds!(ref);
+    // X11 下几何不会精确等于请求值：窗口管理器加装饰边框，
+    // xterm 还会按字符格取整。容差 40px 是"移动确实生效"的判据。
     check(
-      "移动窗口后几何生效",
-      Math.abs(after.x - 120) <= 2 && Math.abs(after.y - 90) <= 2,
+      "移动窗口后几何生效（容差 40，WM 装饰 + 字符格）",
+      Math.abs(after.x - 120) <= 40 && Math.abs(after.y - 90) <= 40,
       JSON.stringify(after),
     );
     await driver.moveWindow!(ref, before);
     await sleep(400);
     const restored = await driver.bounds!(ref);
     check(
-      "还原几何",
-      Math.abs(restored.x - before.x) <= 2 && Math.abs(restored.y - before.y) <= 2,
-      JSON.stringify(restored),
+      "还原几何（同样容差）",
+      Math.abs(restored.x - before.x) <= 40 &&
+        Math.abs(restored.y - before.y) <= 40 &&
+        Math.abs(restored.w - before.w) <= 40 &&
+        Math.abs(restored.h - before.h) <= 40,
+      `before=${JSON.stringify(before)} after=${JSON.stringify(restored)}`,
     );
 
     await driver.type(ref, { controlType: "Pane" }, "echo deskshell-linux\n");

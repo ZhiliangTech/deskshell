@@ -366,6 +366,33 @@ async function main() {
     }
   }
 
+  // 种子仓库：搜索面覆盖不到的贡献面（Linux AT-SPI2 / Windows 无障碍树 / macOS AX …）
+  for (const full of SEED_REPOS) {
+    const existing = repos.get(full.toLowerCase());
+    if (existing) {
+      if (!existing.matched_queries.includes('seed:manual')) existing.matched_queries.push('seed:manual');
+      existing.seed = true;
+      continue;
+    }
+    try {
+      const { json } = await gh('/repos/' + full);
+      repos.set(full.toLowerCase(), {
+        full_name: json.full_name,
+        stars: json.stargazers_count || 0,
+        description: json.description || '',
+        pushed_at: json.pushed_at || '',
+        language: json.language || '',
+        topics: json.topics || [],
+        html_url: json.html_url,
+        matched_queries: ['seed:manual'],
+        seed: true,
+      });
+      console.log('  [seed] ' + json.full_name + ' (' + (json.stargazers_count || 0) + ' stars)');
+    } catch (err) {
+      console.log('  ! seed skipped [' + full + ']: ' + err.message.slice(0, 80));
+    }
+  }
+
   const repoList = [...repos.values()];
   for (const r of repoList) r.tier = tierOf(r);
 
@@ -374,7 +401,11 @@ async function main() {
     ' / tier2 ' + repoList.filter((r) => r.tier === 2).length +
     ' / tier3 ' + repoList.filter((r) => r.tier === 3).length + ')');
 
-  const miningOrder = selectMiningRepos(repoList).slice(0, LIMITS.maxReposForContributors);
+  const seededRepos = repoList.filter((r) => r.seed);
+  const autoMined = selectMiningRepos(repoList).filter((r) => !r.seed);
+  const miningOrder = [...seededRepos, ...autoMined]
+    .filter((r, i, arr) => arr.findIndex((x) => x.full_name === r.full_name) === i)
+    .slice(0, LIMITS.maxReposForContributors + seededRepos.length);
 
   /** @type {Map<string, any>} login -> candidate */
   const people = new Map();
@@ -491,6 +522,10 @@ async function main() {
       console.log('  ! profile skipped [' + person.login + ']: ' + err.message.slice(0, 80));
     }
     if (profile.type === 'Bot' || /\[bot\]$/i.test(person.login)) continue;
+    // 纯用户检索捞到的空壳账号（0 关注者 / 0 仓库 / 无自述）：不能当收件人，直接丢
+    if (person.from_user_search && !profile.bio && (profile.followers || 0) === 0 && (profile.public_repos || 0) === 0) {
+      continue;
+    }
 
     const top = [...person.repos].sort((a, b) => b.stars - a.stars)[0] || null;
     candidates.push({
@@ -547,6 +582,7 @@ async function main() {
       rate_limit_waits: rateLimitWaits,
       repo_queries: REPO_QUERIES,
       user_queries: USER_QUERIES,
+      seed_repos: SEED_REPOS,
       filters: {
         star_min: LIMITS.starMin,
         priority_star_range: [PRIORITY.starMin, PRIORITY.starMax],
