@@ -131,7 +131,9 @@ const css = `
 body { margin:0; font:16px/1.7 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color:var(--fg); background:var(--bg); }
 .layout { display:flex; min-height:100vh; }
 aside { width:260px; padding:28px 20px; border-right:1px solid var(--line); position:sticky; top:0; height:100vh; overflow:auto; }
-.brand { font-weight:700; font-size:18px; margin-bottom:4px; }
+.brand { display:flex; align-items:center; gap:8px; font-weight:700; font-size:18px; margin-bottom:10px; flex-wrap:wrap; }
+.brand img { border-radius:8px; }
+.brand small { flex-basis:100%; }
 .brand small { display:block; color:var(--muted); font-weight:400; font-size:12px; margin-top:6px; }
 .nav-item { display:block; padding:7px 10px; margin:2px 0; border-radius:6px; color:var(--fg); text-decoration:none; font-size:14px; }
 .nav-item:hover { background:#f3f4f6; }
@@ -160,6 +162,10 @@ const assets = path.join(DOCS, "assets");
 if (fs.existsSync(assets)) {
   fs.cpSync(assets, path.join(OUT, "assets"), { recursive: true });
 }
+const brandDir = path.join(ROOT, "brand");
+if (fs.existsSync(brandDir)) {
+  fs.cpSync(brandDir, path.join(OUT, "brand"), { recursive: true });
+}
 
 pages.forEach((page, idx) => {
   const prev = idx > 0 ? pages[idx - 1] : null;
@@ -169,9 +175,10 @@ pages.forEach((page, idx) => {
 <html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(page.title)} · deskshell</title>
+<link rel="icon" href="brand/logo-mark.svg">
 <link rel="stylesheet" href="style.css">
 </head><body><div class="layout">
-<aside><div class="brand">deskshell<small>AI 电脑管家 · 协议 v0</small></div>${nav}</aside>
+<aside><div class="brand"><img src="brand/logo-mark.svg" width="30" height="30" alt=""> <span>deskshell</span><small>AI 电脑管家 · 协议 v0</small></div>${nav}</aside>
 <main>${page.html}${pager}<footer>deskshell docs · 由 scripts/build-docs.ts 生成，请修改 docs/*.md</footer></main>
 </div></body></html>`;
   fs.writeFileSync(path.join(OUT, `${page.slug}.html`), html, "utf8");

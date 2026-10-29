@@ -1,13 +1,19 @@
-# deskshell
+<p align="center">
+  <img src="brand/banner.svg" alt="deskshell" width="880">
+</p>
 
-[![ci](https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![node](https://img.shields.io/badge/node-%E2%89%A522-339933)](package.json)
+<p align="center">
+  <b>让 AI 操作电脑，但每一步都能预览、验证、撤销、审计。</b><br>
+  不是"会点鼠标的脚本"，是一套带事务语义的协议内核。<br>
+  <sub>吉祥物是一只把窗口当壳的寄居蟹——它住在你的电脑里，但不乱动东西。</sub>
+</p>
 
-> 让 AI 操作电脑，但**每一步都能预览、能验证、能撤销、能审计**。
-> 不是"会点鼠标的脚本"，是一套带事务语义的协议内核。
-
-![deskshell demo](docs/assets/hero.gif)
+<p align="center">
+  <a href="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml"><img src="https://github.com/ciceroyang/deskshell/actions/workflows/ci.yml/badge.svg?branch=main" alt="ci"></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license">
+  <img src="https://img.shields.io/badge/node-%E2%89%A522-339933" alt="node">
+  <img src="https://img.shields.io/badge/model-zero%20dependency-FF7A59" alt="zero model dependency">
+</p>
 
 ## 一句话说清它和别的方案的区别
 
@@ -18,6 +24,12 @@
 | 出错时 | 留下半个烂摊子 | 先撤失败动作自身，再逆序回滚全部已成功步骤 |
 | 事后 | 没人知道发生了什么 | JSONL 审计：谁、何时、改了什么、怎么撤 |
 | 模型 | 绑死某个模型 | **内核零模型依赖**，模型只是 skill 内部的可替换件 |
+
+## 实际跑起来是这样
+
+![deskshell demo](docs/assets/hero.gif)
+
+<sub>动图由真实命令输出生成（`scripts/make-assets.py`），不是手绘示意图。</sub>
 
 ## 三个场景，一次撤销
 

@@ -1,6 +1,6 @@
 # deskshell
 
-> AI 电脑管家：**协议优先**的内核。每个动作都可预览、可验证、可撤销、可审计。
+![deskshell](brand/banner.svg)
 
 ![deskshell demo](assets/hero.gif)
 
