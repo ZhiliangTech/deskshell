@@ -7,7 +7,10 @@
       "from": 0,
       "to": 40,
       "accept": "一位没用过的人按 README 从零装好，deskshell doctor 全绿，能跑通 downloads-cleanup 的预览/执行/撤销",
-      "check": "npm i -g <tarball> && deskshell doctor && deskshell run downloads-cleanup --root .\\demo --mode apply"
+      "check": "npm i -g <tarball> && deskshell doctor && deskshell run downloads-cleanup --root .\\demo --mode apply",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "install.ps1 从 v0.5.1 release 经 API 装到全新 prefix，doctor 7/7；downloads-cleanup 预览→执行→撤销全通过（撤销 5 步）"
     },
     {
       "id": "M02",

@@ -25,3 +25,8 @@
 {"ts":1793288499607,"label":"regress 全量回归","kind":"test"}
 {"ts":1793288553207,"label":"regress 全量回归","kind":"test"}
 {"ts":1793288571484,"label":"push to GitHub","kind":"ship"}
+{"ts":1793288619849,"label":"regress 全量回归","kind":"test"}
+{"ts":1793288633677,"label":"regress 全量回归","kind":"test"}
+{"ts":1793288667851,"label":"M01 端到端安装验收","kind":"milestone"}
+{"ts":1793288679483,"label":"M01 验收完成","kind":"milestone"}
+{"ts":1793288679627,"label":"push to GitHub","kind":"ship"}
