@@ -84,7 +84,10 @@
       "from": 280,
       "to": 320,
       "accept": "自然语言 → 计划，产出的动作仍走同一套策略与预览；断网时内核行为不变",
-      "check": "插件开关关闭后 regress 全绿"
+      "check": "插件开关关闭后 regress 全绿",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "intent 23/23（一句话→技能+参数；30天vs90天步数不同；缺槽位给追问；不相关返回 null）；UI 自检 11/11（plan=log-archive、planDays=30）；regress 42/42"
     },
     {
       "id": "M09",

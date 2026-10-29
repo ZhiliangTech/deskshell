@@ -2,6 +2,48 @@
 
 一个 skill 就是一个目录：`skill.json` + `index.ts`。核心只有一个函数 `plan()`。
 
+## 15 分钟写出第一个 skill
+
+整套流程有自动化：`scripts/onboarding-test.ts` 会把 tarball 打进临时 prefix，然后**只照这份清单**执行一遍。文档和产品一旦对不上，这个测试就会红。
+
+```powershell
+# 0. 前置：Node 22+ 在 PATH 里（shim 要调用 node）
+deskshell --version
+
+# 1. 生成骨架 —— 落在 ~/.deskshell/skills/<name>，不会往你的工作目录里塞仓库结构
+deskshell new hello-report
+# → 生成 skill.json + index.ts，并打印下一步
+
+# 2. 只改一处：打开 index.ts 改 plan()
+#    （模板本身已经把文件列表写成 report.md）
+
+# 3. 能被列出来吗？
+deskshell list | Select-String hello-report
+
+# 4. 预览：什么都不碰
+deskshell run hello-report --root .\some-folder --mode preview
+
+# 5. 执行，再撤销 —— 两步走完整套信任模型
+deskshell run hello-report --root .\some-folder --mode apply
+deskshell undo --last --root .\some-folder
+```
+
+预期预览长这样：
+
+```
+汇总：...
+步骤：
+  write:report  [ok]
+```
+
+三个真正会绊住人的坑（都已修，且被测试钉住）：
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `'"node"' 不是内部或外部命令` | 装了 Node 但不在 `PATH` | 把安装目录加进 `PATH`，重开终端 |
+| `deskshell new` 在你文件旁边建了 `packages/skills` | 老版本行为 | 升级；现在写到用户技能目录，给本仓库贡献才用 `--in-repo` |
+| `--last needs a positive integer` | 老版本必须带数字 | 现在 `deskshell undo --last` 就是"撤最近 1 个"，`--last 3` 照旧 |
+
 ## 最小模板
 
 ```ts

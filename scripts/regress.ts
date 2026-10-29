@@ -44,7 +44,7 @@ run(
 
 // 3) CLI：能列出公开 skill
 run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("10 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.10.0"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.11.0"));
 
 // 4) CLI：--json 输出可被程序消费
 run(
@@ -89,6 +89,7 @@ run("fail.story", ["apps/cli-demo/fail-story.ts"], (o) => o.includes("PASS"));
 run("journal.failed", ["bin/deskshell.ts", "journal", "--root", ".demo/fail-story"], (o) => o.includes("失败 1 步"));
 
 // 4) 驱动契约（内存驱动，验证内核对平台无感）
+run("onboarding", ["scripts/onboarding-test.ts"], (o) => o.includes("17/17 passed"), 240_000);
 run("shell.intent", ["scripts/intent-test.ts"], (o) => o.includes("23/23 passed"));
 run("shell.core", ["scripts/shell-test.ts"], (o) => o.includes("14/14 passed"));
 run("shell.ui", ["scripts/shell-ui-selftest.ts"], (o) => o.includes("11/11 passed") || o.includes("1 skipped"));

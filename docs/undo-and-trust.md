@@ -71,6 +71,7 @@ It serves three audiences: users asking "what did it actually do", developers as
 
 ```bash
 deskshell undo --task <taskId>     # one task
+deskshell undo --last              # the most recent task
 deskshell undo --last 3            # the 3 most recent tasks
 deskshell undo --since 30m         # everything started in the last 30 minutes (30m / 2h / 1d)
 ```

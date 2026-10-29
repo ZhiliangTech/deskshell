@@ -9,7 +9,7 @@ import path from "node:path";
 const dry = process.argv.includes("--dry-run");
 const root = path.resolve(import.meta.dirname, "..");
 const work = fs.mkdtempSync(path.join(os.tmpdir(), "deskshell-unscoped-"));
-const NAME = "deskshell";
+const NAME = (process.env.NPM_NAME || "deskshell").trim();
 
 function token(): string {
   if (process.env.NPM_TOKEN) return process.env.NPM_TOKEN.trim();
@@ -51,6 +51,8 @@ const cli = await npmCli();
 const npmrc = path.join(work, ".npmrc");
 fs.writeFileSync(npmrc, dry ? "" : `//registry.npmjs.org/:_authToken=${token()}\n`, "utf8");
 const args = [cli, "publish", "--access", "public", "--userconfig", npmrc];
+const otp = (process.env.NPM_OTP ?? "").trim();
+if (otp) args.push(`--otp=${otp}`);
 if (dry) args.push("--dry-run");
 console.log(`packing ${NAME}@${pkg.version} from a temp copy (repo untouched)`);
 try {

@@ -14,7 +14,8 @@ if (!name) {
   process.exit(2);
 }
 
-const dir = path.join("packages", "skills", name);
+const base = args.dir && args.dir.length > 0 ? args.dir : path.join("packages", "skills");
+const dir = path.join(base, name);
 if (fs.existsSync(dir)) {
   console.error(`目录已存在：${dir}`);
   process.exit(2);
@@ -76,3 +77,11 @@ console.log(`[新建] ${dir}`);
 console.log(`  1. 改 index.ts 里的 plan()`);
 console.log(`  2. 预览： node apps/cli-demo/run.ts --skill ${dir}/index.ts --mode preview`);
 console.log(`  3. 执行： node apps/cli-demo/run.ts --skill ${dir}/index.ts --mode apply --root .demo/downloads`);
+
+const rel = path.relative(process.cwd(), dir) || dir;
+console.log("");
+console.log("下一步：");
+console.log(`  1. 打开 ${path.join(rel, "index.ts")}，改 plan() 里的动作`);
+console.log(`  2. deskshell run ${name} --root . --mode preview   # 只看计划，不动文件`);
+console.log(`  3. deskshell run ${name} --root . --mode apply`);
+console.log(`  4. deskshell undo --last --root .                 # 撤销`);

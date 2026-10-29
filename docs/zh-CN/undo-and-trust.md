@@ -71,6 +71,7 @@ node bin/deskshell.ts story --fail
 
 ```bash
 deskshell undo --task <taskId>     # 撤一个任务
+deskshell undo --last              # 撤最近 1 个任务
 deskshell undo --last 3            # 撤最近 3 个任务
 deskshell undo --since 30m         # 撤最近 30 分钟内开始的任务（30m / 2h / 1d）
 ```

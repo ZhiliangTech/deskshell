@@ -4,6 +4,48 @@
 
 A skill is a directory: `skill.json` + `index.ts`. The only function that matters is `plan()`.
 
+## Your first skill in 15 minutes
+
+This whole flow is automated in `scripts/onboarding-test.ts`: it packs the tarball, installs it into a throwaway prefix, and runs exactly these steps. If the checklist and the product ever disagree, that test goes red.
+
+```powershell
+# 0. prerequisites: Node 22+ on PATH (the shim calls `node`)
+deskshell --version
+
+# 1. scaffold — lands in ~/.deskshell/skills/<name>, NOT in any repo
+deskshell new hello-report
+# → creates skill.json + index.ts, then prints the next steps
+
+# 2. edit ONE thing: open index.ts and change plan()
+#    (the template already lists files and writes report.md)
+
+# 3. does it show up?
+deskshell list | Select-String hello-report
+
+# 4. preview: nothing is touched
+deskshell run hello-report --root .\some-folder --mode preview
+
+# 5. apply, then undo — this is the whole trust story in two commands
+deskshell run hello-report --root .\some-folder --mode apply
+deskshell undo --last --root .\some-folder
+```
+
+Expected preview shape:
+
+```
+汇总：...
+步骤：
+  write:report  [ok]
+```
+
+Three things that trip people up (all fixed, all covered by the test):
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `'"node"' is not recognized` | Node installed but not on `PATH` | add its `bin`/install dir to `PATH`, then reopen the shell |
+| `deskshell new` created a `packages/skills` folder next to your files | you are on an older version | upgrade; `new` now writes to your user skill dir, use `--in-repo` when contributing to this repo |
+| `--last needs a positive integer` | older version required a count | `deskshell undo --last` now means "the last one"; `--last 3` still works |
+
 ## Minimal template
 
 ```ts

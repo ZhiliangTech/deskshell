@@ -35,7 +35,7 @@ function usage(): void {
   deskshell history [--root DIR] [--json] 任务列表：skill / 步数 / 耗时 / 状态
   deskshell show [taskId] [--root DIR]    某个任务的时间线（默认最近一次）
   deskshell undo --task <id> [--root DIR]  撤销某个任务
-  deskshell undo --last <N> | --since <30m>  撤销最近 N 个任务 / 一段时间内的任务
+  deskshell undo --last [N] | --since <30m>  撤销最近 N 个（默认 1）任务 / 一段时间内的任务
   deskshell add <path> [--dir DIR] [--force]  安装外部 skill（默认 ~/.deskshell/skills）
 
 run 选项:
@@ -360,7 +360,13 @@ switch (cmd) {
       process.exitCode = 2;
       break;
     }
-    const r = spawnSync(process.execPath, [path.join(HERE, "..", "scripts", "new-skill.ts"), "--name", name], {
+    // 装好包的用户没有仓库，默认写到用户技能目录；贡献者用 --in-repo
+    const inRepo = Boolean(flags["in-repo"]);
+    const targetDir = inRepo ? path.join(HERE, "..", "packages", "skills") : USER_SKILLS;
+    const r = spawnSync(
+      process.execPath,
+      [path.join(HERE, "..", "scripts", "new-skill.ts"), "--name", name, "--dir", targetDir],
+      {
       stdio: "inherit",
     });
     process.exitCode = r.status ?? 1;
@@ -592,9 +598,10 @@ switch (cmd) {
 
     let targets = ordered;
     if (flags.last) {
-      const n = Number(flags.last);
-      if (!Number.isFinite(n) || n <= 0) {
-        console.error("--last 需要一个正整数");
+      // 只写 --last 就是"撤销最近 1 个"；--last 3 才是最近 3 个
+      const n = flags.last === "true" || flags.last === "" ? 1 : Number(flags.last);
+      if (!Number.isInteger(n) || n <= 0) {
+        console.error("用法: deskshell undo --last [N]（不写 N 就是最近 1 个任务）");
         process.exitCode = 2;
         break;
       }
