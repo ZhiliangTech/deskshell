@@ -1,5 +1,5 @@
 {
-  "name": "deskshell",
+  "name": "@ciceroyang/deskshell",
   "version": "0.2.0",
   "description": "AI computer shell: protocol-first kernel with preview, verification, undo and audit",
   "license": "MIT",
@@ -49,6 +49,7 @@
     "story": "node apps/cli-demo/story.ts"
   },
   "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
     "access": "public"
   }
 }

@@ -55,14 +55,30 @@
 
 ## 安装
 
+需要 Node **>=22.18**（或 >=23.6）——CLI 直接运行 TypeScript，只有这些版本起类型擦除才默认开启。
+
+**用 Release 里的 tarball**（不需要 registry、不需要登录）：
+
+```bash
+npm i -g https://github.com/ciceroyang/deskshell/releases/download/v0.2.0/ciceroyang-deskshell-0.2.0.tgz
+deskshell doctor
+```
+
+**用 GitHub Packages**（需要带 `read:packages` 的 GitHub token）：
+
+```bash
+npm config set @ciceroyang:registry https://npm.pkg.github.com
+npm i -g @ciceroyang/deskshell
+```
+
+**从源码：**
+
 ```bash
 git clone https://github.com/ciceroyang/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-需要 Node **>=22.18**（或 >=23.6）：CLI 直接运行 TypeScript，只有这些版本起类型擦除才默认开启。
-
-打包已就绪（`npm pack` 实测 47 个文件 / 46 kB，另有启动器解决 `node_modules` 下不能擦除类型的限制），但**尚未发布到 npm**——暂时不要用 `npm i -g`。
+> 部分网络访问不了 npmjs.com（registry API 通，网页返回 403）。在解决之前，上面两条是受支持的安装路径；`npm i -g deskshell` 等公共 registry 能发布后再补。
 
 ## 30 秒跑起来
 

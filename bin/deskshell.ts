@@ -253,7 +253,7 @@ switch (cmd) {
       name: string;
       version: string;
     };
-    console.log(`${pkg.name} ${pkg.version}  (protocol v0, node ${process.versions.node}, ${process.platform})`);
+    console.log(`${pkg.name.replace(/^@[^/]+\//, "")} ${pkg.version}  (protocol v0, node ${process.versions.node}, ${process.platform})`);
     break;
   }
   case "doctor": {

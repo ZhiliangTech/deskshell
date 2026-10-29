@@ -55,14 +55,30 @@ Three scenarios, one undo — file moves, a UI-driven export, and window geometr
 
 ## Install
 
+Requires Node **>=22.18** (or >=23.6) — the CLI runs TypeScript directly, and type stripping is only unflagged from those versions.
+
+**From a release tarball** (no registry, no auth):
+
+```bash
+npm i -g https://github.com/ciceroyang/deskshell/releases/download/v0.2.0/ciceroyang-deskshell-0.2.0.tgz
+deskshell doctor
+```
+
+**From GitHub Packages** (needs a GitHub token with `read:packages`):
+
+```bash
+npm config set @ciceroyang:registry https://npm.pkg.github.com
+npm i -g @ciceroyang/deskshell
+```
+
+**From source:**
+
 ```bash
 git clone https://github.com/ciceroyang/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-Requires Node **>=22.18** (or >=23.6): the CLI runs TypeScript directly, and type stripping is only unflagged from those versions.
-
-Packaging is verified (`npm pack` → 47 files, 46 kB; a launcher handles the `node_modules` type-stripping restriction), but the package is **not published to npm yet** — no `npm i -g` until that happens.
+> npmjs.com is unreachable from some networks (the registry API works, the website returns 403). Until that is resolved, the two channels above are the supported install paths; `npm i -g deskshell` will follow once the public registry publish goes through.
 
 ## Quick start
 
