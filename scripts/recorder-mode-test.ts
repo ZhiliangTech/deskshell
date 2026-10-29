@@ -15,9 +15,7 @@ const check = (name: string, ok: boolean, detail = ""): void => {
 };
 
 if (process.platform !== "win32") {
-  check("录制器仅 Windows", true);
-  console.log(checks.join("\n"));
-  console.log("1/1 passed（非 Windows，跳过）");
+  console.log("skipped: 录制器只在 Windows 上有（UIA + WH_MOUSE_LL）");
   process.exit(0);
 }
 

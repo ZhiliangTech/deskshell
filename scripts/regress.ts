@@ -105,7 +105,7 @@ run("new.skills", ["scripts/new-skills-test.ts"], (o) => o.includes("8/8 passed"
 // 5) 文档站
 run("cli.history", ["bin/deskshell.ts", "history", "--root", ".demo/downloads"], (o) => o.includes("任务数"));
 run("cli.show", ["bin/deskshell.ts", "show", "--root", ".demo/downloads"], (o) => o.includes("步"));
-run("recorder.mode", ["scripts/recorder-mode-test.ts"], (o) => o.includes("8/8 passed"));
+run("recorder.mode", ["scripts/recorder-mode-test.ts"], (o) => o.includes("8/8 passed") || o.includes("skipped"));
 run("docs.build", ["scripts/build-docs.ts"], (o) => /built \d+ pages/.test(o));
 
 console.log("");
