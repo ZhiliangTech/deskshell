@@ -42,7 +42,18 @@ Four things the hardware taught us:
 3. **Focus by pid.** `CGWindowList` reports localized owner names ("终端"), while System Events uses "Terminal"; matching by name fails with `-1719`.
 4. **Buttons often have no title.** Calculator's buttons expose only `AXIdentifier` (`Seven`, `Multiply`, `Equals`), and the display text carries U+200E marks that must be stripped before comparison.
 
-**Linux — planned (AT-SPI2)**
+**Linux — X11, window-level (verified in CI)**
+
+- Stack: `wmctrl` for the window list, `xdotool` for geometry, activation, typing, keys and moves.
+- What works: enumerate windows, read title/geometry, activate, type, send key combos, move/resize, and restore geometry.
+- What does **not** work: control-level operations (`invoke`, `click` by selector). X11 has no system-wide accessibility tree; that needs an AT-SPI2 backend. The driver says so explicitly instead of pretending to click:
+
+  ```
+  click 需要控件级定位，X11 驱动暂不支持（没有可访问性树）。
+  ```
+
+- Dependencies: `sudo apt-get install -y xvfb xterm xdotool wmctrl`. Without `DISPLAY` or the two binaries the driver refuses to construct and prints the exact command to run.
+- Verification: `xvfb-run -a --server-args="-screen 0 1280x800x24" node scripts/linux-driver-smoke.ts` — the CI job `linux-ui` runs exactly this, so "it works on Linux" is backed by an Actions log, not by a claim.
 
 ## Mock driver
 

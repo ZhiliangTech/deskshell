@@ -40,7 +40,18 @@ interface UiDriver {
 3. **聚焦要按 pid**：`CGWindowList` 的 owner 名是本地化的（"终端"），System Events 的进程名是 "Terminal"，按名字匹配会 `-1719`。
 4. **按钮常常没有标题**：macOS 计算器的按钮 `AXTitle` 为空，只能靠 `AXIdentifier`（`Seven` / `Multiply` / `Equals`）定位；显示区文本还带 U+200E 方向标记，比对前要剥掉。
 
-**Linux（计划中）**
+**Linux — X11，窗口级（CI 实测）**
+
+- 技术栈：`wmctrl` 列窗口，`xdotool` 做几何、激活、输入、按键、移动。
+- 能做的：枚举窗口、读标题与几何、激活、输入文字、发组合键、移动/缩放、还原几何。
+- 不能做的：控件级操作（`invoke`、按 selector 的 `click`）。X11 没有系统级可访问性树，那需要 AT-SPI2 后端。驱动会**明确报不支持**，而不是假装点成功：
+
+  ```
+  click 需要控件级定位，X11 驱动暂不支持（没有可访问性树）。
+  ```
+
+- 依赖：`sudo apt-get install -y xvfb xterm xdotool wmctrl`。没有 `DISPLAY` 或缺二进制时，驱动直接拒绝构造，并打印要执行的命令。
+- 验证：`xvfb-run -a --server-args="-screen 0 1280x800x24" node scripts/linux-driver-smoke.ts`——CI 的 `linux-ui` 作业跑的就是它，所以"Linux 能跑"有 Actions 日志背书，不是一句声明。
 
 - 技术栈：AT-SPI2
 - 尚未开始

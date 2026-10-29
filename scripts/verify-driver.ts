@@ -1,5 +1,6 @@
 import { WindowsDriver } from "../packages/drivers/windows/driver.ts";
 import { MacDriver } from "../packages/drivers/macos/driver.ts";
+import { LinuxDriver, missingHint } from "../packages/drivers/linux/driver.ts";
 import type { UiDriver } from "../packages/core/src/types.ts";
 
 const args = process.argv.slice(2);
@@ -28,8 +29,16 @@ console.log(`platform=${platform}  node=${process.version}`);
 let driver: UiDriver;
 if (platform === "win32") driver = new WindowsDriver();
 else if (platform === "darwin") driver = new MacDriver();
-else {
-  console.log("当前平台暂无驱动实现（Linux 计划中）。");
+else if (platform === "linux") {
+  const hint = missingHint();
+  if (hint) {
+    console.log(`Linux 驱动依赖不齐：${hint}`);
+    console.log("（窗口级操作需要 xdotool + wmctrl；控件级需要 AT-SPI2，尚未实现。）");
+    process.exit(1);
+  }
+  driver = new LinuxDriver();
+} else {
+  console.log(`当前平台暂无驱动实现：${platform}`);
   process.exit(0);
 }
 
@@ -58,7 +67,7 @@ await check("focus()", async () => {
 
 await check("keys()", async () => {
   if (!withInput) return "跳过（加 --input 测试，会发送一次按键）";
-  await driver.keys({ titleRegex: firstTitle }, platform === "darwin" ? "cmd+shift+h" : "^{HOME}");
+  await driver.keys({ titleRegex: firstTitle }, platform === "darwin" ? "cmd+shift+h" : platform === "linux" ? "ctrl+shift+h" : "^{HOME}");
   return "已发送按键";
 });
 

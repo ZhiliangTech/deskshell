@@ -53,3 +53,8 @@
 {"ts":1793292439702,"label":"regress 全量回归","kind":"test"}
 {"ts":1793292478767,"label":"M05 完成 + 0.7.0","kind":"manual"}
 {"ts":1793292488365,"label":"push to GitHub","kind":"ship"}
+{"ts":1793292637544,"label":"regress 全量回归","kind":"test"}
+{"ts":1793292652949,"label":"regress 全量回归","kind":"test"}
+{"ts":1793292658946,"label":"regress 全量回归","kind":"test"}
+{"ts":1793292671681,"label":"M06 Linux 驱动 + CI 作业","kind":"milestone"}
+{"ts":1793292671744,"label":"push to GitHub","kind":"ship"}

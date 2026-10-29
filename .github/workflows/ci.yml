@@ -42,3 +42,27 @@ jobs:
 
       - name: 文档站可构建
         run: node scripts/build-docs.ts
+
+  # Linux 的真机验证：Xvfb + xterm + xdotool，跑窗口级驱动冒烟。
+  # 本地开发在 Windows，所以 Linux 行为只能由这里证明。
+  linux-ui:
+    name: linux-ui (xvfb)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 安装 X11 工具
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xvfb xterm xdotool wmctrl
+
+      - name: 驱动契约（纯内存，不依赖桌面）
+        run: node scripts/contract-test.ts
+
+      - name: Linux 驱动冒烟（Xvfb）
+        run: xvfb-run -a --server-args="-screen 0 1280x800x24" node scripts/linux-driver-smoke.ts
