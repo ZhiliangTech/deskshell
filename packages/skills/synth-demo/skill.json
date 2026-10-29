@@ -6,12 +6,12 @@
   "capabilities": [
     {
       "id": "ui.read",
-      "scope": "recorded",
+      "scope": "App|Dialog",
       "reason": "回放录制时的界面观察"
     },
     {
       "id": "ui.input",
-      "scope": "recorded",
+      "scope": "App|Dialog",
       "reason": "回放录制时的点击与输入"
     }
   ],

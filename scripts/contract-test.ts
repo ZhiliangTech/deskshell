@@ -296,6 +296,51 @@ await check("symlink.escape", async () => {
   return dirEscapeBlocked && fileEscapeBlocked && !leaked;
 }, "符号链接逃逸没有被拦截");
 
+// 13) 窗口作用域：声明 Notepad 的 skill 不能去点 Calculator
+await check("ui.scope", async () => {
+  const mk = (window: string): Skill => ({
+    manifest: {
+      name: "ui-scope-probe",
+      version: "0.0.0",
+      description: "probe",
+      entry: "./index.ts",
+      capabilities: [{ id: "ui.input", scope: "Notepad", reason: "只操作记事本" }],
+    },
+    async plan() {
+      return [
+        {
+          id: "click",
+          kind: "ui.click",
+          window,
+          selector: { controlType: "Button", name: "OK" },
+          post: [],
+          undo: { kind: "noop" },
+        } as Action,
+      ];
+    },
+  });
+
+  const deny = await run(
+    mk("Calculator"),
+    { root },
+    { mode: "preview", root, granted: ["ui.input"], journalPath: path.join(root, "j.jsonl") },
+    {},
+  )
+    .then(() => false)
+    .catch((e) => /不在声明的能力作用域内/.test(String(e)));
+
+  const allow = await run(
+    mk("Notepad - 未命名"),
+    { root },
+    { mode: "preview", root, granted: ["ui.input"], journalPath: path.join(root, "j.jsonl") },
+    {},
+  )
+    .then(() => true)
+    .catch(() => false);
+
+  return deny && allow;
+}, "窗口作用域没有被执行");
+
 for (const r of results) {
   const dbg = r.name === "window.move+undo" ? (globalThis as Record<string, unknown>).__moveDebug : undefined;
   console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name.padEnd(22)} ${r.detail}${dbg ? " " + JSON.stringify(dbg) : ""}`);

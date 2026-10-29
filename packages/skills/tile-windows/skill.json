@@ -6,12 +6,12 @@
   "capabilities": [
     {
       "id": "ui.read",
-      "scope": "desktop",
+      "scope": ".*",
       "reason": "枚举可见窗口及其位置"
     },
     {
       "id": "ui.input",
-      "scope": "desktop",
+      "scope": ".*",
       "reason": "移动窗口位置"
     }
   ],

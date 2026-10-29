@@ -63,6 +63,19 @@ heap growth       7 MB
 
 The numbers that matter: **0.7 ms per step**, and the journal costs under 400 bytes per step — so an audit trail stays cheap even at thousands of actions.
 
+Scaling check — 5000 files, same machine:
+
+```
+files             5000
+plan              167 ms  (5002 steps)
+apply             3770 ms (0.8 ms/step)
+undo              3436 ms (rolled back 5002 steps)
+journal           2071 KB (424 B/step)
+heap growth       25 MB
+```
+
+Cost stays linear: 0.7–0.8 ms per step at both 1000 and 5000 files, and the journal grows by roughly 400 bytes per step.
+
 ## Writing your own
 
 ```bash

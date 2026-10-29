@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type {
@@ -144,7 +145,19 @@ export async function execute(action: Action, ctx: ExecContext): Promise<void> {
   }
 }
 
-export async function applyUndo(undo: UndoAction, ctx: ExecContext): Promise<void> {
+/** 撤销时的额外校验：文件被外部改过就拒绝覆盖，避免把别人刚写的内容冲掉 */
+export interface UndoGuard {
+  /** 任务写入时文件的 sha256 */
+  expectedHash?: string;
+}
+
+const sha256 = (buf: Buffer): string => createHash("sha256").update(buf).digest("hex");
+
+export async function applyUndo(
+  undo: UndoAction,
+  ctx: ExecContext,
+  guard: UndoGuard = {},
+): Promise<void> {
   switch (undo.kind) {
     case "fs.move": {
       fs.mkdirSync(path.dirname(undo.to), { recursive: true });
@@ -157,8 +170,17 @@ export async function applyUndo(undo: UndoAction, ctx: ExecContext): Promise<voi
       return;
     }
     case "fs.restore": {
+      const exists = fs.existsSync(undo.path);
+      if (exists && guard.expectedHash) {
+        const current = sha256(fs.readFileSync(undo.path));
+        if (current !== guard.expectedHash) {
+          throw new Error(
+            `文件在任务之后被修改，拒绝覆盖：${undo.path}（可用 deskshell undo --force 强制）`,
+          );
+        }
+      }
       if (undo.content === null) {
-        if (fs.existsSync(undo.path)) fs.rmSync(undo.path, { force: true });
+        if (exists) fs.rmSync(undo.path, { force: true });
       } else {
         fs.mkdirSync(path.dirname(undo.path), { recursive: true });
         fs.writeFileSync(undo.path, undo.content, "utf8");

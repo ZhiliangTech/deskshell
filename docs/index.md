@@ -45,7 +45,8 @@ deskshell makes trust part of the protocol:
 - [Undo and trust](undo-and-trust.html) — why rollback lives in the kernel
 - [Recipes](recipes.html)
 - [Recording](recording.html) — record once, get a draft skill
-- [Drivers](drivers.html) — what each platform can and cannot do
+- [Drivers](drivers.html)
+- [Internals](internals.html) — what each platform can and cannot do
 - [Versioning](versioning.html) — how the interface stays stable
 - [Roadmap](roadmap.html)
 - [FAQ](faq.html) — what is next, and what needs a decision

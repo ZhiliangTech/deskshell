@@ -2,6 +2,39 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.4.0 — 2026-10-29
+
+Hardening the guarantees, plus the operational surface a real user needs.
+
+### Security
+
+- **UI window scope is enforced.** A skill declaring `ui.input` with scope `Notepad` can no longer drive `Calculator`; `checkAction` now matches the action's window against the declared scope (regex, case-insensitive). Contract test `ui.scope` covers both the denial and the allowed case.
+- **Undo refuses to overwrite a file that changed.** `fs.write` steps record the sha256 of what was written; undo compares it and refuses when the file was edited afterwards. Contract-level test `undo-guard` also asserts the journal does not lie: a refused undo is not marked `rolled-back`.
+- **Property-based path tests.** `scripts/policy-fuzz.ts` generates 2000 adversarial paths plus 10 known vectors (`C:\Windows`, UNC, `/etc/passwd`, `..`, mixed separators) and asserts every escape is rejected, while 500 legitimate paths still pass.
+
+### Added
+
+- **`deskshell run a b c --parallel`** — concurrent skills, shared journal, one failure does not stop the others. `scripts/parallel-test.ts` proves both the happy path and failure isolation.
+- **`deskshell history`** — task list with skill, step count, duration and state.
+- **`deskshell show [taskId]`** — full timeline of one task, including each step's undo kind.
+- **Journal entries carry `skill` and `hash`**, so history is readable and undo can detect external edits.
+- **`deskshell add` installs into `~/.deskshell/skills`** (override with `$DESKSHELL_SKILLS_DIR`), outside the package, so upgrades no longer reset user skills. Same name in the user directory wins over the built-in one.
+- **Docs**: new `internals` page (kernel flow, policy table, failure semantics, journal schema, parallel model), macOS bridge command list on the drivers page, and a 5000-file benchmark section. 13 pages per language.
+
+### Fixed
+
+- `undoLastTask` marked **every** entry of the task as `rolled-back` even when an undo failed; it now marks only the steps that actually rolled back. Same bug class as the 0.3.0 self-undo fix: the journal must never report a rollback that did not happen.
+
+### Changed
+
+- Fixture skills declare real window scopes (`Notepad|记事本`, `Edge|Chrome|…`) instead of placeholders, because placeholders are now rejected — which is the point.
+
+### Evidence
+
+- `scripts/regress.ts` → 29 checks green
+- contract 13/13 · snapshots 3/3 · parallel 7/7 · policy fuzz 5/5 · undo guard 3/3
+- benchmark: 1000 files 0.7–0.9 ms/step; 5000 files 0.8 ms/step, journal 424 B/step
+
 ## 0.3.0 — 2026-10-29
 
 Hardening and reach: symlink escapes are blocked, three new skills ship with tests, and the kernel gets a performance baseline.

@@ -113,11 +113,15 @@ export interface StepResult {
 export interface JournalEntry {
   ts: number;
   taskId: string;
+  /** 产出这条记录的 skill 名，便于 history 按 skill 归组 */
+  skill?: string;
   actionId: string;
   kind: string;
   summary: string;
   status: "ok" | "rolled-back" | "failed";
   detail?: string;
+  /** fs.write 成功后写入内容的 sha256，撤销前用来判断文件有没有被别人改过 */
+  hash?: string;
   undo?: UndoAction;
 }
 

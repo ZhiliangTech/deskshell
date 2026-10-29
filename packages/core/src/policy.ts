@@ -64,11 +64,21 @@ const ACTION_CAPABILITY: Record<string, CapabilityId> = {
   "window.move": "ui.input",
 };
 
-/** 动作检查：路径逃逸、不可撤销的高危动作、越权动作直接拒绝 */
+/** 窗口匹配：作用域写成正则就按正则，否则按子串（大小写不敏感） */
+function windowMatches(window: string, scope: string): boolean {
+  try {
+    return new RegExp(scope, "i").test(window);
+  } catch {
+    return window.toLowerCase().includes(scope.toLowerCase());
+  }
+}
+
+/** 动作检查：路径逃逸、不可撤销的高危动作、越权动作、窗口越界 */
 export function checkAction(
   action: Action,
   root: string,
   declared: CapabilityId[] = [],
+  caps: CapabilityRequest[] = [],
 ): PolicyDecision {
   const reasons: string[] = [];
   const touched: string[] = [];
@@ -84,9 +94,15 @@ export function checkAction(
     case "fs.write":
       touched.push(action.path);
       break;
-    default:
-      // ui.* 由驱动层负责作用域，这里不做路径校验
+    default: {
+      // ui.* 不涉及文件路径，但要检查窗口是否落在声明的能力作用域内
+      const window = (action as { window?: string }).window;
+      const uiScopes = caps.filter((c) => c.id.startsWith("ui.") && c.scope).map((c) => c.scope!);
+      if (window && uiScopes.length > 0 && !uiScopes.some((sc) => windowMatches(window, sc))) {
+        reasons.push(`窗口 "${window}" 不在声明的能力作用域内（${uiScopes.join(" / ")}）`);
+      }
       break;
+    }
   }
 
   for (const p of sources) {

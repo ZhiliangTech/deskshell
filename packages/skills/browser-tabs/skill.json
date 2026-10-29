@@ -6,7 +6,7 @@
   "capabilities": [
     {
       "id": "ui.read",
-      "scope": "browser",
+      "scope": "Edge|Chrome|Firefox|Safari|Arc|浏览器",
       "reason": "读取浏览器窗口的控件树以获得标签页标题"
     },
     {

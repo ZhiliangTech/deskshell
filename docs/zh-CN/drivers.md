@@ -30,6 +30,7 @@ interface UiDriver {
 - 已验证（macOS 26.6 / arm64）：窗口枚举（20 个 36ms）、控件树（181 节点）、聚焦、Unicode 输入、**AXPress 点击**（计算器 7×8=56）、**窗口移动与还原**（TextEdit 逐像素还原）
 - 坐标点击：AXPress 被拒时自动回退为点击元素矩形中心（`clickAt`），真机验证通过
 - 必须编译桥：`packages/drivers/macos/build.sh`（需要 Xcode Command Line Tools）
+- 驱动用到的桥命令：`windows`、`tree`、`press`、`rect`、`click --x --y`、`cursor`、`type`、`move`、`trusted`。`rect` 只读元素矩形、不触发动作；`cursor` 返回鼠标位置——坐标点击测试靠它证明合成点击落在元素中心。
 - 前置条件：系统设置 → 隐私与安全性 → 辅助功能，给终端授权
 
 四条实测踩出来的坑，写在这里省别人时间：

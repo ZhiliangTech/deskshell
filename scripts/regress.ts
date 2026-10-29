@@ -42,7 +42,7 @@ run(
 
 // 3) CLI：能列出公开 skill
 run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("7 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.3.0"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.4.0"));
 
 // 4) CLI：--json 输出可被程序消费
 run(
@@ -87,16 +87,21 @@ run("fail.story", ["apps/cli-demo/fail-story.ts"], (o) => o.includes("PASS"));
 run("journal.failed", ["bin/deskshell.ts", "journal", "--root", ".demo/fail-story"], (o) => o.includes("失败 1 步"));
 
 // 4) 驱动契约（内存驱动，验证内核对平台无感）
-run("contract", ["scripts/contract-test.ts"], (o) => o.includes("12/12 passed"));
+run("contract", ["scripts/contract-test.ts"], (o) => o.includes("13/13 passed"));
 
 // 5) 预览快照：内核升级不能悄悄改变既有 skill 的计划
 run("snapshots", ["scripts/snapshot-test.ts"], (o) => o.includes("snapshots match"));
 
 // 5) 新 skill：photo-sort / log-archive / rename-batch
 run("photo.sort", ["scripts/photo-sort-test.ts"], (o) => o.includes("PASS photo-sort"));
+run("policy.fuzz", ["scripts/policy-fuzz.ts"], (o) => o.includes("5/5 passed"));
+run("undo.guard", ["scripts/undo-guard-test.ts"], (o) => o.includes("3/3 passed"));
+run("parallel", ["scripts/parallel-test.ts"], (o) => o.includes("7/7 passed"));
 run("new.skills", ["scripts/new-skills-test.ts"], (o) => o.includes("8/8 passed"));
 
 // 5) 文档站
+run("cli.history", ["bin/deskshell.ts", "history", "--root", ".demo/downloads"], (o) => o.includes("任务数"));
+run("cli.show", ["bin/deskshell.ts", "show", "--root", ".demo/downloads"], (o) => o.includes("步"));
 run("docs.build", ["scripts/build-docs.ts"], (o) => /built \d+ pages/.test(o));
 
 console.log("");

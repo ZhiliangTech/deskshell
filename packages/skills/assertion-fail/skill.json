@@ -6,12 +6,12 @@
   "capabilities": [
     {
       "id": "ui.read",
-      "scope": "test",
+      "scope": "Notepad|记事本",
       "reason": "读取记事本内容以校验断言"
     },
     {
       "id": "ui.input",
-      "scope": "test",
+      "scope": "Notepad|记事本",
       "reason": "向记事本写入测试文本"
     }
   ],

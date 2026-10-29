@@ -1,14 +1,19 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { run, PolicyError, undoTask } from "../packages/core/src/kernel.ts";
+import { load } from "../packages/core/src/journal.ts";
 import { validateManifest } from "../packages/core/src/manifest.ts";
 import type { CapabilityId, Skill } from "../packages/core/src/types.ts";
 
 const HERE = import.meta.dirname;
 const SKILLS = path.resolve(HERE, "..", "packages", "skills");
+/** 用户安装的 skill 放这里，跟包版本无关（升级 deskhell 不会丢） */
+const USER_SKILLS =
+  process.env.DESKSHELL_SKILLS_DIR ?? path.join(os.homedir(), ".deskshell", "skills");
 
 function c(color: number, s: string): string {
   return process.stdout.isTTY ? `\u001b[${color}m${s}\u001b[0m` : s;
@@ -20,14 +25,17 @@ function usage(): void {
 用法:
   deskshell list                          列出已安装的 skill
   deskshell run <name> [options]          运行一个 skill
+  deskshell run a b c --parallel [opts]   并行跑多个 skill（各自独立、共用审计日志）
   deskshell new <name>                    生成 skill 骨架
   deskshell verify [--input]              检查当前平台的驱动能力
   deskshell version                       版本信息
   deskshell doctor                        环境自检（Node/平台/权限/清单/可写性）
   deskshell story [--keep] [--fail]       三场景跑一遍并整体撤销；--fail 演示失败回滚
   deskshell journal [--root DIR] [--json] 查看审计日志（谁在什么时候改了什么）
+  deskshell history [--root DIR] [--json] 任务列表：skill / 步数 / 耗时 / 状态
+  deskshell show [taskId] [--root DIR]    某个任务的时间线（默认最近一次）
   deskshell undo --task <id> [--root DIR]  撤销某个任务
-  deskshell add <path> [--dir DIR] [--force]  安装外部 skill
+  deskshell add <path> [--dir DIR] [--force]  安装外部 skill（默认 ~/.deskshell/skills）
 
 run 选项:
   --mode preview|apply|undo   默认 preview
@@ -35,6 +43,7 @@ run 选项:
   --window <regex>            传给 skill 的窗口匹配串
   --example <name>            使用 skill 自带的示例参数（examples/<name>.json）
   --grant <a,b>               只授予指定能力（默认全部）
+  --parallel                  多个 skill 并行执行；一个失败不影响其它
   --json                      输出机器可读结果（CI/脚本用）
 
 示例:
@@ -52,12 +61,13 @@ function listSkills(): Array<{
   internal: boolean;
   platforms?: string[];
 }> {
-  if (!fs.existsSync(SKILLS)) return [];
-  return fs
-    .readdirSync(SKILLS, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => {
-      const file = path.join(SKILLS, d.name, "skill.json");
+  const scan = (root: string) => {
+    if (!fs.existsSync(root)) return [];
+    return fs
+      .readdirSync(root, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => {
+        const file = path.join(root, d.name, "skill.json");
       if (!fs.existsSync(file)) return null;
       const m = JSON.parse(fs.readFileSync(file, "utf8")) as {
         name: string;
@@ -67,18 +77,23 @@ function listSkills(): Array<{
         platforms?: string[];
         capabilities: Array<{ id: string }>;
       };
-      return {
-        name: m.name,
-        version: m.version,
-        description: m.description,
-        dir: path.join(SKILLS, d.name),
-        caps: m.capabilities.map((x) => x.id),
-        internal: m.internal === true,
-        platforms: m.platforms,
-      };
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null)
-    .sort((a, b) => a.name.localeCompare(b.name));
+        return {
+          name: m.name,
+          version: m.version,
+          description: m.description,
+          dir: path.join(root, d.name),
+          caps: m.capabilities.map((x) => x.id),
+          internal: m.internal === true,
+          platforms: m.platforms,
+        };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null);
+  };
+
+  // 用户目录优先：同名时用户可以覆盖内置版本
+  const user = scan(USER_SKILLS);
+  const builtin = scan(SKILLS).filter((s) => !user.some((u) => u.name === s.name));
+  return [...user, ...builtin].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function parse(argv: string[]): { positional: string[]; flags: Record<string, string> } {
@@ -99,12 +114,17 @@ function parse(argv: string[]): { positional: string[]; flags: Record<string, st
   return { positional, flags };
 }
 
-async function runSkill(name: string, flags: Record<string, string>): Promise<number> {
+async function runSkill(
+  name: string,
+  flags: Record<string, string>,
+  opts: { emit?: (line: string) => void } = {},
+): Promise<number> {
+  const out = opts.emit ?? ((line: string) => process.stdout.write(`${line}\n`));
   const json = flags.json === "true";
   const entry = listSkills().find((s) => s.name === name);
   if (!entry) {
-    if (json) console.log(JSON.stringify({ ok: false, error: `skill not found: ${name}` }));
-    else console.error(`找不到 skill: ${name}（先跑 deskshell list）`);
+    if (json) out(JSON.stringify({ ok: false, error: `skill not found: ${name}` }));
+    else out(`找不到 skill: ${name}（先跑 deskshell list）`);
     return 2;
   }
   const mod = (await import(pathToFileURL(path.join(entry.dir, "index.ts")).href)) as {
@@ -113,8 +133,8 @@ async function runSkill(name: string, flags: Record<string, string>): Promise<nu
   };
   const skill = mod.skill ?? mod.default;
   if (!skill) {
-    if (json) console.log(JSON.stringify({ ok: false, error: `${name} 没有导出 skill` }));
-    else console.error(`${name} 没有导出 skill`);
+    if (json) out(JSON.stringify({ ok: false, error: `${name} 没有导出 skill` }));
+    else out(`${name} 没有导出 skill`);
     return 2;
   }
 
@@ -132,15 +152,15 @@ async function runSkill(name: string, flags: Record<string, string>): Promise<nu
       const { MacDriver } = await import("../packages/drivers/macos/driver.ts");
       driver = new MacDriver();
     } else {
-      if (json) console.log(JSON.stringify({ ok: false, error: "no driver for this platform" }));
-      else console.error("当前平台还没有驱动实现");
+      if (json) out(JSON.stringify({ ok: false, error: "no driver for this platform" }));
+      else out("当前平台还没有驱动实现");
       return 2;
     }
   }
 
   if (!json) {
-    console.log(c(36, `${skill.manifest.name}@${skill.manifest.version}`) + `  mode=${mode}  root=${root}`);
-    console.log(`能力: ${granted.join(", ")}`);
+    out(c(36, `${skill.manifest.name}@${skill.manifest.version}`) + `  mode=${mode}  root=${root}`);
+    out(`能力: ${granted.join(", ")}`);
   }
 
   const input: Record<string, unknown> = { root };
@@ -149,13 +169,13 @@ async function runSkill(name: string, flags: Record<string, string>): Promise<nu
     const file = path.join(entry.dir, "examples", `${flags.example}.json`);
     if (!fs.existsSync(file)) {
       const msg = `没有这个示例：examples/${flags.example}.json`;
-      if (json) console.log(JSON.stringify({ ok: false, error: msg }));
-      else console.error(msg);
+      if (json) out(JSON.stringify({ ok: false, error: msg }));
+      else out(msg);
       return 2;
     }
     const example = JSON.parse(fs.readFileSync(file, "utf8")) as Record<string, unknown>;
     Object.assign(input, example);
-    if (!json) console.log(`示例: examples/${flags.example}.json`);
+    if (!json) out(`示例: examples/${flags.example}.json`);
   }
 
   try {
@@ -167,7 +187,7 @@ async function runSkill(name: string, flags: Record<string, string>): Promise<nu
     );
 
     if (json) {
-      console.log(
+      out(
         JSON.stringify({
           ok: !report.steps.some((s) => s.status === "failed"),
           skill: skill.manifest.name,
@@ -182,19 +202,47 @@ async function runSkill(name: string, flags: Record<string, string>): Promise<nu
     } else {
       for (const s of report.steps) {
         const mark = s.status === "ok" ? c(32, "✓") : s.status === "skipped" ? "·" : c(31, "✗");
-        console.log(`  ${mark} ${s.actionId}${s.detail ? "  " + s.detail : ""}`);
+        out(`  ${mark} ${s.actionId}${s.detail ? "  " + s.detail : ""}`);
       }
-      if (report.rolledBack) console.log(`  ↩ 回滚 ${report.rolledBack} 步`);
+      if (report.rolledBack) out(`  ↩ 回滚 ${report.rolledBack} 步`);
     }
     return report.steps.some((s) => s.status === "failed") ? 1 : 0;
   } catch (err) {
     if (err instanceof PolicyError) {
-      if (json) console.log(JSON.stringify({ ok: false, error: "policy", reasons: err.reasons }));
-      else console.error(c(31, "拒绝：") + err.reasons.join("; "));
+      if (json) out(JSON.stringify({ ok: false, error: "policy", reasons: err.reasons }));
+      else out(c(31, "拒绝：") + err.reasons.join("; "));
       return 2;
     }
     throw err;
   }
+}
+
+/**
+ * 并行跑多个 skill：各自独立的执行流程，共享同一份审计日志。
+ * 一个 skill 失败不会影响其它；退出码取其中最严重的那个。
+ */
+async function runParallel(names: string[], flags: Record<string, string>): Promise<number> {
+  const started = Date.now();
+  const results = await Promise.all(
+    names.map(async (name) => {
+      const lines: string[] = [];
+      const code = await runSkill(name, flags, { emit: (l) => lines.push(l) });
+      return { name, code, lines };
+    }),
+  );
+
+  let code = 0;
+  for (const r of results) {
+    console.log(c(36, `── ${r.name}`) + (r.code === 0 ? c(32, "  ok") : c(31, `  exit ${r.code}`)));
+    for (const line of r.lines) console.log(line);
+    console.log("");
+    if (r.code !== 0) code = Math.max(code, r.code);
+  }
+  const failed = results.filter((r) => r.code !== 0).length;
+  console.log(
+    `${names.length} 个 skill 并行完成，用时 ${Date.now() - started} ms，失败 ${failed} 个`,
+  );
+  return code;
 }
 
 const argv = process.argv.slice(2);
@@ -219,13 +267,18 @@ switch (cmd) {
     break;
   }
   case "run": {
-    const name = positional[1];
-    if (!name) {
+    const names = positional.slice(1);
+    if (!names.length) {
       usage();
       process.exitCode = 2;
       break;
     }
-    process.exitCode = await runSkill(name, flags);
+    if (names.length > 1 && !("parallel" in flags)) {
+      console.error("多个 skill 需要加 --parallel，例如：deskshell run a b --parallel --mode apply");
+      process.exitCode = 2;
+      break;
+    }
+    process.exitCode = "parallel" in flags ? await runParallel(names, flags) : await runSkill(names[0], flags);
     break;
   }
   case "new": {
@@ -336,6 +389,89 @@ switch (cmd) {
     }
     break;
   }
+  case "history": {
+    const root = path.resolve(flags.root ?? ".demo/cli");
+    const file = path.join(root, ".deskshell", "journal.jsonl");
+    if (!fs.existsSync(file)) {
+      console.log(`没有审计日志：${file}`);
+      break;
+    }
+    const entries = load(file);
+    const tasks = new Map<string, typeof entries>();
+    for (const e of entries) {
+      tasks.set(e.taskId, [...(tasks.get(e.taskId) ?? []), e]);
+    }
+    const rows = [...tasks.entries()].map(([taskId, list]) => {
+      const start = Math.min(...list.map((x) => x.ts));
+      const end = Math.max(...list.map((x) => x.ts));
+      const failed = list.filter((x) => x.status === "failed").length;
+      const rolled = list.filter((x) => x.status === "rolled-back").length;
+      const state = failed ? "failed" : rolled === list.length ? "rolled-back" : rolled ? "partial" : "applied";
+      return {
+        taskId,
+        skill: list.find((x) => x.skill)?.skill ?? "?",
+        start,
+        ms: end - start,
+        steps: list.length,
+        state,
+      };
+    });
+
+    if (flags.json === "true") {
+      console.log(JSON.stringify({ file, tasks: rows }));
+      break;
+    }
+    if (rows.length === 0) {
+      console.log("还没有执行记录");
+      break;
+    }
+    console.log(`任务数 ${rows.length}  (${file})\n`);
+    console.log(`${"taskId".padEnd(22)} ${"skill".padEnd(18)} ${"步数".padStart(4)}  ${"耗时".padStart(8)}  ${"状态".padEnd(12)} 开始时间`);
+    for (const r of rows) {
+      console.log(
+        `${r.taskId.padEnd(22)} ${r.skill.padEnd(18)} ${String(r.steps).padStart(4)}  ${`${r.ms}ms`.padStart(8)}  ${r.state.padEnd(12)} ${new Date(r.start).toLocaleString("zh-CN")}`,
+      );
+    }
+    console.log(`\n看某一次的全部步骤：deskshell show ${rows[rows.length - 1].taskId}`);
+    break;
+  }
+  case "show": {
+    const root = path.resolve(flags.root ?? ".demo/cli");
+    const file = path.join(root, ".deskshell", "journal.jsonl");
+    if (!fs.existsSync(file)) {
+      console.log(`没有审计日志：${file}`);
+      break;
+    }
+    const entries = load(file);
+    const wanted = positional[1];
+    const taskId = wanted ?? entries[entries.length - 1]?.taskId;
+    if (!taskId) {
+      console.log("没有可展示的任务");
+      break;
+    }
+    const list = entries.filter((e) => e.taskId === taskId);
+    if (list.length === 0) {
+      console.error(`没有这个任务：${taskId}`);
+      process.exitCode = 2;
+      break;
+    }
+    const start = Math.min(...list.map((x) => x.ts));
+    const end = Math.max(...list.map((x) => x.ts));
+    if (flags.json === "true") {
+      console.log(JSON.stringify({ taskId, skill: list[0].skill ?? "?", start, ms: end - start, entries: list }));
+      break;
+    }
+    console.log(`${taskId}  ${list[0].skill ?? "?"}  ${list.length} 步  ${end - start} ms`);
+    console.log(`${new Date(start).toLocaleString("zh-CN")}\n`);
+    list.forEach((e, i) => {
+      const mark = e.status === "ok" ? c(32, "✓") : e.status === "failed" ? c(31, "✗") : "↩";
+      const at = new Date(e.ts).toLocaleTimeString("zh-CN", { hour12: false });
+      console.log(`${mark} ${String(i + 1).padStart(2)}. ${at}  ${e.kind.padEnd(12)} ${e.summary}`);
+      if (e.detail) console.log(`      ${e.detail}`);
+      if (e.undo) console.log(`      undo: ${e.undo.kind}`);
+    });
+    break;
+  }
   case "undo": {
     const taskId = flags.task;
     if (!taskId) {
@@ -391,7 +527,7 @@ switch (cmd) {
       process.exitCode = 2;
       break;
     }
-    const destRoot = path.resolve(flags.dir ?? SKILLS);
+    const destRoot = path.resolve(flags.dir ?? USER_SKILLS);
     const dest = path.join(destRoot, m.name);
     if (fs.existsSync(dest) && flags.force !== "true") {
       console.error(`目标已存在：${dest}（加 --force 覆盖）`);

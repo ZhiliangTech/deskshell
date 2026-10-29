@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import type {
   Action,
@@ -37,7 +38,7 @@ export async function run(
   const actions = await skill.plan(input, ctx);
   const declared = skill.manifest.capabilities.map((c) => c.id);
   const violations = actions
-    .map((a) => ({ action: a, decision: checkAction(a, opts.root, declared) }))
+    .map((a) => ({ action: a, decision: checkAction(a, opts.root, declared, skill.manifest.capabilities) }))
     .filter((x) => !x.decision.allowed);
   if (violations.length > 0) {
     throw new PolicyError(violations.flatMap((v) => v.decision.reasons));
@@ -73,13 +74,20 @@ export async function run(
           throw new Error(`后置断言失败：${JSON.stringify(post)}`);
         }
       }
+      // fs.write 记下写入内容的哈希：撤销时据此判断文件是否已被别人改过
+      const hash =
+        action.kind === "fs.write" && fs.existsSync(action.path)
+          ? createHash("sha256").update(fs.readFileSync(action.path)).digest("hex")
+          : undefined;
       const entry: JournalEntry = {
         ts: Date.now(),
         taskId,
+        skill: skill.manifest.name,
         actionId: action.id,
         kind: action.kind,
         summary: describe(action),
         status: "ok",
+        hash,
         undo: action.undo ?? undefined,
       };
       append(opts.journalPath, entry);
@@ -93,6 +101,7 @@ export async function run(
       append(opts.journalPath, {
         ts: Date.now(),
         taskId,
+        skill: skill.manifest.name,
         actionId: action.id,
         kind: action.kind,
         summary: describe(action),
@@ -116,7 +125,7 @@ export async function run(
       }
 
       for (const e of [...done].reverse()) {
-        if (e.undo) await applyUndo(e.undo, execCtx);
+        if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
         e.status = "rolled-back";
       }
       const doneKeys = new Set(done.map((e) => `${e.taskId}:${e.actionId}`));
@@ -156,14 +165,17 @@ async function undoLastTask(opts: RunOptions, ctx: SkillContext): Promise<RunRep
   const lastTask = entries[entries.length - 1].taskId;
   const target = entries.filter((e) => e.taskId === lastTask);
   const steps: StepResult[] = [];
+  const rolled = new Set<string>();
   const execCtx = { ...ctx, root: opts.root };
 
   for (const e of [...target].reverse()) {
     try {
-      if (e.undo) await applyUndo(e.undo, execCtx);
+      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
+      rolled.add(`${e.taskId}:${e.actionId}`);
       e.status = "rolled-back";
       steps.push({ actionId: e.actionId, status: "ok", detail: `撤销 ${e.summary}` });
     } catch (err) {
+      // 撤销失败时不能把这条标成 rolled-back，否则日志会撒谎
       steps.push({
         actionId: e.actionId,
         status: "failed",
@@ -171,10 +183,13 @@ async function undoLastTask(opts: RunOptions, ctx: SkillContext): Promise<RunRep
       });
     }
   }
-  markRolledBack(opts.journalPath, load(opts.journalPath).map((e) =>
-    e.taskId === lastTask ? { ...e, status: "rolled-back" as const } : e,
-  ));
-  return { mode: "undo", steps, journal: target, rolledBack: target.length };
+  markRolledBack(
+    opts.journalPath,
+    load(opts.journalPath).map((e) =>
+      rolled.has(`${e.taskId}:${e.actionId}`) ? { ...e, status: "rolled-back" as const } : e,
+    ),
+  );
+  return { mode: "undo", steps, journal: target, rolledBack: rolled.size };
 }
 
 export function summarizeRisk(actions: Action[]): string {
@@ -198,7 +213,7 @@ export async function undoTask(
   for (const e of [...target].reverse()) {
     const key = `${e.taskId}:${e.actionId}`;
     try {
-      if (e.undo) await applyUndo(e.undo, execCtx);
+      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
       rolled.add(key);
       steps.push({ actionId: e.actionId, status: "ok", detail: `撤销 ${e.summary}` });
     } catch (err) {
@@ -231,7 +246,7 @@ export async function undoAll(opts: RunOptions, ctx: SkillContext = {}): Promise
   for (const e of [...done].reverse()) {
     const key = `${e.taskId}:${e.actionId}`;
     try {
-      if (e.undo) await applyUndo(e.undo, execCtx);
+      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
       rolled.add(key);
       steps.push({ actionId: e.actionId, status: "ok", detail: `撤销 ${e.summary}` });
     } catch (err) {
