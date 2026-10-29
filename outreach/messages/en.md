@@ -8,8 +8,8 @@ For developers who have never heard of this project. One job: get them to spend 
 
 1. **Personalize the first line or do not send it.** Every template starts with `{why_them}` — one specific sentence about *their* project, issue, or post. If you cannot write that sentence, this person is not a lead yet.
 2. **Every piece ends with a 30-minute action.** There are only three allowed: run `doctor`, write one skill, claim one issue. Do not invent a fourth, and never end with "let me know what you think".
-3. **Facts only from the repo.** Numbers you may use: Node >= 22.18; 8 action kinds / 7 assertion kinds / 5 undo kinds / 7 capability ids (frozen in `spec/protocol-v0.json`); the driver interface is 6 required methods + 2 optional ones; recorder polls at 300 ms, left clicks only. Nothing about users, stars, adoption, or speed.
-4. **Do not claim what is not true.** Linux has no driver. There is no public npm package yet (installer, GitHub Packages, or clone). The recorder is a poller.
+3. **Facts only from the repo.** Numbers you may use: Node >= 22.18; 8 action kinds / 7 assertion kinds / 5 undo kinds / 7 capability ids (frozen in `spec/protocol-v0.json`); the driver interface is 6 required methods + 2 optional ones; the recorder runs on UIA event callbacks (20 ms fallback) and captures focus, left clicks and window opens; `scripts/regress.ts` passes 39/39 on a clean checkout. Nothing about users, stars, adoption, or speed.
+4. **Do not claim what is not true.** Linux is window-level only — an X11 driver on xdotool + wmctrl exists, control-level AT-SPI2 doesn't. There is no public npm package yet (installer, GitHub Packages, or clone). The recorder doesn't capture drag, right-click menus or wheel.
 5. Replace `{name}`, `{project}`, `{issue_url}`, `{repo_url}`. Never send with a placeholder still in it.
 
 Canonical one-liner: **Every action is previewed, asserted, undoable, and audited — and there is no model in the kernel.**
@@ -22,7 +22,7 @@ Canonical one-liner: **Every action is previewed, asserted, undoable, and audite
 
 > Hi {name} — {why_them}
 >
-> I'm building deskshell: a kernel where every desktop action must declare a post-assertion and an undo, and one failed assertion rolls the whole task back. Windows (UIA) and macOS (AX bridge) drivers exist. Linux doesn't — the interface is frozen at six required methods, and an AT-SPI2 driver is the missing piece.
+> I'm building deskshell: a kernel where every desktop action must declare a post-assertion and an undo, and one failed assertion rolls the whole task back. Windows (UIA), macOS (AX bridge) and Linux (X11, window-level) drivers exist. What Linux lacks is the control layer — selector-scoped click and invoke on AT-SPI2 — and that's the missing piece.
 >
 > 30 minutes: clone it, run `node bin/deskshell.ts doctor`. {repo_url}
 
@@ -46,7 +46,7 @@ Canonical one-liner: **Every action is previewed, asserted, undoable, and audite
 >
 > In deskshell a skill only produces actions; each action must declare a post-assertion ("how we know it worked") and an undo. Preview is the default — `run` does nothing without `--mode apply`. When an assertion fails, the kernel undoes that action's own side effects, then rolls the rest back in reverse, and journals the failure. The protocol is frozen as v0 in `spec/protocol-v0.json`.
 >
-> The driver interface is what I'd want your opinion on — it's six required methods (`windows`, `tree`, `invoke`, `click`, `type`, `keys`) plus two optional ones (`bounds`, `moveWindow`) — and a Linux AT-SPI2 implementation doesn't exist yet.
+> The driver interface is what I'd want your opinion on — it's six required methods (`windows`, `tree`, `invoke`, `click`, `type`, `keys`) plus two optional ones (`bounds`, `moveWindow`) — and the Linux control layer (AT-SPI2 selector-scoped click/invoke) doesn't exist yet; window-level works.
 >
 > 30 minutes: `node bin/deskshell.ts story --fail` — watch it roll back. If the interface is wrong for your platform, say where. {repo_url}
 
@@ -58,7 +58,7 @@ Canonical one-liner: **Every action is previewed, asserted, undoable, and audite
 >
 > deskshell is my answer to that. A skill declares intent only — `plan() → Action[]` — and never calls system APIs. Every action needs a post-assertion and an undo; the kernel does permission checks, preview, execution, assertions, rollback and a JSONL audit log. The kernel has no model dependency at all: models can only live behind two replaceable interfaces, `see()` and `plan()`, inside a skill. It runs offline, no API key.
 >
-> Status: Windows verified, macOS verified on hardware, Linux not implemented.
+> Status: Windows verified, macOS verified on hardware, Linux window-level (X11, xdotool + wmctrl); Linux control-level (AT-SPI2) not implemented.
 >
 > 30 minutes: `node scripts/new-skill.ts --name my-skill`, edit only `plan()`, then `node bin/deskshell.ts run my-skill --mode preview`. If your first skill is something you actually need, I'll review it the same day. {repo_url}
 
@@ -76,7 +76,7 @@ Canonical one-liner: **Every action is previewed, asserted, undoable, and audite
 >
 > deskshell makes that structural instead of aspirational. Actions declare a post-assertion and an undo. Preview is the default — nothing runs without `--mode apply`. A failed assertion stops the run, undoes that action's own side effects, then rolls back everything else in reverse. Every step — including the failures — lands in a JSONL journal with the undo recipe attached. The protocol is frozen as v0 (`spec/protocol-v0.json`), and the kernel contains no model; models only appear behind `see()` / `plan()` inside a skill.
 >
-> Two honest limitations: there is no Linux driver yet (AT-SPI2, interface already frozen), and there is no public npm package — install is a PowerShell installer, GitHub Packages, or a clone.
+> Two honest limitations: the Linux driver is window-level only, so control-level AT-SPI2 isn't there yet, and there is no public npm package — install is a PowerShell installer, GitHub Packages, or a clone.
 >
 > If this is useful for {project}, the cheapest next step is 30 minutes:
 > `git clone {repo_url} && cd deskshell && node bin/deskshell.ts doctor`
@@ -129,7 +129,7 @@ Rule: **the first 80% of the comment must be useful even if nobody clicks the li
 >
 > - License: MIT
 > - Runtime: Node >= 22.18, zero third-party runtime dependencies
-> - Platforms: Windows (UIA, verified), macOS (Swift AX bridge, verified on hardware), Linux (not implemented — AT-SPI2 planned)
+> - Platforms: Windows (UIA, verified), macOS (Swift AX bridge, verified on hardware), Linux (window-level X11 via xdotool + wmctrl; control-level AT-SPI2 not implemented)
 > - Why it may not fit: no public npm package yet, pre-1.0, one maintainer. Happy to be declined on those grounds.
 
 ---
@@ -163,7 +163,7 @@ Rule: **the first 80% of the comment must be useful even if nobody clicks the li
 >
 > Try it in 30 seconds: `git clone`, `node bin/deskshell.ts doctor`, then `node bin/deskshell.ts story --fail` — the third step is rigged to fail and you can watch it roll back to the starting state.
 >
-> What is honestly not there: no Linux driver yet (AT-SPI2 — the interface is frozen, the implementation isn't), the recorder polls at 300 ms and only sees left clicks, undo covers file and window-geometry changes but not network side effects (the protocol rejects actions with `undo: null`), and there's no public npm package — the installer, GitHub Packages or a clone are the three ways in.
+> What is honestly not there: the Linux driver is window-level only — control-level AT-SPI2 isn't implemented — the recorder misses drag, right-click menus and wheel, undo covers file and window-geometry changes but not network side effects (the protocol rejects actions with `undo: null`), and there's no public npm package — the installer, GitHub Packages or a clone are the three ways in.
 >
 > I'd most like feedback on the protocol shape: whether seven assertion kinds are enough to describe "the click worked" without letting people cheat with weak assertions.
 >
@@ -214,7 +214,7 @@ Post to one subreddit at a time, spaced across days. Read the current sidebar an
 > node bin/deskshell.ts story --fail                                            # watch a failure roll back
 > ```
 >
-> Limits, up front: **no Linux driver** (AT-SPI2 planned, interface frozen), recorder polls at 300 ms and only catches left clicks, undo doesn't cover network side effects, no public npm package yet (installer / GitHub Packages / clone), pre-1.0.
+> Limits, up front: **Linux is window-level only** (X11 via xdotool + wmctrl; control-level AT-SPI2 not implemented), the recorder misses drag, right-click menus and wheel, undo doesn't cover network side effects, no public npm package yet (installer / GitHub Packages / clone), pre-1.0.
 >
 > What I actually want from this post: pushback on the assertion model. Is "post-assertion per action" the right place to put the trust boundary, or does it belong at the task level?
 >
@@ -249,7 +249,7 @@ Post to one subreddit at a time, spaced across days. Read the current sidebar an
 > Protocol v0 is frozen: 8 action kinds, 7 assertion kinds, 5 undo kinds, 7 capability ids.
 
 > **5/5**
-> Honest status: Windows (UIA) verified. macOS (Swift AX bridge) verified on hardware. Linux not implemented — AT-SPI2 is the open piece, interface is frozen at six required methods. Recorder polls at 300ms, left clicks only.
+> Honest status: Windows (UIA) and macOS (AX bridge) verified. Linux is window-level only (xdotool + wmctrl); the AT-SPI2 control layer is the open piece. Recorder misses drag/right-click/wheel. 39/39 regressions pass.
 >
 > 30 min: clone, `node bin/deskshell.ts doctor`. MIT.
 
@@ -261,9 +261,9 @@ Post to one subreddit at a time, spaced across days. Read the current sidebar an
 >
 > The thing I've been working on for a while: deskshell, an MIT kernel for computer-use where the interesting constraint is that **every action must declare a post-assertion and an undo**, preview is the default mode, and a failed assertion rolls the whole task back instead of continuing. Protocol is frozen as v0. No model in the kernel — models only sit behind `see()` / `plan()` in a skill.
 >
-> Windows driver verified, macOS AX bridge verified on hardware, Linux driver doesn't exist yet (AT-SPI2). Repo: {repo_url}
+> Windows and macOS verified on hardware; Linux has a window-level X11 driver, the control layer on AT-SPI2 is still open. Repo: {repo_url}
 >
-> I'm mostly here for the hard parts: multi-display coordinate mapping, event hooks versus polling, and how people decide what "the click worked" means. If anyone's fighting a flaky `click()`, I have opinions and a repro harness — happy to dig in on your issue instead of talking about mine.
+> I'm mostly here for the hard parts: multi-display coordinate mapping, the Linux control layer on AT-SPI2, and how people decide what "the click worked" means. If anyone's fighting a flaky `click()`, I have opinions and a repro harness — happy to dig in on your issue instead of talking about mine.
 >
 > If you want to poke at it in 30 minutes: clone, `node bin/deskshell.ts doctor`, then `node bin/deskshell.ts story --fail`.
 

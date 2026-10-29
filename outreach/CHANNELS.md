@@ -22,8 +22,9 @@
 | 失败时先自撤该动作自身的副作用，再逆序回滚其余步骤 | `README.md` / `docs/quickstart.md` |
 | JSONL 审计：ts / taskId / skill / actionId / kind / summary / status / hash / detail / undo；失败也入日志 | `spec/protocol-v0.json` journalFields / `STATUS.md` |
 | 内核零模型依赖，模型只能出现在 `see()` / `plan()` 后面，断网可用 | `README.md` / `STATUS.md` |
-| Windows 已验证（UI Automation）；macOS 真机验证（Swift AX 桥）；Linux 未实现，待 AT-SPI2 | `STATUS.md` / `README.md` |
-| 录制器 300ms 轮询，只抓左键 | `README.md` 已知限制 / `docs/roadmap.md` |
+| Windows 已验证（UI Automation）；macOS 真机验证（Swift AX 桥）；Linux 窗口层已落地（X11，xdotool + wmctrl），控件层待 AT-SPI2 | `packages/drivers/linux/driver.ts` / `scripts/verify-driver.ts` / `STATUS.md` |
+| 录制器默认走 UIA 事件回调（FocusChanged / StructureChanged，20ms 兜底），抓 focus / 左键 / 窗口打开；拖拽、右键菜单、滚轮未抓 | `packages/drivers/windows/recorder.ps1` / `docs/roadmap.md` |
+| 回归套件 39 项全绿（含 docs.build / compat.v0 / parallel / recorder.mode） | `scripts/regress.ts`，本机实测 `39/39 passed` |
 | 撤销覆盖文件与窗口几何；网络副作用不可撤销，协议直接拒收 `undo: null` | `README.md` 已知限制 |
 | 装法三条：`install.ps1`（走 GitHub API）、GitHub Packages、clone 源码；公共 npm 未发布 | `docs/install.md` |
 | 退出码 0 成功 / 1 某步失败 / 2 策略拒绝或参数错误 | `docs/quickstart.md` |
@@ -76,11 +77,11 @@ English: **Every action is previewed, asserted, undoable, and audited — and th
 ### 1.4 Hacker News（Show HN）
 
 - **适合谁**：HN 上的系统/工具类读者。他们对"事务语义"这种词有反应，对"AI agent"疲劳。
-- **发什么**：标题必须以 `Show HN:` 开头，5 个备选见 `messages/en.md` 第 5 节。正文说清：这是什么、怎么跑、已知限制（把 Linux 未实现、录制器 300ms、npm 未发布写进去——HN 最恨隐瞒限制）。
+- **发什么**：标题必须以 `Show HN:` 开头，5 个备选见 `messages/en.md` 第 5 节。正文说清：这是什么、怎么跑、已知限制（把 Linux 只有窗口层、录制器还没抓拖拽/右键菜单/滚轮、npm 未发布写进去——HN 最恨隐瞒限制）。
 - **时机**：周三或周四，美东时间 8:00–10:00 之间提交（估算的最佳窗口，未实测）。提交后 3 小时内必须守在评论区逐条回。
 - **禁忌**：不要找人 upvote（会被识别并降权）；不要用营销句式；不要在正文里放"请给 star"；不要在评论里和质疑者辩论——只补事实和数据。
 - **预期转化**：估算 100–300 次访问 → 5–15 人真跑 → 1–3 条 issue。**一次 Show HN 的绝对量最大，但留存不如 1.1。**
-- **每天配额**：**30 天内最多 2 次**（第二次必须是因为第一次之后有实质变化，例如 Linux 驱动落地）。
+- **每天配额**：**30 天内最多 2 次**（第二次必须是因为第一次之后有实质变化，例如 Linux 控件层落地）。
 
 ### 1.5 Reddit（r/LocalLLaMA、r/opensource、r/automation、r/computeruse）
 
@@ -101,7 +102,7 @@ English: **Every action is previewed, asserted, undoable, and audited — and th
 ### 1.7 V2EX（分享创造节点）
 
 - **适合谁**：中文独立开发者、工具作者。对"做了一半就发出来"很宽容，对营销腔极其敏感。
-- **发什么**：`messages/zh.md` 第 3 节。开头必须自曝限制（Linux 没驱动、录制器 300ms、npm 还没发），然后给三条命令。
+- **发什么**：`messages/zh.md` 第 3 节。开头必须自曝限制（Linux 只有窗口层、录制器还没抓拖拽和右键菜单、npm 还没发），然后给三条命令。
 - **禁忌**：不要在多个节点重复发；不要标题带"重磅/开源神器"；不要在正文里求 star；不要用"我们"（就一个人写的东西，说"我"）。
 - **预期转化**：估算 300–800 阅读 → 5–15 条回复 → 3–8 人跑 → 0–2 条 issue。中文渠道里**唯一稳定出真实反馈**的地方。
 - **每天配额**：**30 天内 2 帖**（首发 + 有实质更新后的一帖）。发帖当天要守着回帖。
@@ -263,7 +264,7 @@ English: **Every action is previewed, asserted, undoable, and audited — and th
 
 1. **跑 doctor**：`git clone` → `node bin/deskshell.ts doctor` → 看 7 项检查结果。
 2. **写一个 skill**：`node scripts/new-skill.ts --name my-skill` → 只改 `plan()` → `--mode preview`。
-3. **认领一个 issue**：roadmap 里"不需要决策"的条目对应的 issue（Linux AT-SPI2 驱动、多显示器/DPI 坐标映射、录制器事件钩子、`window.rect` 断言推断、dry-run diff、撤销时间线、`run --parallel`、故障注入、文档站搜索）。
+3. **认领一个 issue**：roadmap 里"不需要决策"的条目对应的 issue（Linux AT-SPI2 驱动、多显示器/DPI 坐标映射、录制器补拖拽/右键菜单/滚轮、`window.rect` 断言推断、dry-run diff、撤销时间线、`run --parallel`、故障注入、文档站搜索）。
 
 动作必须**可判定完成**："看看仓库"不算动作。
 

@@ -120,7 +120,7 @@ node bin/deskshell.ts story --fail
 | --- | --- | --- |
 | Windows | 已验证（UI Automation） | `deskshell doctor` |
 | macOS | 已验证（原生 Swift AX 桥，20 个窗口 36ms） | `deskshell doctor` |
-| Linux | 计划中（AT-SPI2） | — |
+| Linux | 窗口层已实现（xdotool + wmctrl）；控件层（selector）待 AT-SPI2 | `deskshell verify` |
 
 macOS 需要先编译桥：`packages/drivers/macos/build.sh`（Xcode Command Line Tools），并在「系统设置 → 隐私与安全性 → 辅助功能」给终端授权。
 
@@ -142,7 +142,7 @@ node bin/deskshell.ts run my-skill --mode preview
 
 ## 已知限制
 
-- **Linux 驱动未实现**：文件类 skill 不受影响。
+- **Linux 还没有可访问性树**：窗口层驱动（xdotool + wmctrl）可用，但 selector 级的 `invoke`/`click` 会明确报不支持，不会假装点成功。
 - **录制器是 300ms 轮询**，快速切换可能漏采；只捕获左键。
 - **撤销覆盖文件与窗口几何**；网络请求等外部副作用不可撤销（协议层会拒绝 `undo: null` 的动作）。
 - 项目处于 `0.x`，破坏性变更走 RFC 并在 CHANGELOG 给迁移说明。
@@ -160,7 +160,7 @@ deskshell 先是协议，其次才是产品——最硬的部分还没人认领�
 
 | 待认领 | 从哪里下手 |
 | --- | --- |
-| **Linux AT-SPI2 驱动** | 实现 `UiDriver`（mock 驱动就是模板），`scripts/verify-driver.ts` 是及格线 |
+| **Linux 控件层**（AT-SPI2） | 窗口层驱动已有；补可访问性树后端，让 selector 级 `click`/`invoke` 可用 |
 | **录制器事件钩子**（干掉 300ms 轮询） | `packages/drivers/windows/recorder.ps1` |
 | dry-run diff · 撤销时间线 · 文档站搜索 | 已拆成带验收标准的 issue |
 | **新 skill** | `node scripts/new-skill.ts --name x`，然后只改 `plan()` |

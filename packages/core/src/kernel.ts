@@ -77,7 +77,9 @@ export async function run(
     return { mode: "preview", steps, journal: [], rolledBack: 0, summary };
   }
 
-  const taskId = `task-${Date.now()}`;
+  // 并发运行时两个任务可能在同一毫秒启动，只用时间戳会撞 id，
+// 撞了之后日志里的 taskId 就分不开谁是谁（并行撤销也会串）。
+const taskId = `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const steps: StepResult[] = [];
   const done: JournalEntry[] = [];
   const execCtx = { ...ctx, root: opts.root };

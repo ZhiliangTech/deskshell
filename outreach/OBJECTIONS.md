@@ -72,7 +72,7 @@
 > node scripts/regress.ts
 > ```
 >
-> If the rollback output and the regression suite don't convince you, no number of stars would. STATUS.md pairs every capability with a reproducible command and its real output — including the ones that are not done (no Linux driver, recorder polls at 300ms, no public npm package).
+> `scripts/regress.ts` prints `39/39 passed` on a clean checkout, and `story --fail` shows a rigged failure undoing itself. If that output doesn't convince you, no number of stars would. STATUS.md pairs every capability with a reproducible command and its real output — including the ones that are not done (Linux is window-level only, the recorder misses drag/right-click/wheel, no public npm package).
 >
 > The real risk isn't code quality, it's maintainer time. That's a legitimate reason to say no, and I'd rather you say it than be polite.
 >
@@ -88,7 +88,7 @@
 > node scripts/regress.ts
 > ```
 >
-> 如果回滚输出和回归套件都说服不了你，多少 star 都不行。STATUS.md 里每条能力都配一条可复现命令和真实输出——包括没做到的（Linux 没驱动、录制器 300ms 轮询、npm 没发）。
+> `scripts/regress.ts` 在本机跑出 `39/39 passed`，`story --fail` 能看到一次故意失败被完整撤销。如果这些输出都说服不了你，多少 star 都不行。STATUS.md 里每条能力都配一条可复现命令和真实输出——包括没做到的（Linux 只有窗口层、录制器还没抓拖拽和右键菜单、npm 没发）。
 >
 > 真正的风险不是代码质量，是维护者时间够不够。这是个体面的拒绝理由，我宁愿你直说，而不是客气。
 
@@ -133,9 +133,9 @@
 >
 > - **File-based skills: any platform.** The kernel, assertions, rollback and journal are platform-independent; `doctor`, `run`, `undo` and the regression suite run on your machine today.
 > - **UI skills on macOS:** verified on real hardware through a native Swift AX bridge (build it with `packages/drivers/macos/build.sh`, then grant Terminal accessibility permission).
-> - **UI skills on Linux:** not implemented. That's the honest answer. The driver interface is frozen at six required methods, so an AT-SPI2 driver is a bounded piece of work — it's also the single highest-value contribution available right now.
+> - **UI skills on Linux:** window-level works today — an X11 driver on xdotool + wmctrl (list windows, move, focus, window-level keys/type). Control-level (AT-SPI2: the tree, selector-scoped click/invoke) is not implemented, and those calls fail loudly instead of pretending to succeed. That's the highest-value contribution available right now, and the interface is already frozen at six required methods.
 >
-> If you're Linux-only and only care about UI scenarios, don't spend time on this yet. If you care about the file side, or you want to own the Linux driver, there's a clear first issue.
+> If you're Linux-only and only care about UI scenarios, don't spend time on this yet. If you care about the file side, or you want to own the Linux control layer, there's a clear first issue.
 >
 > 30 minutes: `node bin/deskshell.ts doctor` on your box — it will tell you exactly which capabilities this platform has.
 
@@ -144,15 +144,15 @@
 >
 > - **文件类 skill：全平台可跑。** 内核、断言、回滚、日志都跟平台无关，`doctor`、`run`、`undo` 和回归套件在你这台机器上今天就能跑。
 > - **macOS 的 UI 场景**：真机验证过，走原生 Swift AX 桥（先 `packages/drivers/macos/build.sh`，再给终端开辅助功能权限）。
-> - **Linux 的 UI 场景**：没实现，这就是实话。驱动接口冻结在六个必选方法，AT-SPI2 驱动是一块边界清楚的工作，也是现在价值最高的一个贡献位。
+> - **Linux 的 UI 场景**：窗口层今天就能用——X11 驱动（xdotool + wmctrl）能列窗口、移动、聚焦、做窗口级键盘输入。控件层（AT-SPI2：控件树、selector 级的 click/invoke）没实现，这类调用会明确报不支持，不会假装成功。这是现在价值最高的一个贡献位，接口也已经冻结在六个必选方法上。
 >
-> 如果你只有 Linux 且只关心 UI 场景，现在别投时间。如果你关心文件那一侧，或者想拿下 Linux 驱动，有明确的第一件事可做。
+> 如果你只有 Linux 且只关心 UI 场景，现在别投时间。如果你关心文件那一侧，或者想拿下 Linux 控件层，有明确的第一件事可做。
 >
 > 30 分钟：在你机器上跑 `node bin/deskshell.ts doctor`，它会直接告诉你这台机器支持哪些能力。
 
-**证据**：`README.md` 平台表（Windows 已验证 / macOS 真机验证 / Linux Planned）；`STATUS.md`「没做到的」表第一行。
+**证据**：`packages/drivers/linux/driver.ts`（X11 窗口层：xdotool + wmctrl；selector 级操作明确声明不支持并给出 AT-SPI2 说明）；`scripts/verify-driver.ts` 的 linux 分支与 `missingHint()` 安装提示。注：`README.md` 平台表仍写 Linux Planned，落后于代码，以代码为准。
 
-**不要说什么**："Linux 马上就好"——没有排期的事不要说，他三个月后会回来问你。
+**不要说什么**："Linux 驱动还没有"——窗口层驱动已经在代码里了，说"没有"会被当场打脸；要说清"窗口层有、控件层没有"。
 
 ---
 
@@ -225,9 +225,9 @@
 >
 > - **See if it's real**: `node bin/deskshell.ts doctor`, then `node bin/deskshell.ts story --fail`. Read the journal it leaves behind.
 > - **Write one skill you actually need**: `node scripts/new-skill.ts --name my-skill`, edit only `plan()`, run with `--mode preview`. Every action needs a post-assertion and an undo. That's the whole difficulty.
-> - **Claim one issue**: the roadmap's "no decision needed" list — Linux AT-SPI2 driver, multi-display/DPI coordinate mapping, recorder event hooks instead of 300ms polling, inferring `window.rect` assertions from recordings, per-action dry-run diffs, undo timeline view, `run --parallel`, fault injection, docs search.
+> - **Claim one issue**: the roadmap's "no decision needed" list — the Linux control layer on AT-SPI2, multi-display/DPI coordinate mapping, recorder support for drag/right-click/wheel, inferring `window.rect` assertions from recordings, per-action dry-run diffs, undo timeline view, `run --parallel`, fault injection, docs search.
 >
-> My honest ranking if you have one evening: the Linux driver's `windows()` + `tree()` on AT-SPI2 changes the most for the most people. A new assertion kind is the smallest useful thing.
+> My honest ranking if you have one evening: the Linux control layer (AT-SPI2 `tree()` plus selector-scoped `click`/`invoke`) changes the most for the most people. A new assertion kind is the smallest useful thing.
 >
 > 30 minutes: run `node scripts/new-skill.ts --name my-skill` and see how much is already scaffolded.
 
@@ -236,9 +236,9 @@
 >
 > - **先看它是不是真的**：`node bin/deskshell.ts doctor`，再 `node bin/deskshell.ts story --fail`，然后看它留下的那份日志。
 > - **写一个你自己真需要的 skill**：`node scripts/new-skill.ts --name my-skill`，只改 `plan()`，`--mode preview` 跑。每个动作要有 post 断言和 undo，难点就这些。
-> - **认领一个 issue**：roadmap 里"不需要决策"那一档——Linux AT-SPI2 驱动、多显示器/DPI 坐标映射、录制器改成事件钩子、从录制推断 `window.rect` 断言、每步 dry-run diff、撤销时间线视图、`run --parallel`、故障注入、文档站搜索。
+> - **认领一个 issue**：roadmap 里"不需要决策"那一档——Linux 控件层（AT-SPI2）、多显示器/DPI 坐标映射、录制器补拖拽/右键菜单/滚轮、从录制推断 `window.rect` 断言、每步 dry-run diff、撤销时间线视图、`run --parallel`、故障注入、文档站搜索。
 >
-> 如果只有一个晚上，我的排序：Linux 驱动的 `windows()` + `tree()`（AT-SPI2）对最多人影响最大；加一种断言类型是最小的有用改动。
+> 如果只有一个晚上，我的排序：Linux 控件层（AT-SPI2 的 `tree()` 加 selector 级 `click`/`invoke`）对最多人影响最大；加一种断言类型是最小的有用改动。
 >
 > 30 分钟：跑一次 `node scripts/new-skill.ts --name my-skill`，看看脚手架已经帮你做了多少。
 

@@ -59,10 +59,13 @@ jobs:
       - name: 安装 X11 工具
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends xvfb xterm xdotool wmctrl
+          sudo apt-get install -y --no-install-recommends xvfb xterm xdotool wmctrl openbox
 
       - name: 驱动契约（纯内存，不依赖桌面）
         run: node scripts/contract-test.ts
 
       - name: Linux 驱动冒烟（Xvfb）
-        run: xvfb-run -a --server-args="-screen 0 1280x800x24" node scripts/linux-driver-smoke.ts
+        run: |
+          # 裸 Xvfb 没有窗口管理器，wmctrl 拿不到 _NET_CLIENT_LIST；
+          # openbox 提供 EWMH，激活/移动窗口才有语义。
+          xvfb-run -a --server-args="-screen 0 1280x800x24" sh -c 'openbox >/dev/null 2>&1 & sleep 2; node scripts/linux-driver-smoke.ts' 

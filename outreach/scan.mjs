@@ -213,10 +213,20 @@ function makeClient(token) {
 /* 主流程                                                              */
 /* ------------------------------------------------------------------ */
 
+// AI/CI 提交身份：技术上都是 User，但对“发消息找人共建”没有意义，单独排除
+const AUTOMATION_ACCOUNTS = new Set([
+  'claude', 'cursoragent', 'copilot', 'copilot-swe-agent', 'gemini-code-assist',
+  'devin-ai-integration', 'openhands-agent', 'codex', 'chatgpt-codex-connector',
+  'github-actions', 'dependabot', 'renovate', 'sweep-ai', 'coderabbitai',
+  'google-labs-jules', 'jules', 'allcontributors', 'pre-commit-ci', 'vercel',
+  'netlify', 'qodo-free-for-open-source-projects', 'gemini-cli', 'windsurf-bot',
+]);
+
 const isBot = (u) => {
   if (!u) return true;
   if (u.type === 'Bot') return true;
-  const login = String(u.login || '');
+  const login = String(u.login || '').toLowerCase();
+  if (AUTOMATION_ACCOUNTS.has(login)) return true;
   return /\[bot\]$/i.test(login) || /-bot$/i.test(login) || /^bot-/i.test(login);
 };
 
@@ -309,12 +319,7 @@ async function main() {
     ' / tier2 ' + repoList.filter((r) => r.tier === 2).length +
     ' / tier3 ' + repoList.filter((r) => r.tier === 3).length + ')');
 
-  // 拉 contributor 的顺序：先“小而活”，再“小而沉寂”，再“大而活”
-  const miningOrder = [...repoList].sort((a, b) => {
-    if (a.tier !== b.tier) return a.tier - b.tier;
-    if (a.pushed_at !== b.pushed_at) return a.pushed_at < b.pushed_at ? 1 : -1;
-    return b.stars - a.stars;
-  }).slice(0, LIMITS.maxReposForContributors);
+  const miningOrder = selectMiningRepos(repoList).slice(0, LIMITS.maxReposForContributors);
 
   /** @type {Map<string, any>} login -> candidate */
   const people = new Map();

@@ -120,7 +120,7 @@ node bin/deskshell.ts story --fail
 | --- | --- | --- |
 | Windows | Verified (UI Automation) | `deskshell doctor` |
 | macOS | Verified (native Swift AX bridge, 20 windows in 36 ms) | `deskshell doctor` |
-| Linux | Planned (AT-SPI2) | — |
+| Linux | Window-level implemented (xdotool + wmctrl); control-level (selector) still AT-SPI2 | `deskshell verify` |
 
 macOS requires building the bridge first: `packages/drivers/macos/build.sh` (Xcode Command Line Tools), plus granting Terminal accessibility permission.
 
@@ -146,7 +146,7 @@ Three hard rules: every action needs a `post` assertion; every action needs an `
 
 ## Known limits
 
-- **No Linux driver** yet; file-based skills are unaffected.
+- **Linux has no accessibility tree yet**: the window-level driver (xdotool + wmctrl) works, but selector-level `invoke`/`click` reports unsupported instead of pretending to click.
 - **Recorder polls at 300 ms**, may miss fast switches; left clicks only.
 - **Undo covers file and window-geometry changes**; external side effects (network calls) are not undoable — the protocol rejects actions with `undo: null`.
 - Pre-1.0: breaking changes go through an RFC and ship with migration notes in the CHANGELOG.
@@ -164,7 +164,7 @@ deskshell is a protocol first, a product second — and the hard parts are still
 
 | Open surface | Where to start |
 | --- | --- |
-| **Linux AT-SPI2 driver** | implement `UiDriver` (the mock driver is the template); `scripts/verify-driver.ts` is the bar to clear |
+| **Linux control layer** (AT-SPI2) | the window-level driver already ships; add the accessibility-tree backend so selector-level `click`/`invoke` work |
 | **Recorder event hooks** (drop the 300 ms polling) | `packages/drivers/windows/recorder.ps1` |
 | Dry-run diffs · undo timeline · docs search | scoped issues, kernel + docs site |
 | **New skills** | `node scripts/new-skill.ts --name x`, then only `plan()` |

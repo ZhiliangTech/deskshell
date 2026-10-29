@@ -2,82 +2,83 @@
 
 Twelve tasks that are **already scoped**, **already unblocked**, and **each end with a command you can run to prove you are done**. Nothing here needs a design decision from the maintainer first — that is the point of the list.
 
-Everything below is derived from the gaps recorded in [docs/roadmap.md](../docs/roadmap.md) and the honest-limits table in [STATUS.md](../STATUS.md). Where a naive version of a feature already shipped, the task says so and moves one step further, so you never spend a weekend rebuilding what exists. There is no invented work on this board.
+Everything below is derived from the gaps recorded in [docs/roadmap.md](../docs/roadmap.md), the honest-limits table in [STATUS.md](../STATUS.md), and the code itself. Where part of a feature already shipped, the task names the shipped part precisely (with the file to prove it) and moves one step further, so you never spend a weekend rebuilding what exists. There is no invented work on this board.
 
 - Repo: `https://github.com/ciceroyang/deskshell` · MIT · Node `>=22.18`
-- Zero third-party runtime dependencies — this is an invariant, not a preference. A PR that adds a dependency needs an RFC first (see [GOVERNANCE.md](GOVERNANCE.md)).
-- Protocol v0 is frozen in `spec/protocol-v0.json`. Changing action / assertion / undo semantics needs an RFC. Almost everything on this board fits inside v0.
-- First PR path (should take under 30 minutes of setup): [CONTRIBUTING.md](../CONTRIBUTING.md) → `node scripts/regress.ts` → pick a task below → open a draft PR with the claim comment.
+- Zero third-party runtime dependencies — an invariant, not a preference. A PR that adds a dependency needs an RFC first (see [GOVERNANCE.md](GOVERNANCE.md)).
+- Protocol v0 is frozen in `spec/protocol-v0.json`. Changing action / assertion / undo semantics needs an RFC. Everything on this board fits inside v0.
+- First PR path (under 30 minutes of setup): [CONTRIBUTING.md](../CONTRIBUTING.md) → `node scripts/regress.ts` → pick a task → open a draft PR with the claim comment.
 
 ## How to claim
 
-1. Open a `bounty` issue from [.github/ISSUE_TEMPLATE/bounty.yml](../.github/ISSUE_TEMPLATE/bounty.yml) — or comment on the existing issue for that task — and say which task number you are taking.
-2. The maintainer replies within **48 h** with: a mentor name, confirmation that the scope is still free, and any fixture you asked for.
-3. Work in a branch. Do not touch files outside the task's file list, and do not rewrite docs you were not asked to touch.
-4. Open the PR with the acceptance commands and their real output pasted into the description. Green CI plus pasted output is the whole review bar.
+1. Open a `bounty` issue from [.github/ISSUE_TEMPLATE/bounty.yml](../.github/ISSUE_TEMPLATE/bounty.yml) — or comment on the existing issue — and say which task number you are taking.
+2. The maintainer replies within **48 h** with a mentor name, confirmation the scope is still free, and any fixture you asked for.
+3. Work in a branch. Touch only the files in the task's file list.
+4. Open the PR with the acceptance commands and their real output pasted in. Green CI plus pasted output is the whole review bar.
 
-Sizes: **S** = half a day, **M** = 1–3 days, **L** = about a week, measured for someone who has already run `node scripts/regress.ts` once.
+Sizes: **S** = half a day, **M** = 1–3 days, **L** = about a week, for someone who has already run `node scripts/regress.ts` once.
 
 ## Index
 
 | # | Task | Labels | Size | Area |
 | --- | --- | --- | --- | --- |
-| 01 | Linux AT-SPI2 driver: `windows()` and `tree()` | `good first issue` `driver` `help wanted` | **L** | driver |
+| 01 | Linux: AT-SPI2 control-tree backend above the existing window-level driver | `good first issue` `driver` `help wanted` | **L** | driver |
 | 02 | Multi-display and DPI coordinate mapping | `bounty` `driver` `help wanted` | **M** | driver |
-| 03 | Recorder: right-click, middle-click, wheel and drag | `bounty` `driver` `recorder` | **M** | driver / recorder |
-| 04 | Infer `window.rect` assertions from a recording | `bounty` `recorder` | **M** | recorder / kernel |
-| 05 | Per-action dry-run diffs (`run --diff`) | `bounty` `kernel` | **M** | kernel |
-| 06 | Undo timeline view (`deskshell timeline`) | `good first issue` `kernel` | **M** | kernel / CLI |
-| 07 | Remember capability consents (`--ask --remember`) | `good first issue` `kernel` | **S** | kernel |
-| 08 | Full-text search in the docs site | `good first issue` `docs` | **M** | docs |
-| 09 | Random fault injection soak | `good first issue` `testing` | **S** | engineering |
+| 03 | Recorder: right/middle/wheel/drag capture + `window.rect` inference | `bounty` `driver` `recorder` | **M** | driver / recorder |
+| 04 | Per-action dry-run diffs (`run --diff`) | `bounty` `kernel` | **M** | kernel |
+| 05 | Cross-task undo timeline (`deskshell timeline`) | `good first issue` `kernel` | **M** | kernel / CLI |
+| 06 | Remember capability consents (`--ask --remember`) | `good first issue` `kernel` | **S** | kernel |
+| 07 | Full-text search in the docs site | `good first issue` `docs` | **M** | docs |
+| 08 | Engineering guardrails: kernel `--fail-at`, flake soak, three-platform CI | `good first issue` `testing` `ci` | **M** (part A alone: **S**) | engineering |
+| 09 | MCP adapter: expose preview / apply / undo as MCP tools | `bounty` `ecosystem` `mcp` | **M** | ecosystem |
 | 10 | New skill: `screenshot-dedupe` | `good first issue` `skill` | **S** | skill |
 | 11 | New skill: `browser-download-sort` | `bounty` `skill` | **M** | skill |
 | 12 | New skill: `pdf-merge` (zero-dependency) | `bounty` `skill` `hard` | **L** | skill |
 
 ---
 
-## 01 — Linux AT-SPI2 driver: `windows()` and `tree()`
+## 01 — Linux: AT-SPI2 control-tree backend
 
-**Title:** `driver(linux): implement UiDriver.windows() and tree() over AT-SPI2`
+**Title:** `driver(linux): add an AT-SPI2 control-tree backend for tree() depth and selector-based invoke/click`
 
 **Labels:** `good first issue`, `driver`, `help wanted`, `platform: linux`
 
-**Background.** `packages/drivers/` contains `windows/`, `macos/` and `mock/` — there is no `linux/`. `scripts/verify-driver.ts` has an explicit branch for the missing case: it picks `WindowsDriver` on `win32`, `MacDriver` on `darwin`, and otherwise prints that no driver exists for the platform and exits 0. So on Linux every file-based skill runs and nothing that touches a screen does. The interface is frozen, which is what makes this a fill-in-the-blank task instead of a design task.
+**Background.** The window layer is done — do not rebuild it. `packages/drivers/linux/driver.ts` is a working X11 driver over `xdotool` + `wmctrl`: window enumeration with geometry (`xdotool getwindowgeometry --shell`), `type()` / `keys()` via `xdotool type` / `xdotool key`, `moveWindow()` via `windowmove` + `windowsize`, and exported `detect()` / `missingHint()` so a machine without `DISPLAY`, `xdotool` or `wmctrl` gets install instructions instead of a stack trace. `scripts/verify-driver.ts` already has the `linux` branch, and `.github/workflows/ci.yml` already runs `scripts/linux-driver-smoke.ts` under Xvfb.
+
+What it cannot do is controls, and it says so. `tree(ref, depth)` ignores `_depth` and returns exactly two nodes — the window plus one synthetic `X11Content` pane. `invoke()` and `click()` call `this.unsupported()`, which throws "control-level targeting needs AT-SPI2". That is the gap: a real control tree plus selector resolution, on top of what works.
 
 **Files and interfaces.**
 
-- New: `packages/drivers/linux/driver.ts` exporting `class LinuxDriver implements UiDriver`.
-- The interface is `UiDriver` in `packages/core/src/types.ts`: `windows()`, `tree(ref, depth)`, `invoke(ref, sel)`, `click(ref, sel)`, `type(ref, sel, text)`, `keys(ref, combo)`, `focus(ref)`, `bounds(ref)`.
-- `scripts/verify-driver.ts`: add the `linux` branch.
-- `docs/drivers.md`: add the Linux row with a *verified / not verified / known limits* split, the same shape the macOS section already uses.
-- Reference implementations to copy the shape from: `packages/drivers/mock/driver.ts` (small, readable) and `packages/drivers/macos/driver.ts`.
-
-**Scope the first PR to read-only.** `windows()` and `tree()` only. Implement the input methods as `throw new Error("not implemented: <name>")` and let the verifier report them as `SKIP`, exactly as it already does for `click()` / `invoke()` today. A read-only driver that passes `windows()` and `tree()` is mergeable; a half-working input driver is not.
+- `packages/drivers/linux/driver.ts`: make `tree(ref, depth)` honour `depth` and return real control nodes from AT-SPI2 when the app exposes them; **keep the two-node synthetic tree as the fallback** when it does not. Many X11 apps ship no accessibility bridge; degrading honestly beats throwing.
+- Selector resolution: `UiSelector` → AT-SPI2 node (`name`, `controlType`, accessible-id interface where implemented), then `invoke()` through the AT-SPI `Action` interface and `click()` through the component extents centre. Keep the existing rule — no matching node throws, never a silent success.
+- Leave `windows()`, `bounds()`, `moveWindow()`, `type()`, `keys()` alone except where the a11y layer needs a focus call.
+- `scripts/verify-driver.ts`: on Linux report the tree's real node count.
+- `docs/drivers.md`: refresh the Linux row — window level verified, control level verified / unverified split, known limit (apps without an a11y bridge fall back).
+- New test script following the existing pattern: `scripts/atspi-tree-test.ts`.
 
 **Acceptance criteria.**
 
 ```bash
-# on a Linux box with a desktop session (GNOME/KDE) and AT-SPI2 enabled
+# X11 session with xdotool + wmctrl installed and AT-SPI2 live on the session bus
 node scripts/verify-driver.ts
-# expect: platform=linux
-#         PASS windows()  <n> windows, e.g. <some window title>
-#         PASS tree()     <window> -> <n> nodes
-#         final line "N passed, 0 failed", every unimplemented method listed as SKIP
+# expect: platform=linux, PASS windows(), PASS tree() with a real node count, final "N passed, 0 failed"
+# on a machine missing DISPLAY/xdotool/wmctrl it must still print the missingHint() instructions
+# and exit 1 — that path exists today, do not break it
 ```
 
 ```bash
-node bin/deskshell.ts doctor     # environment self-check still reports 0 failed
-node scripts/regress.ts          # last line is "NN/NN passed" with 0 failures
+node scripts/atspi-tree-test.ts
+# "<n>/<n> passed", covering: tree depth > 2 for an app that exposes accessibility (name it in
+# the PR), a selector resolving to a real control, an unmatched selector throwing instead of
+# silently succeeding, and the fallback path returning the two synthetic nodes
+node scripts/regress.ts   # green
 ```
 
-Also required: the Linux section of `docs/drivers.md` states which of the eight interface methods are verified on hardware, which are implemented-but-unverified, and what the known limits are (no accessibility bus, a Wayland session with the accessibility bridge disabled, and so on).
+**Size:** L — about a week. A third of it is already written, so the work is the accessibility tree and D-Bus, not the window plumbing.
 
-**Size:** L — one week. Two thirds of it is learning the AT-SPI2 bus and the accessibility tree shape, not typing.
+**What we provide.** A mentor who wrote the other drivers and will answer AT-SPI2 / D-Bus questions in the thread; review within 48 h of your first push; your name in `CONTRIBUTORS.md` under *Driver* and in the release notes of the first version with control-level Linux support.
 
-**What we provide.** A mentor who wrote the other two drivers and will answer bus / DBus questions in the issue thread; review within 48 h of your first push; your name in `CONTRIBUTORS.md` under *Driver* and in the release notes of the first version that ships Linux support.
-
-**Risks and notes.** You need a real desktop session — a headless container has no accessibility bus, so "it works on my CI" is not achievable here and we will not ask you to fake it. Check `busctl --user list | grep -i atspi` first; if `org.a11y.Bus` is missing, get the bridge loaded (`NO_AT_BRIDGE=0`, `GTK_MODULES=gail:atk-bridge`) before concluding the driver is wrong. Do not put a permission check inside the driver — permissions belong to `packages/core/src/policy.ts`.
+**Risks and notes.** AT-SPI2 is a D-Bus service: check `busctl --user list | grep -i atspi` first; if `org.a11y.Bus` is absent, load the bridge (`NO_AT_BRIDGE=0`, `GTK_MODULES=gail:atk-bridge`) before concluding the code is wrong. **No new dependency** — talk to the bus through the existing CLI style (`gdbus` / `busctl`) or a hand-rolled client, not an npm D-Bus library. `xvfb-run` is fine for a smoke test but usually has no accessibility bus, so it cannot prove the control tree. Do not put a permission check inside the driver — permissions belong to `packages/core/src/policy.ts`.
 
 ---
 
@@ -87,12 +88,12 @@ Also required: the Linux section of `docs/drivers.md` states which of the eight 
 
 **Labels:** `bounty`, `driver`, `help wanted`
 
-**Background.** Searching the whole tree for `dpi`, `scaling`, `devicePixelRatio` or `monitor` returns nothing: every driver assumes one display at one scale factor. `window.rect` assertions compare rectangles in whatever space the platform API returns, and `click(ref, sel)` resolves a target to a point in that same space. On a mixed-DPI desk (a 150 % laptop panel next to a 100 % external monitor) those assumptions stop holding and a click lands tens of pixels off. **Reproduce it before you fix it** — the exact failure depends on whether the host process is DPI-aware, and establishing that is part of the deliverable.
+**Background.** The gap is real in the code, not only in the roadmap: searching `packages/`, `apps/`, `bin/` and `scripts/` for `dpi`, `scaling`, `devicePixelRatio` or `monitor` returns nothing — only `docs/roadmap.md` and its Chinese mirror mention the item. Every driver therefore assumes one display at one scale factor. `window.rect` assertions compare rectangles in whatever space the platform API returns, and `click(ref, sel)` resolves a target to a point in that same space. On a mixed-DPI desk (a 150 % laptop panel next to a 100 % external monitor) those assumptions stop holding and a click lands tens of pixels off. **Reproduce it before you fix it** — the exact failure depends on whether the host process is DPI-aware, and establishing that is part of the deliverable.
 
 **Files and interfaces.**
 
 - `packages/drivers/windows/driver.ps1` / `driver.ts`: report the monitor layout and be explicit about DPI awareness.
-- `packages/core/src/types.ts`: add an *additive* capability (for example `screens(): Promise<Screen[]>`). Additive is fine — do not change the meaning of `Rect` or `bounds()`.
+- `packages/core/src/types.ts`: add an *additive* optional capability (for example `screens?(): Promise<Screen[]>`). `UiDriver` already mixes six required methods with two optionals (`bounds?`, `moveWindow?`), so follow that shape — do not change the meaning of `Rect` and do not make the new method required, or the macOS and Linux drivers stop compiling.
 - `scripts/verify-driver.ts`: a `screens()` check printing every monitor with bounds and scale factor.
 - New test script following the existing pattern: `scripts/dpi-map-test.ts`.
 
@@ -112,114 +113,82 @@ node scripts/dpi-map-test.ts
 # final line "<n>/<n> cases passed"
 ```
 
-The test must contain at least one case where naive arithmetic gives the wrong answer, so a future regression is caught instead of tolerated. `node scripts/regress.ts` stays green and `node scripts/snapshot-test.ts` still prints `3/3 snapshots match` — preview snapshots must not move because of a coordinate fix.
+At least one case must be one where naive arithmetic gives the wrong answer, so a future regression is caught rather than tolerated. `node scripts/regress.ts` stays green and `node scripts/snapshot-test.ts` still prints `3/3 snapshots match` — a coordinate fix must not move preview snapshots.
 
 **Size:** M — 1–3 days including the reproduction write-up.
 
 **What we provide.** The maintainer's reproduction notes from macOS hardware (the AX bridge already clicks by coordinate there), a review that argues about the abstraction instead of the formatting, and a release-notes mention.
 
-**Risks and notes.** Two traps. "Just multiply by the scale factor" is wrong the moment a window straddles two monitors — handle per-monitor scale, not per-system scale. And `Rect` is part of protocol v0: if you find yourself wanting to change its units, stop and open an RFC ([rfcs/README.md](../rfcs/README.md)), because that invalidates every stored assertion.
+**Risks and notes.** Two traps. "Just multiply by the scale factor" is wrong the moment a window straddles two monitors — handle per-monitor scale, not per-system scale. And `Rect` is protocol v0: if you want to change its units, stop and open an RFC ([rfcs/README.md](../rfcs/README.md)), because that invalidates every stored assertion.
 
 ---
 
-## 03 — Recorder: right-click, middle-click, wheel and drag
+## 03 — Recorder: pointer coverage and geometry inference
 
-**Title:** `recorder: capture right-click, middle-click, wheel and drag`
+**Title:** `recorder: capture right-click, middle-click, wheel and drag; infer window.rect assertions`
 
 **Labels:** `bounty`, `driver`, `recorder`
 
-**Background.** The event-hook rewrite already landed: `packages/drivers/windows/recorder.ps1` registers `Automation.AddAutomationFocusChangedEventHandler` and `AddStructureChangedEventHandler` on `RootElement`, with a 300 ms `-Poll` fallback, and `scripts/recorder-mode-test.ts` proves both modes start and write JSONL. What is still missing is *which* pointer events get through. The low-level mouse hook (`SetWindowsHookEx(14, …)`, i.e. `WH_MOUSE_LL`) filters on one message only: `wParam == 0x0201`, left button down. Right-click, middle-click, wheel and drag are dropped silently, and `docs/recording.md` admits it under *Known limits*.
+**Background.** The event-hook rewrite is done and is the default: `packages/drivers/windows/recorder.ps1` line `$useEvents = -not $Poll` selects UIA `FocusChanged` / `StructureChanged` callbacks drained through `Application.DoEvents()`, with `-Poll` (300 ms sampling) only as the fallback, and `scripts/recorder-mode-test.ts` proves both modes start and write JSONL. **Do not redo that.**
+
+Two real gaps remain, and they live in the same two files:
+
+- **Input coverage.** `ClickWatcher` (`SetWindowsHookEx(14, …)`, i.e. `WH_MOUSE_LL`) filters on one message: `wParam == 0x0201`, left button down. Right-click, middle-click, wheel and drag are dropped silently. `docs/recording.md` admits it under *Known limits*.
+- **Geometry.** `interface Sample` in `scripts/draft-skill.ts` has `ts / type / window / controlType / name / automationId / value / x / y` and no rectangle at all, so `window.rect` — the fourth "the click worked" signal, the one `tile-windows` writes by hand — can never be inferred. Today the script infers only `window.exists` (a window appeared within 3 s), `ui.exists` (focus moved within 2.5 s) and `ui.value` (typed text).
 
 **Files and interfaces.**
 
-- `packages/drivers/windows/recorder.ps1`: handle `0x0204` (right down), `0x0207` (middle down), `0x020A` (wheel — the high word of `mouseData` is a signed delta), and for drag pair `0x0201` with `0x0202` plus movement beyond a threshold.
-- Recording JSONL is an internal schema, **not** protocol v0: add `button: "left" | "right" | "middle"` to click rows and a `wheel` row type carrying `delta`.
-- `scripts/draft-skill.ts`: keep generating `ui.click` for left clicks; for every other kind, emit an explicit `// TODO: <kind> at <window> — no Action kind in protocol v0` comment in the draft instead of dropping the event. Silent data loss is the bug.
-- `docs/recording.md`: update the three-event-kinds paragraph and the modes table.
+- `packages/drivers/windows/recorder.ps1`: handle `0x0204` (right down), `0x0207` (middle down), `0x020A` (wheel — the high word of `mouseData` is a signed delta), pair `0x0201` with `0x0202` plus movement beyond a threshold for drag; add `rect: [x, y, w, h]` to `click` and `window-open` rows (`BoundingRectangle` is already in scope).
+- Recording JSONL is an internal schema, **not** protocol v0: click rows gain `button: "left" | "right" | "middle"`, a `wheel` row type carries `delta`, and a `drag` row carries `from` / `to`.
+- `scripts/draft-skill.ts`: left clicks keep generating `ui.click`; every other kind emits an explicit `// TODO: <kind> at <window> — no Action kind in protocol v0` comment instead of being dropped (silent data loss is the bug); and a click followed within 3 s by a geometry change of the same window emits `{ kind: "window.rect", window, rect, tolerance }` — a kind `packages/core/src/types.ts` already declares, so no protocol change.
+- `docs/recording.md`: update the three-event-kinds paragraph, the modes table, and the inference rules list.
+- `scripts/recorder-mode-test.ts`: add cases for the new event kinds.
 
 **Acceptance criteria.**
 
 ```bash
 node scripts/recorder-mode-test.ts
-# "8/8 passed" today; your version keeps it green and adds cases for the new kinds
+# "8/8 passed" today; yours keeps it green and adds the new kinds
 ```
 
 ```bash
 node apps/recorder/main.ts --seconds 15 --out .demo/recordings/rec.jsonl
-# then, after performing a left click, a right click and a wheel scroll:
-node -e "const r=require('fs').readFileSync('.demo/recordings/rec.jsonl','utf8').trim().split(/\n/).map(JSON.parse); console.log([...new Set(r.map(x=>x.type+(x.button?':'+x.button:'')))]  .join(' '))"
-# expect output containing: click:left click:right wheel
+# during the recording: one left click, one right click, one wheel scroll, one title-bar drag, then:
+node -e "const r=require('fs').readFileSync('.demo/recordings/rec.jsonl','utf8').trim().split(/\n/).map(JSON.parse); console.log([...new Set(r.map(x=>x.type+(x.button?':'+x.button:'')))].join(' '))"
+# expect output containing: click:left click:right wheel drag
 ```
 
 ```bash
 node scripts/draft-skill.ts --recording .demo/recordings/rec.jsonl --name rec-check --only "."
-# the draft contains a TODO comment for every non-left-click event, and
-node bin/deskshell.ts run rec-check --mode preview
-# still renders a plan
-node scripts/regress.ts   # green
+# the draft has a TODO comment per non-left-click event AND a window.rect assertion for the drag,
+# and the summary line counts the inferred assertion
+node bin/deskshell.ts run rec-check --mode preview   # renders a plan
+node scripts/snapshot-test.ts                        # 3/3 snapshots match — existing drafts unchanged
+node scripts/regress.ts                              # green
 ```
 
-**Size:** M — 1–3 days. The hook plumbing is small; the drag threshold and de-duplication eat the time.
+Negative case that must be covered: a click that does **not** move the window produces no `window.rect` assertion.
 
-**What we provide.** A recording session and the JSONL the maintainer produced for comparison; a review that looks for event loss and for the poll fallback staying equivalent; credit as recorder contributor.
+**Size:** M — 1–3 days; the hook plumbing is small, the drag threshold and tolerance tuning eat the time. Split it into two PRs if you prefer: capture first, inference second.
 
-**Risks and notes.** `WH_MOUSE_LL` callbacks run on a hook thread and must stay fast — do not call UI Automation inline, enqueue and resolve on the drain thread the way the existing left-click path does. Drag detection needs a distance threshold, or every slightly shaky click becomes a drag. Stay out of protocol v0: a right-click that really needs a new `Action` kind is a separate RFC, and this task deliberately stops at the recording layer.
+**What we provide.** A recording session and the JSONL the maintainer produced for comparison; a review focused on event loss, tolerance justification and the poll fallback staying equivalent; credit as recorder contributor.
+
+**Risks and notes.** `WH_MOUSE_LL` callbacks run on a hook thread and must stay fast — enqueue and resolve on the drain thread the way the existing left-click path does, do not call UI Automation inline. Drag needs a distance threshold or every shaky click becomes a drag. Maximized, minimized and animating windows produce garbage rectangles — skip those rows. Stay out of protocol v0: a right-click that genuinely needs a new `Action` kind is a separate RFC.
 
 ---
 
-## 04 — Infer `window.rect` assertions from a recording
-
-**Title:** `draft: infer a window.rect assertion when a click moves or resizes a window`
-
-**Labels:** `bounty`, `recorder`, `kernel-adjacent`
-
-**Background.** `scripts/draft-skill.ts` already infers three assertion kinds: a window appearing within 3 s becomes `window.exists`, focus moving within 2.5 s becomes `ui.exists`, and typed text becomes `ui.value`. Geometry is the fourth "the click worked" signal — the one `tile-windows` declares by hand today — and nothing infers it. The real blocker is that recording samples carry no geometry at all: `interface Sample` has `ts / type / window / controlType / name / automationId / value / x / y` and nothing else.
-
-**Files and interfaces.**
-
-- `packages/drivers/windows/recorder.ps1`: include `rect: [x, y, w, h]` on `click` and `window-open` rows (`BoundingRectangle` is already in scope in both handlers).
-- `scripts/draft-skill.ts`: `interface Sample` gains `rect`; when a click is followed within 3 s by a geometry change of the same window beyond a tolerance, emit `{ kind: "window.rect", window, rect, tolerance }`.
-- `packages/core/src/types.ts` already declares `{ kind: "window.rect"; window; rect; tolerance? }` — no protocol change needed.
-- `docs/recording.md`: add the new inference rule to the rules list.
-
-**Acceptance criteria.**
-
-```bash
-node apps/recorder/main.ts --seconds 12 --out .demo/recordings/rect.jsonl
-# drag a window's title bar during the recording, then:
-node scripts/draft-skill.ts --recording .demo/recordings/rect.jsonl --name rect-check --only "."
-# expect a window.rect post-assertion in the draft, and the summary line counting it
-node bin/deskshell.ts run rect-check --mode preview
-# expect the plan to render, with the window.rect step visible
-```
-
-```bash
-node scripts/snapshot-test.ts   # 3/3 snapshots match — existing drafts must not change
-node scripts/regress.ts         # green
-```
-
-A negative case must be covered too: a recorded click that does **not** move the window must not produce a `window.rect` assertion.
-
-**Size:** M — 1–3 days, most of it tolerance tuning plus the negative case.
-
-**What we provide.** A recorded session containing a window drag to develop against; a review that argues about the tolerance rule specifically (that is the part we will disagree on); credit as recorder contributor.
-
-**Risks and notes.** Maximized, minimized and animating windows produce garbage rectangles — skip those rows rather than asserting them. Tolerance must be tight enough to catch a real regression and loose enough not to flake; start at 1–2 px and justify the number in the PR. This task depends on **02** for mixed-DPI correctness; if you hit that wall, land the single-display case first and say so.
-
----
-
-## 05 — Per-action dry-run diffs (`run --diff`)
+## 04 — Per-action dry-run diffs (`run --diff`)
 
 **Title:** `kernel: per-action dry-run diff output for preview mode`
 
 **Labels:** `bounty`, `kernel`
 
-**Background.** Preview is the default mode and it already prints a plan with a risk level, per-step undoability and a summary. What it does not do is say what the bytes would become. For a skill that rewrites 300 files, "312 steps, low risk" is not enough to approve. Searching for `dryRun` / `dry-run` outside the publish scripts returns nothing — this does not exist.
+**Background.** Preview is the default mode and already prints a plan with risk level, per-step undoability and a summary. What it does not do is say what the bytes would become. For a skill that rewrites 300 files, "312 steps, low risk" is not enough to approve. Searching for `dryRun` / `dry-run` outside the publish scripts returns nothing — this does not exist.
 
 **Files and interfaces.**
 
 - New: `packages/core/src/diff.ts` — a pure function turning an `Action` into a short human diff (`fs.write` → `+18 -0` with a bounded excerpt, `fs.move` → `a -> b`, `fs.delete` → `-<n> bytes`, `fs.restore` → `restore <n> bytes`).
-- `bin/deskshell.ts`: a `--diff` flag on `run`, printed in preview mode only, and carried into `--json` as a `diff` field per step.
+- `bin/deskshell.ts`: a `--diff` flag on `run`, printed in preview mode only, carried into `--json` as a per-step `diff` field.
 - New test: `scripts/dry-run-diff-test.ts`, shaped like `scripts/preview-summary-test.ts`.
 
 **Acceptance criteria.**
@@ -243,21 +212,27 @@ node scripts/regress.ts             # green
 
 **What we provide.** The fixture generator (`scripts/make-fixture.ts`), a review focused on output determinism (this output gets pasted into issues and screenshots), and a release-notes credit.
 
-**Risks and notes.** Do not read whole files to build a diff — cap the bytes and say so in the output. Keep it deterministic across platforms: no absolute paths, no timestamps, no locale-dependent formatting. Do not change default preview output; `scripts/snapshot-test.ts` exists to catch exactly that.
+**Risks and notes.** Do not read whole files to build a diff — cap the bytes and say so in the output. Keep it deterministic: no absolute paths, no timestamps, no locale-dependent formatting. Do not change default preview output; `scripts/snapshot-test.ts` exists to catch exactly that.
 
 ---
 
-## 06 — Undo timeline view (`deskshell timeline`)
+## 05 — Cross-task undo timeline (`deskshell timeline`)
 
-**Title:** `cli: deskshell timeline — a time-ordered undo view with per-step undoability`
+**Title:** `cli: deskshell timeline — one time-ordered view across tasks, with per-step undoability`
 
 **Labels:** `good first issue`, `kernel`
 
-**Background.** Undo has more surface than people expect: `deskshell undo --task <id>`, `--last <N>`, `--since <30m|2h|1d>`, plus `deskshell show <taskId>` for one task's steps and `deskshell history` for per-task counts. What is missing is the thing the roadmap asks for: a *time* view answering "what did this machine do in the last hour, and which of it can still be taken back". Today that is `history` → pick an id → `show`, and nothing tells you that a step ran with `undo: null` and therefore cannot be reverted.
+**Background.** Read the three existing pieces first; this task is not a rename of any of them.
+
+- `deskshell history [--root DIR] [--json]` — one row **per task**: taskId, skill, step count, duration, state, start time. It never shows steps, and it ends by telling you to run `show`.
+- `deskshell show [taskId] [--root DIR]` — **one task's** steps: `✓ 01. 12:34:56 fs.move …`, plus `undo: <kind>` when the journal entry carries an undo. For a step recorded with `undo: null` it prints nothing, so absence is ambiguous between "no undo needed" and "cannot be undone".
+- `deskshell undo --task <id> | --last <N> | --since <30m|2h|1d>` — already the way to roll back.
+
+What nothing provides is the roadmap's ask: one view across *all* tasks in time order that answers "what did this machine do in the last hour, and which of it can still be taken back" — with non-undoable steps marked, already-undone steps marked, and apply/undo events interleaved.
 
 **Files and interfaces.**
 
-- `bin/deskshell.ts`: a new `timeline` command with `--since`, `--limit`, `--json`.
+- `bin/deskshell.ts`: a new `timeline` command with `--since`, `--limit`, `--json`, `--root`.
 - `packages/core/src/journal.ts`: whatever read helper the view needs (a `load()` already exists).
 - New test: `scripts/timeline-test.ts`.
 
@@ -265,32 +240,36 @@ node scripts/regress.ts             # green
 
 ```bash
 node bin/deskshell.ts timeline --root .demo/downloads
-# newest task first: taskId, skill, start time, step count, and a marked count of
-# non-undoable steps, e.g.   20 步（18 可撤销 / 2 不可撤销）
+# one time-ordered stream across tasks; each step marked ok / failed / already undone,
+# and explicitly "不可撤销" where undo is null; footer states which range can still be undone now
 ```
 
 ```bash
 node bin/deskshell.ts timeline --root .demo/downloads --json
-# expect { tasks: [ { taskId, skill, start, steps, undoable, notUndoable } ] }
-node scripts/timeline-test.ts   # "<n>/<n> passed", including a task containing an undo:null step
-node scripts/regress.ts         # green — history/show/undo behaviour unchanged
+# expect { tasks: [ { taskId, skill, start, steps, undoable, notUndoable, undone } ] }
+node scripts/timeline-test.ts   # "<n>/<n> passed", including a task with an undo:null step
+node scripts/regress.ts         # green — cli.history / cli.show / undo behaviour unchanged
 ```
 
-**Size:** M — 1–3 days. The reading is trivial; designing the output is the work.
+Put real `history` and `show` output next to `timeline` output in the PR description, so the reviewer can see it adds information rather than reformatting.
 
-**What we provide.** A journal fixture with a mixed undoable / non-undoable task, a review of the table layout against `history` so the two do not drift, and a release-notes credit.
+**Size:** M — 1–3 days. Reading the journal is trivial; designing an output that is not a prettier `show` is the work.
 
-**Risks and notes.** This is a **read-only** command: it must not undo anything. Do not change the journal schema — existing `.deskshell/journal.jsonl` files must keep working, which the rotation and range tests already police. Column widths and ordering are user-visible API; follow the alignment conventions `history` already uses.
+**What we provide.** A journal fixture with a mixed undoable / non-undoable / partially-undone task, a review of the table layout against `history` so the two do not drift, and a release-notes credit.
+
+**Risks and notes.** Read-only: it must not undo anything. Do not change the journal schema — existing `.deskshell/journal.jsonl` files must keep working, which the rotation and range tests police. Do not modify `history` or `show` output in this PR; if you think they should merge, that is a separate discussion. Column widths and ordering are user-visible API — follow `history`'s alignment conventions.
 
 ---
 
-## 07 — Remember capability consents (`--ask --remember`)
+## 06 — Remember capability consents (`--ask --remember`)
 
 **Title:** `cli: persist capability consent so --ask does not re-ask every run`
 
 **Labels:** `good first issue`, `kernel`
 
-**Background.** `--ask` already works and is pinned down by `scripts/ask-test.ts`: all-yes proceeds, any-no exits 2 with no side effects, empty input counts as refusal, per-capability interview on a TTY and `y`/`n` lines otherwise. What it does not do is remember. Every run re-interviews, so in practice people pass `--grant` and skip the asking — which defeats the design. `packages/core/src/policy.ts` takes `granted: CapabilityId[]` as an argument and stores nothing.
+**Background.** Interactive consent already exists: `bin/deskshell.ts` has the `--ask` flag and `askCapabilities()`, which on a TTY asks per capability through `node:readline/promises` and on a pipe reads `y`/`n` lines from stdin. Its behaviour is pinned by `scripts/ask-test.ts`: all-yes proceeds, any-no exits 2 with no side effects, empty input counts as refusal.
+
+What it does not do is **remember**. Searching `bin/`, `packages/` and `scripts/` for `remember` or `grants.json` returns nothing: there is no consent store, so every run re-interviews the user — and in practice people pass `--grant` and skip the asking entirely, which defeats the design. `packages/core/src/policy.ts` takes `granted: CapabilityId[]` as an argument and stores nothing.
 
 **Files and interfaces.**
 
@@ -320,22 +299,22 @@ node scripts/regress.ts             # green
 
 **What we provide.** `scripts/ask-test.ts` as the behavioural contract to preserve, a review that focuses on the refusal path above all, and a release-notes credit.
 
-**Risks and notes.** Consent that silently widens is a security bug. A reused grant must be printed, `--forget` must really delete, and a stored grant must never apply to another skill or a wider scope. A corrupt `grants.json` is treated as absent and re-asks — never as "everything allowed". This touches the CLI and policy only, not protocol v0.
+**Risks and notes.** Consent that silently widens is a security bug. A reused grant must be printed, `--forget` must really delete, and a stored grant must never apply to another skill or a wider scope. A corrupt `grants.json` is treated as absent and re-asks — never as "everything allowed". CLI and policy only, not protocol v0.
 
 ---
 
-## 08 — Full-text search in the docs site
+## 07 — Full-text search in the docs site
 
-**Title:** `docs: full-text search across pages instead of the sidebar title filter`
+**Title:** `docs: full-text search across page bodies, keyboard navigable`
 
 **Labels:** `good first issue`, `docs`
 
-**Background.** The built site already has a search box — `#nav-search` — and it is a decent progressive enhancement, but it only filters `.nav-item` link text, i.e. page titles. A reader who remembers the word "tolerance" but not the page gets nothing. `scripts/build-docs.ts` generates the entire bilingual site with no third-party assets, and that constraint stays.
+**Background.** The built site already has a search box — `#nav-search` in `scripts/build-docs.ts` — and it is a decent progressive enhancement, but it filters `.nav-item` link text only, i.e. the sidebar's page titles. It is not full-text search and should not be described as one. A reader who remembers the word "tolerance" but not the page gets nothing. The site is generated for both languages with no third-party assets, and that constraint stays.
 
 **Files and interfaces.**
 
-- `scripts/build-docs.ts`: emit a search index at build time (for example `site/en/search-index.json` and `site/zh-CN/search-index.json`) built from page HTML — heading text, anchor ids, and a bounded body excerpt per heading section.
-- The injected script in the same file: query the index, render hits as page + heading links, and keep today's title filter as the empty-query state.
+- `scripts/build-docs.ts`: emit a search index at build time (`site/en/search-index.json`, `site/zh-CN/search-index.json`) from page HTML — heading text, anchor ids, and a bounded body excerpt per heading section.
+- The injected script in the same file: query the index, render hits as page + heading links, support ↑/↓ to move through hits and Enter to open, and keep today's title filter as the empty-query state.
 - `docs/index.md`: one line telling readers that search covers page bodies.
 
 **Acceptance criteria.**
@@ -352,48 +331,105 @@ node -e "const i=require('./site/en/search-index.json'); const q='tolerance'; co
 node scripts/regress.ts   # green, including the docs.build check
 ```
 
-Manual check written into the PR: open `site/en/index.html`, type a word that only appears in a page body, get a hit, click it, land on the right anchor. With JavaScript disabled the page behaves as it does today (filter hidden, layout intact).
+Manual check written into the PR: open `site/en/index.html`, type a word that appears only in a body, get a hit, press ↓ and Enter, land on the right anchor. With JavaScript disabled the page behaves as today (filter hidden, layout intact).
 
 **Size:** M — 1–3 days. Indexing is easy; keeping the payload small and the UI honest is the work.
 
 **What we provide.** A review of the generated HTML for accessibility and for the no-JS path, and your name under *Docs* in `CONTRIBUTORS.md`.
 
-**Risks and notes.** No third-party search library, no CDN, no build-time service — the site must stay openable offline from `file://`. Strip tags and navigation chrome from the indexed text or every page matches every query. Cap the excerpt length.
+**Risks and notes.** No third-party search library, no CDN, no build-time service — the site must stay openable offline from `file://`. Strip tags and navigation chrome from indexed text or every page matches every query. Cap excerpt length.
 
 ---
 
-## 09 — Random fault injection soak
+## 08 — Engineering guardrails: `--fail-at`, flake soak, three-platform CI
 
-**Title:** `scripts: flake-soak — random fault injection on top of --fail-at`
+**Title:** `kernel+ci: --fail-at for any skill, a random-fault soak, and a Windows/macOS CI matrix`
 
-**Labels:** `good first issue`, `testing`
+**Labels:** `good first issue`, `testing`, `ci`
 
-**Background.** `apps/cli-demo/fail-story.ts` takes `--fail-at <step>` and proves that a failure at a chosen step rolls everything back and lands in the journal. That is a *deterministic* failure at a step you picked. Flakiness comes from failures you did not pick: the first step, the last step, twice in a row, during a rollback. There is no random injection anywhere in the tree today.
+**Background.** Two honest gaps, both about proof.
+
+- **Fault injection lives in a demo, not in the kernel.** `apps/cli-demo/fail-story.ts` reads `--fail-at <step>` from `process.argv` (lines 6–7) and wraps the plan to fail at that step. There is no equivalent on `node bin/deskshell.ts run` and nothing random anywhere in the tree, even though `docs/roadmap.md` lists "random fault injection on top of `--fail-at`".
+- **CI is single-platform.** `.github/workflows/ci.yml` has exactly two jobs, both on `ubuntu-latest`: `regress` (Node 22 + 24 matrix, running `node scripts/regress.ts` and `node scripts/build-docs.ts`) and `linux-ui` (installs `xvfb xterm xdotool wmctrl`, runs `node scripts/contract-test.ts` and `xvfb-run -a --server-args="-screen 0 1280x800x24" node scripts/linux-driver-smoke.ts`). The Windows UIA driver and the macOS AX bridge — the two things STATUS.md claims were verified on hardware — are never exercised in CI. A regression there ships silently.
+
+Part A (CI matrix) is a half-day and mergeable on its own. Part B (fault injection) is the other half.
 
 **Files and interfaces.**
 
-- New: `scripts/flake-soak.ts`. For N runs, inject a failure at a random step (bounded by plan length), then assert the invariant after each run: side effects gone, journal holds exactly one failed step, the report carries the rollback count, and a second undo is a no-op. `scripts/undo-test.ts` proves idempotence for one case; you are generalising it.
-- Reuse the fixture and helper style from `apps/cli-demo/fail-story.ts` and parameterise its failure injection instead of writing a second mechanism.
+- Part A: `.github/workflows/ci.yml` — add `windows-latest` and `macos-latest` jobs running `node scripts/regress.ts` and `node scripts/build-docs.ts`; on macOS build the bridge first (`packages/drivers/macos/build.sh`) so the AX path is actually exercised. Fail the job on any snapshot drift by running `node scripts/snapshot-test.ts` on every OS.
+- Part B: kernel-level injection — a `--fail-at <step>` flag on `deskshell run` (or a kernel option) that makes step N fail during `apply`, so any skill can be tested, not only the demo.
+- Part B: new `scripts/flake-soak.ts` running N iterations with a **random** step, seeded and reproducible, asserting after each: side effects gone, exactly one failed step in the journal, rollback count reported, second undo a no-op.
+- `docs/roadmap.md` / `docs/zh-CN/roadmap.md`: tick the item off in the same PR.
 
 **Acceptance criteria.**
 
 ```bash
-node scripts/flake-soak.ts --runs 20
-# one line per run:  run 7/20  fail-at step 13/20  rolled back 12  journal ok  PASS
-# final line: "20/20 runs rollback-consistent"
-# exit 0; any inconsistency prints the offending journal path and exits non-zero
+# Part A — after pushing the branch, the PR's checks show three operating systems
+gh pr checks   # or read them in the browser: regress (ubuntu), regress (windows), regress (macos) all green
+node scripts/snapshot-test.ts   # 3/3 snapshots match on every OS
 ```
 
 ```bash
-node scripts/flake-soak.ts --runs 5 --seed 42   # same seed, same steps — reproducible
+# Part B — injection usable on a real skill, not just the demo
+node bin/deskshell.ts run downloads-cleanup --root .demo/fail-at --mode apply --fail-at 7
+# expect: step 7 fails, 6 steps rolled back, exit non-zero
+node bin/deskshell.ts journal --root .demo/fail-at   # shows exactly 1 failed step
+```
+
+```bash
+node scripts/flake-soak.ts --runs 20
+# one line per run:  run 7/20  fail-at step 13/20  rolled back 12  journal ok  PASS
+# final line: "20/20 runs rollback-consistent"; any inconsistency prints the journal path and exits non-zero
+node scripts/flake-soak.ts --runs 5 --seed 42   # same seed, same steps
 node scripts/regress.ts                          # green
 ```
 
-**Size:** S — half a day, plus however long you keep finding bugs with it.
+**Size:** M total — Part A is S (half a day), Part B is S too. They are independent PRs; do one, claim the other.
 
-**What we provide.** The failed-run journal from any soak you publish, a review that insists the seed is reproducible, and a release-notes credit.
+**What we provide.** The failing-run journal from any soak you publish, a review that insists the seed is reproducible and that CI failures are real failures (no `continue-on-error` masking), and a release-notes credit.
 
-**Risks and notes.** This run the kernel dozens of times against the filesystem — keep everything under `.demo/` and clean up between runs or you will leave orphan directories behind. A soak that only ever fails at step 3 is not a soak: assert the random steps actually spread across the plan. If it finds a real kernel bug that is a **success** — open a separate `bug` issue and link it; do not fix the kernel inside this PR.
+**Risks and notes.** On macOS the Swift bridge build may fail for reasons unrelated to your change — if it does, report the failure and mark the driver checks `SKIP` with a linked issue; do **not** make CI green by swallowing the error. The soak runs the kernel dozens of times against the filesystem: keep everything under `.demo/` and clean up between runs. If the soak finds a real kernel bug that is a **success** — open a separate `bug` issue and link it rather than fixing the kernel inside this PR.
+
+---
+
+## 09 — MCP adapter
+
+**Title:** `mcp: expose deskshell preview / apply / undo as MCP tools`
+
+**Labels:** `bounty`, `ecosystem`, `mcp`
+
+**Background.** Nothing in the tree speaks MCP today — searching the code for `mcp` returns only planning notes under `outreach/`. Meanwhile the interface an MCP client needs is exactly the one the kernel already has: a plan (preview), an execution (apply), and a reversal (undo), each already returning structured JSON (`deskshell run --json` returns `{ ok, steps }`). Exposing those three as tools is the cheapest way to let any MCP-capable agent drive deskshell **without** giving the kernel a model dependency, and it changes no protocol semantics.
+
+**Files and interfaces.**
+
+- New: `apps/mcp/server.ts` (plus a thin `bin/` entry if you prefer `deskshell mcp`) speaking JSON-RPC over stdio: `initialize`, `tools/list`, `tools/call`.
+- Three tools, thin wrappers over existing kernel entry points: `deskshell_preview` (`skill`, `root`), `deskshell_apply` (`skill`, `root`, `grant` required — no implicit grants), `deskshell_undo` (`taskId` or `last`, `root`). Reuse `run()` / `undoTask()` from `packages/core/src/kernel.ts`; do not reimplement execution.
+- **Zero dependencies**: hand-roll the JSON-RPC framing rather than adding `@modelcontextprotocol/sdk`. This is the constraint that makes the task interesting, and it is non-negotiable without an RFC.
+- New test: `scripts/mcp-smoke.ts` driving the server over stdin/stdout.
+- `docs/index.md` (or a new `docs/mcp.md` if that is cleaner): a five-line "connect an MCP client" section with the exact command.
+
+**Acceptance criteria.**
+
+```bash
+node scripts/mcp-smoke.ts
+# "<n>/<n> passed": initialize handshake, tools/list returns exactly 3 tools,
+# tools/call deskshell_preview returns the plan as JSON, tools/call on a skill whose
+# capabilities were not granted returns a structured error (not a crash), and an
+# unknown tool name returns a JSON-RPC error
+```
+
+```bash
+# manual, from any MCP client (Claude Desktop, or your own script):
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke","version":"0"}}}' | node apps/mcp/server.ts
+# expect a well-formed initialize result, then the same for tools/list
+node scripts/regress.ts   # green — the new smoke check included
+```
+
+**Size:** M — 1–3 days. The protocol surface you need is small; the discipline is in not letting the adapter bypass the permission layer.
+
+**What we provide.** A review focused on one question — does the adapter weaken the capability model? — plus a sample client config for the docs, and credit under *Ecosystem* in `CONTRIBUTORS.md`.
+
+**Risks and notes.** An MCP tool is an entry point for an agent, so the permission layer must stay exactly where it is: `apply` without an explicit `grant` argument must fail closed, and every call must land in the journal like any other run. Do not expose a "shell" or "arbitrary action" tool — three narrow tools or nothing. Do not let `server.ts` import anything that pulls in a model SDK; the kernel stays dependency-free and so does its adapter.
 
 ---
 
@@ -403,14 +439,14 @@ node scripts/regress.ts                          # green
 
 **Labels:** `good first issue`, `skill`
 
-**Background.** Two existing skills are adjacent but neither does this. `dedupe-folders` hashes file *content*, so it only catches byte-identical copies. `screenshot-organize` groups screenshots by date into `YYYY/MM/` and prefixes the time. What people actually have is bursts: six screenshots of the same dialog, differing only in a caret blink. That case is unserved, and it is an ideal first skill because it is filesystem-only — it runs on every platform, including Linux without a driver.
+**Background.** Two existing skills are adjacent but neither does this. `dedupe-folders` hashes file *content*, so it only catches byte-identical copies. `screenshot-organize` groups screenshots by date into `YYYY/MM/` and prefixes the time. What people actually have is bursts: six screenshots of the same dialog, differing only in a caret blink. That case is unserved — and it is an ideal first skill because it is filesystem-only, so it runs on every platform, including Linux without a control-level driver.
 
 **Files and interfaces.**
 
 - `node scripts/new-skill.ts --name screenshot-dedupe` scaffolds `packages/skills/screenshot-dedupe/{index.ts,skill.json}`; after that only `plan()` changes.
 - Manifest: `fs.read` and `fs.write` scoped to `"{{root}}"` with a plain-language `reason` each. The kernel rejects actions not covered by a declared capability, so an over-broad scope gets refused.
 - Zero dependencies: read dimensions from the PNG `IHDR` header and the JPEG `SOF` marker (a few dozen lines) — no image library.
-- Fixture: `scripts/make-screenshot-fixture.ts` (new), generating PNGs of known dimensions and mtimes.
+- Fixture: `scripts/make-screenshot-fixture.ts` (new) generating PNGs of known dimensions and mtimes.
 - Register in `scripts/regress.ts` following the `photo-sort` / `new-skills` pattern.
 
 **Acceptance criteria.**
@@ -431,7 +467,7 @@ Hard rules from `CONTRIBUTING.md`: every action has a `post` assertion, every ac
 
 **What we provide.** The fixture generator sketch, a review that checks the "keep the earliest" rule and the `.trash` safety, and your name under *Skill* in `CONTRIBUTORS.md`.
 
-**Risks and notes.** "Near-identical" is a policy decision, not an algorithm: same dimensions plus a small mtime window is defensible and explainable, and the rule must sit in the skill's `description` so the user sees it before applying. No deleting, no overwriting, and no deduping across directories in v1.
+**Risks and notes.** "Near-identical" is a policy decision, not an algorithm: same dimensions plus a small mtime window is defensible and explainable, and the rule must sit in the skill's `description` so the user sees it before applying. No deleting, no overwriting, no deduping across directories in v1.
 
 ---
 
@@ -441,7 +477,7 @@ Hard rules from `CONTRIBUTING.md`: every action has a `post` assertion, every ac
 
 **Labels:** `bounty`, `skill`
 
-**Background.** `browser-tabs` reads browser *windows* through the UI tree (Windows and macOS only). `downloads-cleanup` sorts by extension alone. Nobody sorts a download folder using what the filenames actually say — `report (3).pdf`, `setup-x64.exe`, `invoice_2026-03.pdf` — even though that information is right there. Filesystem-only, so it works on all three platforms today.
+**Background.** `browser-tabs` reads browser *windows* through the UI tree (Windows and macOS only). `downloads-cleanup` sorts by extension alone. Nobody sorts a download folder using what the filenames actually say — `report (3).pdf`, `setup-x64.exe`, `invoice_2026-03.pdf` — even though that information is right there. Filesystem-only, so it works on all platforms today.
 
 **Files and interfaces.**
 
@@ -469,7 +505,7 @@ The classifier table must appear in the skill `description` and in the PR: a use
 
 **What we provide.** A real download-folder listing (names only, no content) to test against, a review that pushes on collision handling, and credit under *Skill*.
 
-**Risks and notes.** Two files that would land on the same target must make the step fail loudly rather than silently overwrite — `rename-batch` already set that precedent; follow it. Do not read browser history databases, do not touch anything outside `{{root}}`.
+**Risks and notes.** Two files that would land on the same target must make the step fail loudly rather than silently overwrite — `rename-batch` set that precedent; follow it. Do not read browser history databases, do not touch anything outside `{{root}}`.
 
 ---
 
@@ -484,7 +520,7 @@ The classifier table must appear in the skill `description` and in the PR: a use
 **Files and interfaces.**
 
 - `packages/skills/pdf-merge/{index.ts,skill.json}` with `fs.read` + `fs.write` on `"{{root}}"`.
-- A minimal PDF reader/writer next to the skill (or under `packages/core/src/` if it is genuinely reusable — say which and why in the PR): parse `startxref` → xref table → trailer → `/Root` → `/Pages` → `/Kids`, copy page objects into a new document, write a fresh xref and trailer.
+- A minimal PDF reader/writer next to the skill (or under `packages/core/src/` if genuinely reusable — say which and why in the PR): parse `startxref` → xref table → trailer → `/Root` → `/Pages` → `/Kids`, copy page objects into a new document, write a fresh xref and trailer.
 - **Bounded first version:** same page geometry only; no encryption; no object streams (`/ObjStm`). Refuse those inputs with a clear message instead of emitting a corrupt file.
 - Fixture: `scripts/make-pdf-fixture.ts` (new) generating small uncompressed PDFs so the output is inspectable.
 
@@ -514,22 +550,25 @@ node scripts/regress.ts   # green, including your new check
 
 ## Already shipped — do not rebuild these
 
-Three items from older roadmap drafts are **done**, and stale requests for them keep arriving. If you want to work in one of these areas, take the follow-up task above instead.
+Stale requests for these keep arriving. Each has a real, runnable proof.
 
-| Already shipped | Proof you can run yourself |
+| Already shipped | Proof |
 | --- | --- |
+| Linux **window-level** X11 driver (`xdotool` + `wmctrl`): window enumeration with geometry, `type`, `keys`, `moveWindow`, plus `missingHint()` install guidance | `packages/drivers/linux/driver.ts`; `scripts/verify-driver.ts`; `scripts/linux-driver-smoke.ts` runs it under Xvfb in CI — the follow-up gap is task **01** (control tree) |
 | `deskshell run a b --parallel` — several skills in one invocation, one failing does not stop the others | `node scripts/parallel-test.ts` → `7/7 passed` |
-| Interactive capability consent in the terminal (`--ask`, per capability, TTY or piped) | `node scripts/ask-test.ts` → `8/8 passed` — the remaining gap is task **07** |
-| Recorder on UIA event hooks (`FocusChanged` + `StructureChanged`) with a `-Poll` fallback instead of pure 300 ms polling | `node scripts/recorder-mode-test.ts` → `8/8 passed`; both modes documented in `docs/recording.md` — remaining gaps are tasks **03** and **04** |
+| Interactive capability consent (`--ask`, per feature, TTY interview or piped `y`/`n`) | `node scripts/ask-test.ts` → `8/8 passed` — the remaining gap is task **06** (remembering) |
+| Recorder on UIA event hooks (`FocusChanged` + `StructureChanged`, default since `$useEvents = -not $Poll`) with a `-Poll` fallback | `node scripts/recorder-mode-test.ts` → `8/8 passed`; `docs/recording.md` documents both modes — remaining gap is task **03** |
+| `deskshell history` (per-task list) and `deskshell show` (one task's steps) | Usage text in `bin/deskshell.ts` lines 35–36; `cli.history` / `cli.show` checks in `scripts/regress.ts` — remaining gap is task **05** (cross-task) |
 
 Also already true, and worth knowing before proposing a shortcut: every action needs a `post` assertion and an `undo`; actions with `undo: null` are rejected by the kernel; the kernel has no model dependency and adding one is not on the table.
 
 ## What the maintainer will not accept
 
-Stated once here so nobody discovers it three days in — the same list appears in [CONTRIBUTOR-LADDER.md](CONTRIBUTOR-LADDER.md) and [GOVERNANCE.md](GOVERNANCE.md):
+Stated once, so nobody discovers it three days in — the same list appears in [CONTRIBUTOR-LADDER.md](CONTRIBUTOR-LADDER.md) and [GOVERNANCE.md](GOVERNANCE.md):
 
 - A demo-only script that works once on the author's machine and has no assertion or no undo.
 - A change to protocol semantics (action kinds, assertion kinds, undo contract) smuggled into a feature PR. That is an RFC.
 - A new third-party runtime dependency without an RFC.
 - A driver that does its own permission checks — permissions belong to `packages/core/src/policy.ts`.
 - A "bypass" that widens capability scope to make a skill convenient.
+- CI made green by swallowing an error (`continue-on-error`, `|| true`, skipped assertions).

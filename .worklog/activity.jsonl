@@ -58,3 +58,7 @@
 {"ts":1793292658946,"label":"regress 全量回归","kind":"test"}
 {"ts":1793292671681,"label":"M06 Linux 驱动 + CI 作业","kind":"milestone"}
 {"ts":1793292671744,"label":"push to GitHub","kind":"ship"}
+{"ts":1793292746885,"label":"regress 全量回归","kind":"test"}
+{"ts":1793292838018,"label":"regress 全量回归","kind":"test"}
+{"ts":1793292855613,"label":"修 taskId 碰撞 + CI openbox","kind":"manual"}
+{"ts":1793292855678,"label":"push to GitHub","kind":"ship"}
