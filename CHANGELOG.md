@@ -2,6 +2,27 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.8.0 — 2026-10-30
+
+M06：Linux 从"计划中"变成"CI 实测能用"。
+
+### Added
+
+- **`packages/drivers/linux/driver.ts`** —— X11 窗口级驱动：`wmctrl` 列窗口 + `xdotool` 做几何/激活/输入/按键/移动。依赖缺失时**拒绝构造并打印要执行的命令**；控件级操作（`invoke` / 按 selector 的 `click`）明确报"不支持"，不假装成功（X11 没有可访问性树，那要 AT-SPI2）。
+- **`scripts/linux-driver-smoke.ts`** —— 在 Xvfb + openbox 里起窗口，验证枚举/读树/移动/还原/输入/按键，以及"控件级操作必须报不支持"。
+- **CI 新增 `linux-ui` 作业** —— apt 装 `xvfb xterm xdotool wmctrl openbox`，`xvfb-run` 跑冒烟；`contract-test` 在 ubuntu 上真跑。
+
+### Fixed
+
+- **并发任务 id 碰撞**：`taskId` 原本是 `task-<毫秒>`，并行执行时两个任务可能同毫秒启动拿到同一个 id，日志里分不开、并行撤销会串。现在加了随机后缀。这个 bug 是 CI 的 node 24 作业第一次跑出来才暴露的。
+
+### Evidence
+
+    CI run 32 · linux-ui success + regress(node 22/24) success
+    smoke 10/10（含几何容差判定：WM 装饰与 xterm 字符格会让几何不等于请求值）
+    contract 在 ubuntu 上 13/13（非跳过）
+    本地 regress 39/39
+
 ## 0.7.0 — 2026-10-30
 
 M05：公开 skill 从 7 个补到 10 个，每一个都有端到端测试与逐字节撤销证明。

@@ -62,7 +62,10 @@
       "from": 200,
       "to": 240,
       "accept": "Linux 上文件类 + 基础 UI 动作可用，契约测试在 CI 的 ubuntu 上真跑",
-      "check": "CI matrix 中 linux 任务实跑 contract-test（非跳过）"
+      "check": "CI matrix 中 linux 任务实跑 contract-test（非跳过）",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": "CI run 32 linux-ui success：smoke 10/10（Xvfb+openbox）、contract 在 ubuntu 13/13 实跑；驱动窗口级可用，控件级明确报不支持"
     },
     {
       "id": "M07",

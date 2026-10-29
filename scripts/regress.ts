@@ -44,7 +44,7 @@ run(
 
 // 3) CLI：能列出公开 skill
 run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("10 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.7.0"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.8.0"));
 
 // 4) CLI：--json 输出可被程序消费
 run(

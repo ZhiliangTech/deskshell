@@ -69,3 +69,7 @@
 {"ts":1793293216629,"label":"push to GitHub","kind":"ship"}
 {"ts":1793293428259,"label":"Linux 几何容差","kind":"manual"}
 {"ts":1793293428322,"label":"push to GitHub","kind":"ship"}
+{"ts":1793293451142,"label":"regress 全量回归","kind":"test"}
+{"ts":1793293656498,"label":"regress 全量回归","kind":"test"}
+{"ts":1793293699774,"label":"M06 完成 + 0.8.0","kind":"manual"}
+{"ts":1793293703536,"label":"push to GitHub","kind":"ship"}
