@@ -82,7 +82,7 @@
 
 阶梯的完整定义在 [CONTRIBUTOR-LADDER.md](CONTRIBUTOR-LADDER.md)，这里只说治理相关的那部分：
 
-- **L3 Driver Maintainer**：由维护者指派，条件是该平台驱动有被合并的实现 + `scripts/verify-driver.ts` 通过 + 至少一次对他人改动的实质评审。指派后该平台 PR 需要其 approve 才能合并。
+- **L3 Driver Maintainer**：由维护者指派，条件是该平台驱动有被合并的实现 + `scripts/verify-driver.ts` 通过 + 至少一次对他人改动的实质评审。指派后该平台 PR 需要其 approve 才能合并；同时新建 `.github/CODEOWNERS` 把该目录指给他（这个文件目前还没有，指派时一并建）。
 - **L4 Protocol Reviewer**：条件是一份被接受的 RFC 或三次改变结论的 RFC 评审。达成后，改协议或内核语义的 PR 必须有其 approve。
 - **L5 Maintainer**：由现有维护者一致提名，条件见阶梯文件。获得写权限、合并权、发布权、否决权。
 

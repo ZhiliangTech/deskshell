@@ -1,0 +1,118 @@
+name: bounty
+description: 认领一个带验收标准、工期与 mentor 的任务（good first issue / bounty board）· Claim a scoped task
+title: "[bounty] "
+labels: ["bounty"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        这张表背后是 [outreach/GOOD-FIRST-ISSUES.zh-CN.md](https://github.com/ciceroyang/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.zh-CN.md)（英文：[GOOD-FIRST-ISSUES.md](https://github.com/ciceroyang/deskshell/blob/main/outreach/GOOD-FIRST-ISSUES.md)）。
+        每个任务都自带可跑的验收命令；认领前请先读过 [CONTRIBUTING.md](https://github.com/ciceroyang/deskshell/blob/main/CONTRIBUTING.md)。
+        维护者承诺：首次响应 48 小时内，小 PR 72 小时内给结论。
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: 任务类型 (task type)
+      description: 按影响面选，不要按改动大小选
+      options:
+        - driver（Windows / macOS / Linux）
+        - skill（packages/skills/ 下的新 skill 或改动）
+        - kernel（预览 / 执行 / 断言 / 回滚 / 审计）
+        - docs（文档与文档站）
+        - ci / testing（回归、契约、快照、工作流）
+        - ecosystem（MCP、集成、外围工具）
+    validations:
+      required: true
+
+  - type: input
+    id: task-ref
+    attributes:
+      label: 任务编号 (task number from the board)
+      description: 对应 GOOD-FIRST-ISSUES 里的编号；不是板上的任务就贴你自己的想法或已有 issue
+      placeholder: "01 / 05 / 09，或 issue 链接"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: 难度与规模 (size)
+      options:
+        - S — 半天 / half a day
+        - M — 1–3 天 / 1–3 days
+        - L — 约一周 / about a week
+        - 不确定 / not sure yet
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准 (acceptance criteria)
+      description: 必须机器可判：命令 + 期望输出。写不出来的任务不该开工。
+      value: |
+        1. 命令：
+           期望输出：
+        2. 命令：
+           期望输出：
+        3. 回归：node scripts/regress.ts 全绿，失败数为 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: support
+    attributes:
+      label: 我们提供的支持 (what we provide)
+      description: 维护者填：mentor、fixture、评审节奏、署名方式
+      value: |
+        - mentor：
+        - fixture / 素材：
+        - 评审 SLA：首次响应 48h；小 PR（≤200 行）72h 内给结论
+        - 署名：CONTRIBUTORS.md + 发布说明
+    validations:
+      required: true
+
+  - type: textarea
+    id: claim
+    attributes:
+      label: 认领方式 (how to claim)
+      description: 写清楚怎么表示认领、认领后多久内要有第一个 PR、超时怎么释放
+      value: |
+        在这个 issue 下留言「我认领」，并写清任务编号与预计开始时间。
+        维护者 48 小时内确认范围仍然空闲、指派 mentor。
+        认领后 14 天没有 PR 且没有说明，范围自动释放，其他人可以接手。
+    validations:
+      required: true
+
+  - type: input
+    id: mentor
+    attributes:
+      label: mentor
+      description: 由维护者填写；认领确认时一并给出
+      placeholder: "@github-handle"
+
+  - type: dropdown
+    id: duration
+    attributes:
+      label: 预计工期 (estimated duration)
+      description: 给区间，不给承诺；超期不是失败，但要提前说一声
+      options:
+        - 半天 / half a day
+        - 1–3 天 / 1–3 days
+        - 约一周 / about a week
+        - 分阶段，见 issue / staged, see thread
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ground-rules
+    attributes:
+      label: 开工前确认
+      options:
+        - label: 我读过 CONTRIBUTING.md 与 outreach/CONTRIBUTOR-LADDER.md
+          required: true
+        - label: 我知道每个 action 必须有 post 断言与 undo，undo 为 null 的动作会被内核拒绝
+          required: true
+        - label: 我不会为了让测试变绿而跳过断言或吞掉错误
+          required: true

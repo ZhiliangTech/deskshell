@@ -39,7 +39,7 @@ const LIMITS = {
   searchMinGapMs: 2200,     // 搜索接口 30 req/min
   coreMinGapMs: 1100,       // 核心接口 5000 req/h，保守 1s
   maxPagesPerQuery: 2,
-  maxReposForContributors: Number(process.env.OUTREACH_MAX_REPOS || 40),
+  maxReposForContributors: Number(process.env.OUTREACH_MAX_REPOS || 60),
   maxCandidates: Number(process.env.OUTREACH_MAX_CANDIDATES || 120),
   maxContributorsPerRepo: 10,
   starMin: Number(process.env.OUTREACH_STAR_MIN || 10),
@@ -244,6 +244,41 @@ function tierOf(repo) {
   return 3;                          // 大而沉寂
 }
 
+/**
+ * 挑要挖 contributor 的仓库：分层取样，而不是单一按“最新提交”排。
+ * 原因：纯粹按 pushed_at 排会把 2000+ star 的项目全挤掉（它们是 browser-use / cua 这类
+ * 生态核心），名单最后只剩刚建的小仓库。反过来只按 star 排又会全是惰性项目。
+ */
+function selectMiningRepos(repos) {
+  const byStars = (a, b) => b.stars - a.stars;
+  const byPush = (a, b) => (a.pushed_at < b.pushed_at ? 1 : a.pushed_at > b.pushed_at ? -1 : 0);
+  const buckets = {
+    0: repos.filter((r) => r.tier === 0).sort(byStars),
+    1: repos.filter((r) => r.tier === 1).sort(byStars),
+    2: repos.filter((r) => r.tier === 2).sort(byStars),
+    3: repos.filter((r) => r.tier === 3).sort(byStars),
+  };
+  const freshest = [...repos].sort(byPush).slice(0, 60);
+
+  const picked = new Map();
+  const take = (list, n) => {
+    let added = 0;
+    for (const r of list) {
+      if (added >= n) break;
+      if (picked.has(r.full_name)) continue;
+      picked.set(r.full_name, r);
+      added += 1;
+    }
+  };
+  take(buckets[2], 14);                    // 有影响力的相关项目（2000+ star，近期有提交）
+  take(buckets[0], 14);                    // 小而活：20-2000 star 且近 90 天有提交
+  take(buckets[1], 8);                     // 小而沉寂
+  take(freshest, 12);                      // 最新提交（含各 tier）
+  take(buckets[3], 4);                     // 大而沉寂（协议/标准类老项目）
+  take(buckets[0].sort(byPush), 8);        // 小而活里最新推的
+  return [...picked.values()];
+}
+
 function csvCell(value) {
   const s = value === null || value === undefined ? '' : String(value);
   return '"' + s.replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
@@ -339,7 +374,7 @@ async function main() {
       .sort((a, b) => (b.contributions || 0) - (a.contributions || 0))
       .slice(0, LIMITS.maxContributorsPerRepo);
 
-    for (const c of humans) {
+    for (const [rankIndex, c] of humans.entries()) {
       const login = c.login;
       let entry = people.get(login.toLowerCase());
       if (!entry) {
@@ -350,9 +385,13 @@ async function main() {
           contributions: 0,
           matched_queries: [],
           repos: [],
+          minRank: 99,
         };
         people.set(login.toLowerCase(), entry);
       }
+      // minRank = 他在某个仓库里排第几。排名时先取各仓库的第 1 名，再取第 2 名……
+      // 这样名单不会因为一两个大仓库的 10 个人占满。
+      entry.minRank = Math.min(entry.minRank ?? 99, rankIndex);
       entry.contributions = Math.max(entry.contributions, c.contributions || 0);
       entry.repos.push({
         full_name: repo.full_name,
@@ -397,6 +436,7 @@ async function main() {
         contributions: 0,
         matched_queries: [query.q],
         repos: [],
+        minRank: 1,
         from_user_search: true,
       });
       added += 1;
@@ -404,8 +444,14 @@ async function main() {
     console.log('  [' + query.q + '] ' + items.length + ' users, +' + added + ' new (total ' + people.size + ')');
   }
 
-  // 排名：命中的仓库数 > 贡献数；仓库派生优先于纯用户检索
+  // 排名（用于挑进入名单的人，轮次优先保证仓库多样性）：
+  //   1) 在某个仓库里的名次越靠前越好（各仓库第 1 名先入选）
+  //   2) 命中的仓库越多越好
+  //   3) 贡献数越多越好
   const ranked = [...people.values()].sort((a, b) => {
+    const ra = a.minRank ?? 99;
+    const rb = b.minRank ?? 99;
+    if (ra !== rb) return ra - rb;
     if (a.repos.length !== b.repos.length) return b.repos.length - a.repos.length;
     if (a.contributions !== b.contributions) return b.contributions - a.contributions;
     return (a.from_user_search ? 1 : 0) - (b.from_user_search ? 1 : 0);

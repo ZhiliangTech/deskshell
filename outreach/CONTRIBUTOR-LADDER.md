@@ -48,7 +48,7 @@
 - `CONTRIBUTORS.md` 的 *Skill* 一节有你的条目，链接到你写的 skill。
 - 你写的 skill 出问题时，维护者先 @ 你，而不是直接改你的代码——除非你 14 天没回应。
 - roadmap 讨论里，你对自己 skill 范围内的方向有优先发言权。
-- 可以要求成为某个 skill 目录的 CODEOWNER（在 issue 里说一声，维护者加进 `.github/CODEOWNERS`）。
+- 可以要求成为某个 skill 目录的 CODEOWNER（在 issue 里说一声；`.github/CODEOWNERS` 目前还没建，第一次指派时一并创建）。
 
 **下一步怎么走**
 
@@ -111,7 +111,7 @@ L5 由现有维护者提名。判断标准不是技术水平，而是"这个人�
 - 仓库写权限、合并权、发布权。
 - 对"需要拍板"的条目有否决权，且必须书面写理由。
 - 可以提名下一位维护者。
-- `CONTRIBUTORS.md` 的 *Maintainer* 一节，且名字出现在 `package.json` 的 `maintainers` 里（加这一条需要一次 RFC 之外的普通 PR）。
+- `CONTRIBUTORS.md` 的 *Maintainer* 一节；同时一个普通 PR 会把维护者写进 `package.json` 的 `maintainers` 字段（这个字段目前还没有，晋升时一并加）。
 
 **下一步怎么走**
 

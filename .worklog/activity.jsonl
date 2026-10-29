@@ -62,3 +62,6 @@
 {"ts":1793292838018,"label":"regress 全量回归","kind":"test"}
 {"ts":1793292855613,"label":"修 taskId 碰撞 + CI openbox","kind":"manual"}
 {"ts":1793292855678,"label":"push to GitHub","kind":"ship"}
+{"ts":1793293026932,"label":"regress 全量回归","kind":"test"}
+{"ts":1793293038281,"label":"Linux smoke 重写窗口探测","kind":"manual"}
+{"ts":1793293038343,"label":"push to GitHub","kind":"ship"}

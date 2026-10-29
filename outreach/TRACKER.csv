@@ -1,2 +1,11 @@
 handle,segment,tier,repo,ask,channel,first_touch_date,followup1_date,followup2_date,reply,outcome,notes
-ciceroyang,owner,owner,ciceroyang/deskshell,-,-,2026-10-29,,,owner,active,维护者本人
+abrichr,automation-replay,A,OpenAdaptAI/OpenAdapt,protocol review + recorder input,X/email,2026-10-30,2026-11-04,2026-11-11,,planned,
+AmrDab,desktop-control,A,AmrDab/clawdcursor,MCP adapter alignment,GitHub issue,2026-10-30,2026-11-04,2026-11-11,,planned,
+PM-Shawn,office-agent,A,PM-Shawn/Abu-Cowork,write 2 skills,X,2026-10-30,2026-11-04,2026-11-11,,planned,
+ayuayue,agent-workbench,A,ayuayue/PiDeck,protocol review / skill,GitHub issue,2026-10-31,2026-11-05,2026-11-12,,planned,
+gnh1201,windows-industrial,A,gnh1201/welsonjs,recorder input coverage,GitHub/email,2026-10-31,2026-11-05,2026-11-12,,planned,
+lukemarsden,agent-fleet,A,helixml/helix,undo boundary review,X,2026-11-01,2026-11-06,2026-11-13,,planned,
+Wh1isper,agent-platform,B,converge-ai-labs/agent-foundation,protocol review,blog/email,2026-11-03,2026-11-08,2026-11-15,,planned,
+MongLong0214,mcp-server,B,MongLong0214/logic-pro-mcp,spec review,GitHub issue,2026-11-03,2026-11-08,2026-11-15,,planned,
+divshekhar,verification,B,reticlehq/reticle,undo semantics review,X,2026-11-06,2026-11-11,2026-11-18,,planned,
+echoVic,coding-agent,B,echoVic/orca-agent,write one skill,GitHub/email,2026-11-06,2026-11-11,2026-11-18,,planned,

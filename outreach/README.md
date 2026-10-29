@@ -12,6 +12,8 @@
 | [GOOD-FIRST-ISSUES.md](GOOD-FIRST-ISSUES.md) · [.zh-CN](GOOD-FIRST-ISSUES.zh-CN.md) | 12 个带验收标准的任务（悬赏板源文件） | 有人回“我能做什么”时 |
 | [CONTRIBUTOR-LADDER.md](CONTRIBUTOR-LADDER.md) | 五级贡献者阶梯、权利、评审 SLA | 有人问“长期怎么参与”时 |
 | [GOVERNANCE.md](GOVERNANCE.md) | 决策权、RFC、冲突处理 | 有人问“谁说了算”时 |
+| [SEND-QUEUE.md](SEND-QUEUE.md) | 首发 10 人 + 已填好的私信正文（换名字即可发） | 今天就开始发时 |
+| [AWESOME-LISTS.md](AWESOME-LISTS.md) | 值得投稿的 awesome list、真实收录规则、PR 文案 | 每周铺外链时 |
 | [TRACKER.csv](TRACKER.csv) | 触达流水（一人一行，含跟进日期与结果） | 每天收工前更新 |
 | [candidates.json](candidates.json) · [candidates.csv](candidates.csv) · [scan.mjs](scan.mjs) | 候选池原始数据与可复现扫描脚本 | 每月刷新一次名单 |
 

@@ -42,12 +42,17 @@ node apps/cli-demo/run.ts --skill packages/skills/my-skill/index.ts --mode undo
 
 ## 贡献一个驱动
 
-驱动只实现一个接口（`packages/core/src/types.ts` 里的 `UiDriver`）：
+驱动只实现一个接口（`packages/core/src/types.ts` 里的 `UiDriver`）——6 个必选 + 2 个可选：
 
 ```ts
+// 必选
 windows(); tree(ref, depth); invoke(ref, sel); click(ref, sel);
-type(ref, sel, text); keys(ref, combo); focus(ref);
+type(ref, sel, text); keys(ref, combo);
+// 可选：不是每个平台都支持窗口几何操作
+bounds?(ref); moveWindow?(ref, rect);
 ```
+
+`focus()` 不在接口上——它是具体驱动里的实现细节，不要依赖它跨平台可用。
 
 新平台请：
 
@@ -76,6 +81,14 @@ docs: 补充 macOS 验证步骤
 ## 行为准则
 
 技术讨论可以很直接，对人不可以。人身攻击、歧视、骚扰，一次就移除。
+
+## 生态与贡献路径
+
+- 想找活干：[outreach/GOOD-FIRST-ISSUES.zh-CN.md](outreach/GOOD-FIRST-ISSUES.zh-CN.md)（英文版 [GOOD-FIRST-ISSUES.md](outreach/GOOD-FIRST-ISSUES.md)）——12 个任务，每个都带可跑的验收命令和 S/M/L 工期。
+- 想知道自己能走到哪：[outreach/CONTRIBUTOR-LADDER.md](outreach/CONTRIBUTOR-LADDER.md) 的五级阶梯（第一次 PR → Skill Author → Driver Maintainer → Protocol Reviewer → Maintainer）。
+- 改内核协议之前：[outreach/GOVERNANCE.md](outreach/GOVERNANCE.md) 说清谁在什么范围内说了算，[rfcs/README.md](rfcs/README.md) 给模板与状态机。
+- 认领与悬赏：用 [bounty issue 模板](.github/ISSUE_TEMPLATE/bounty.yml) 建 issue，维护者会在里面写 mentor 与工期。
+- 已经贡献过的人：[CONTRIBUTORS.md](CONTRIBUTORS.md)。
 
 ## 许可
 

@@ -25,24 +25,71 @@ if (!caps.display || !caps.xdotool || !caps.wmctrl) {
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-// 起一个最小的 X 客户端；xterm 最稳，退而求其次 xmessage
-const spawnWindow = (): { kill: () => void; label: string } => {
-  const candidates: Array<[string, string[]]> = [
-    ["xterm", ["-T", "deskshell-smoke", "-geometry", "80x24+40+60"]],
-    ["xmessage", ["-buttons", "", "-geometry", "400x200+40+60", "deskshell-smoke"]],
-  ];
-  for (const [bin, args] of candidates) {
-    try {
-      execFileSync("sh", ["-c", `command -v ${bin}`], { stdio: "ignore" });
-    } catch {
-      continue;
-    }
-    const child = spawn(bin, args, { detached: true, stdio: "ignore" });
-    child.unref();
-    return { kill: () => { try { process.kill(-child.pid!, "SIGKILL"); } catch { try { child.kill("SIGKILL"); } catch { /* 已退出 */ } } }, label: bin };
+// 起一个最小的 X 客户端，并且**确认窗口真的出现**再继续。
+// xterm 在 CI 里偶尔会因为字体/locale 起不来，所以按候选依次尝试并验证。
+const listWindows = async (): Promise<string[]> => {
+  try {
+    const d = new LinuxDriver();
+    return (await d.windows()).map((w) => w.name);
+  } catch {
+    return [];
   }
-  throw new Error("既没有 xterm 也没有 xmessage；apt-get install -y xterm");
 };
+
+const exists = (bin: string): boolean => {
+  try {
+    execFileSync("sh", ["-c", `command -v ${bin}`], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+interface Attempt {
+  bin: string;
+  args: string[];
+}
+
+const ATTEMPTS: Attempt[] = [
+  { bin: "xterm", args: ["-T", "deskshell-smoke", "-geometry", "80x24+40+60", "-e", "sleep", "300"] },
+  { bin: "xmessage", args: ["-title", "deskshell-smoke", "-geometry", "400x200+40+60", "deskshell-smoke"] },
+  { bin: "xclock", args: ["-title", "deskshell-smoke", "-geometry", "200x200+40+60"] },
+];
+
+async function spawnWindow(): Promise<{ kill: () => void; label: string }> {
+  const errors: string[] = [];
+  for (const attempt of ATTEMPTS) {
+    if (!exists(attempt.bin)) continue;
+    const child = spawn(attempt.bin, attempt.args, { detached: true, stdio: ["ignore", "ignore", "pipe"] });
+    child.stderr?.on("data", (d: Buffer) => errors.push(`${attempt.bin}: ${String(d).trim()}`));
+    for (let i = 0; i < 20; i++) {
+      await sleep(300);
+      const names = await listWindows();
+      if (names.some((n) => /deskshell-smoke/i.test(n))) {
+        return {
+          label: attempt.bin,
+          kill: () => {
+            try {
+              process.kill(-child.pid!, "SIGKILL");
+            } catch {
+              try {
+                child.kill("SIGKILL");
+              } catch {
+                /* 已退出 */
+              }
+            }
+          },
+        };
+      }
+    }
+    try {
+      process.kill(-child.pid!, "SIGKILL");
+    } catch {
+      child.kill("SIGKILL");
+    }
+  }
+  throw new Error(`没能创建测试窗口（试过 ${ATTEMPTS.map((a) => a.bin).join(" / ")}）：${errors.join(" | ").slice(0, 300)}`);
+}
 
 const app = spawnWindow();
 await sleep(1500);
