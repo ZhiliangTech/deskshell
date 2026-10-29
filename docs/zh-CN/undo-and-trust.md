@@ -95,6 +95,33 @@ deskshell undo --since 30m         # 撤最近 30 分钟内开始的任务（30m
 - 撤销只重写包含目标条目的那个文件，状态一致且不会产生重复行；
 - `DESKSHELL_JOURNAL_MAX_BYTES` 可以改阈值（测试里用 600 字节）。
 
+## 撤销覆盖率（实测）
+
+`scripts/undo-coverage-test.ts` 先给目录拍快照（每个路径 + 每个文件的 sha256，排除 `.deskshell/`），执行 skill，再撤销，然后**逐字节**比对两次快照。当前结果：
+
+```
+PASS  downloads-cleanup  10 步 · 撤销 10 步 · 逐字节一致
+PASS  photo-sort         13 步 · 撤销 13 步 · 逐字节一致
+PASS  log-archive         5 步 · 撤销  5 步 · 逐字节一致
+PASS  rename-batch        3 步 · 撤销  3 步 · 逐字节一致
+PASS  first-skill         1 步 · 撤销  1 步 · 逐字节一致
+SKIP  browser-tabs        需要真实浏览器窗口（GUI）
+SKIP  tile-windows        需要真实窗口（GUI）
+```
+
+GUI 类 skill 是**带理由跳过**并打印出来的，不会静默略过——假装通过的测试比没有测试更糟。
+
+## 逐项确认能力
+
+`deskshell run <skill> --ask` 在执行前逐条问：
+
+```
+授予能力 fs.read（读取下载目录）？[y/N] y
+授予能力 fs.write（移动与写入）？[y/N] y
+```
+
+任何一条回 `n`，整个任务取消，退出码 2，而且**没有任何副作用**——不写日志、不动文件。管道输入也行（每行一个 y/n），CI 就是这么测的；空输入等同于拒绝。
+
 ## 已知边界
 
 - 外部副作用无法撤销（例如已经发出的网络请求），这类动作必须走 `undo: null` 并被拒绝；

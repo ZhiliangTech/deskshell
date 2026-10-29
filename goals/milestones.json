@@ -29,7 +29,10 @@
       "from": 80,
       "to": 120,
       "accept": "每个能力在授予时都要人确认一次；任意 skill 的撤销都有测试证明文件系统回到原状",
-      "check": "deskshell run --ask；regress 中 rollback 覆盖率 100%"
+      "check": "deskshell run --ask；regress 中 rollback 覆盖率 100%",
+      "done": true,
+      "doneAt": "2026-10-29",
+      "evidence": ""
     },
     {
       "id": "M04",

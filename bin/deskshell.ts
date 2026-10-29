@@ -44,6 +44,7 @@ run 选项:
   --window <regex>            传给 skill 的窗口匹配串
   --example <name>            使用 skill 自带的示例参数（examples/<name>.json）
   --grant <a,b>               只授予指定能力（默认全部）
+  --ask                       逐项确认能力（交互终端或从标准输入读 y/n）
   --parallel                  多个 skill 并行执行；一个失败不影响其它
   --json                      输出机器可读结果（CI/脚本用）
 
@@ -115,6 +116,49 @@ function parse(argv: string[]): { positional: string[]; flags: Record<string, st
   return { positional, flags };
 }
 
+
+/**
+ * 逐项确认能力。交互终端逐条问；非交互（管道/CI）从标准输入按行读 y/n。
+ * 任一项被拒 → 返回 null，调用方整单放弃。
+ */
+async function askCapabilities(
+  caps: Array<{ id: string; reason?: string }>,
+  emit: (line: string) => void,
+): Promise<CapabilityId[] | null> {
+  const granted: CapabilityId[] = [];
+
+  if (process.stdin.isTTY) {
+    const { createInterface } = await import("node:readline/promises");
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      for (const cap of caps) {
+        const answer = await rl.question(`授予能力 ${cap.id}（${cap.reason ?? "未说明"}）？[y/N] `);
+        if (/^y(es)?$/i.test(answer.trim())) granted.push(cap.id as CapabilityId);
+      }
+    } finally {
+      rl.close();
+    }
+    return granted.length === caps.length ? granted : null;
+  }
+
+  // 非交互：把标准输入读干，按行取 y/n
+  let raw = "";
+  try {
+    raw = fs.readFileSync(0, "utf8");
+  } catch {
+    raw = "";
+  }
+  const answers = raw.split(/\r?\n/).map((x) => x.trim());
+  if (answers.filter(Boolean).length === 0) {
+    emit("--ask 需要输入：交互终端逐项回答，或从标准输入按行提供 y/n");
+    return null;
+  }
+  for (let i = 0; i < caps.length; i++) {
+    if (/^y(es)?$/i.test(answers[i] ?? "")) granted.push(caps[i].id as CapabilityId);
+  }
+  return granted.length === caps.length ? granted : null;
+}
+
 async function runSkill(
   name: string,
   flags: Record<string, string>,
@@ -142,7 +186,17 @@ async function runSkill(
   const root = path.resolve(flags.root ?? ".demo/cli");
   const mode = (flags.mode ?? "preview") as "preview" | "apply" | "undo";
   const needsDriver = entry.caps.some((x) => x.startsWith("ui.") || x === "window.move");
-  const granted = (flags.grant ? flags.grant.split(",") : entry.caps) as CapabilityId[];
+  let granted = (flags.grant ? flags.grant.split(",") : entry.caps) as CapabilityId[];
+  if ("ask" in flags) {
+    const declared = (skill.manifest.capabilities ?? []) as Array<{ id: string; reason?: string }>;
+    const approved = await askCapabilities(declared, out);
+    if (!approved) {
+      if (json) out(JSON.stringify({ ok: false, error: "capabilities denied" }));
+      else out(c(31, "已取消：") + "有能力的授予被拒绝，任务不会执行");
+      return 2;
+    }
+    granted = approved;
+  }
 
   let driver;
   if (needsDriver) {

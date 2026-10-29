@@ -2,6 +2,21 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.6.0 — 2026-10-30
+
+M03：能力授予变得可见，撤销从"步数对得上"升级为"逐字节对得上"。
+
+### Added
+
+- **`deskshell run <skill> --ask`** —— 执行前逐项确认能力，显示 id 与人话理由。交互终端逐条问；管道输入每行一个 `y`/`n`（CI 就这么测）。任一拒绝 → 整单取消、退出码 2、**零副作用**（不写日志、不动文件）。空输入等同拒绝。
+- **`scripts/undo-coverage-test.ts`** —— 对每个公开 skill：拍快照（路径 + 每文件 sha256）→ apply → undo → 再比快照，要求逐字节一致。当前 5 个文件类 skill 全过，2 个 GUI 类**带理由**跳过（不静默略过）。
+- **`scripts/ask-test.ts`** —— 8 条契约：同意可跑、拒绝即停、无输入即拒、拒绝时无副作用、`--ask` 优先于 `--grant`。
+
+### Changed
+
+- 回归从 35 项扩到 **37 项**（新增 capability.ask、undo.coverage）。
+- `docs/undo-and-trust`（中英）补"撤销覆盖率"与"逐项确认能力"两节，直接贴实测输出。
+
 ## 0.5.1 — 2026-10-29
 
 M01 验收（"陌生人在 Windows 上 10 分钟跑通"）挖出来的两个真问题，都已修掉。

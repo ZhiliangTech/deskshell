@@ -95,6 +95,33 @@ The journal grows by roughly 400 bytes per step (measured: 387 KB for 1000 steps
 - undo rewrites only the file that contains the affected entries, so statuses stay consistent without duplicating rows;
 - `DESKSHELL_JOURNAL_MAX_BYTES` overrides the threshold (tests use 600 bytes).
 
+## Undo coverage, measured
+
+`scripts/undo-coverage-test.ts` snapshots a directory (every path plus a sha256 per file, `.deskshell/` excluded), applies a skill, undoes it, and compares the two snapshots **byte for byte**. Current result:
+
+```
+PASS  downloads-cleanup  10 步 · 撤销 10 步 · 逐字节一致
+PASS  photo-sort         13 步 · 撤销 13 步 · 逐字节一致
+PASS  log-archive         5 步 · 撤销  5 步 · 逐字节一致
+PASS  rename-batch        3 步 · 撤销  3 步 · 逐字节一致
+PASS  first-skill         1 步 · 撤销  1 步 · 逐字节一致
+SKIP  browser-tabs        needs a real browser window (GUI)
+SKIP  tile-windows        needs real windows (GUI)
+```
+
+GUI skills are skipped **with a reason in the output**, never silently — a skipped test that pretends to pass is worse than no test.
+
+## Confirming capabilities one by one
+
+`deskshell run <skill> --ask` asks before anything runs:
+
+```
+授予能力 fs.read（读取下载目录）？[y/N] y
+授予能力 fs.write（移动与写入）？[y/N] y
+```
+
+Any `n` cancels the whole task with exit code 2 and **no side effects** — no journal entry, no file touched. Piped stdin works too (one `y`/`n` per line), which is how CI tests it; empty input counts as a refusal.
+
 ## Known boundaries
 
 - external side effects cannot be undone (an HTTP request already left); such actions are `undo: null` and rejected;

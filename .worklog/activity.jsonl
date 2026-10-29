@@ -34,3 +34,8 @@
 {"ts":1793291516525,"label":"regress 全量回归","kind":"test"}
 {"ts":1793291531377,"label":"M02 完成","kind":"milestone"}
 {"ts":1793291531520,"label":"push to GitHub","kind":"ship"}
+{"ts":1793291681816,"label":"M03 能力确认 + 撤销覆盖","kind":"milestone"}
+{"ts":1793291726530,"label":"regress 全量回归","kind":"test"}
+{"ts":1793291744602,"label":"regress 全量回归","kind":"test"}
+{"ts":1793291787702,"label":"M03 完成 + 0.6.0 发版","kind":"manual"}
+{"ts":1793291787849,"label":"push to GitHub","kind":"ship"}
