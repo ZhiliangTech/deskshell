@@ -46,7 +46,8 @@
     "new-skill": "node scripts/new-skill.ts",
     "demo:fs": "node apps/cli-demo/main.ts --mode preview",
     "demo:ui": "node apps/cli-demo/ui.ts --root .demo/archive --window Edge --mode preview",
-    "story": "node apps/cli-demo/story.ts"
+    "story": "node apps/cli-demo/story.ts",
+    "clock": "node scripts/clock.ts"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",

@@ -16,3 +16,6 @@
 {"ts":1793284360830,"label":"probe","kind":"test"}
 {"ts":1793284366155,"label":"生成 WORKLOG + 推送","kind":"manual"}
 {"ts":1793284369274,"label":"push to GitHub","kind":"ship"}
+{"ts":1793285919639,"label":"里程碑拆分","kind":"manual"}
+{"ts":1793285923886,"label":"读我加进度段","kind":"manual"}
+{"ts":1793285923952,"label":"push to GitHub","kind":"ship"}

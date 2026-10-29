@@ -1,0 +1,101 @@
+{
+  "goalHours": 480,
+  "milestones": [
+    {
+      "id": "M01",
+      "title": "陌生人在 Windows 上 10 分钟跑通",
+      "from": 0,
+      "to": 40,
+      "accept": "一位没用过的人按 README 从零装好，deskshell doctor 全绿，能跑通 downloads-cleanup 的预览/执行/撤销",
+      "check": "npm i -g <tarball> && deskshell doctor && deskshell run downloads-cleanup --root .\\demo --mode apply"
+    },
+    {
+      "id": "M02",
+      "title": "协议 v0 冻结 + 兼容性测试",
+      "from": 40,
+      "to": 80,
+      "accept": "五个类型与不变式写死；新增一条\"旧 skill 在新内核上仍可运行\"的兼容测试",
+      "check": "node scripts/compat-test.ts（待建）"
+    },
+    {
+      "id": "M03",
+      "title": "能力授予可见、撤销可证明",
+      "from": 80,
+      "to": 120,
+      "accept": "每个能力在授予时都要人确认一次；任意 skill 的撤销都有测试证明文件系统回到原状",
+      "check": "deskshell run --ask；regress 中 rollback 覆盖率 100%"
+    },
+    {
+      "id": "M04",
+      "title": "录制 → 可运行 skill 闭环",
+      "from": 120,
+      "to": 160,
+      "accept": "录一次真实工作流，草稿补完断言后能重复执行三次结果一致",
+      "check": "录制→draft→手工补断言→连跑 3 次，diff 为空"
+    },
+    {
+      "id": "M05",
+      "title": "10 个真实场景 skill",
+      "from": 160,
+      "to": 200,
+      "accept": "10 个公开 skill，至少 3 个是 UI 类，每个都有快照与撤销测试",
+      "check": "deskshell list | wc -l；snapshots 数 ≥ 10"
+    },
+    {
+      "id": "M06",
+      "title": "第三个平台（Linux）",
+      "from": 200,
+      "to": 240,
+      "accept": "Linux 上文件类 + 基础 UI 动作可用，契约测试在 CI 的 ubuntu 上真跑",
+      "check": "CI matrix 中 linux 任务实跑 contract-test（非跳过）"
+    },
+    {
+      "id": "M07",
+      "title": "桌面壳 MVP",
+      "from": 240,
+      "to": 280,
+      "accept": "全局热键唤起、输入一句话、看到预览面板再决定执行；关掉面板不产生任何副作用",
+      "check": "手动验收 + 面板单测"
+    },
+    {
+      "id": "M08",
+      "title": "模型接入插件",
+      "from": 280,
+      "to": 320,
+      "accept": "自然语言 → 计划，产出的动作仍走同一套策略与预览；断网时内核行为不变",
+      "check": "插件开关关闭后 regress 全绿"
+    },
+    {
+      "id": "M09",
+      "title": "文档到\"不用问人\"",
+      "from": 320,
+      "to": 360,
+      "accept": "教程、FAQ、故障排查、一段 3 分钟演示视频；新人按文档不提问能完成一次真实任务",
+      "check": "找 1 位外部读者按文档操作，记录卡点并修完"
+    },
+    {
+      "id": "M10",
+      "title": "公共 npm 发布 + 版本承诺",
+      "from": 360,
+      "to": 400,
+      "accept": "npm i -g deskshell 可用；0.x 破坏性变更走 RFC 并给迁移脚本",
+      "check": "npm view deskshell version；CHANGELOG 有迁移段"
+    },
+    {
+      "id": "M11",
+      "title": "社区就绪",
+      "from": 400,
+      "to": 440,
+      "accept": "issue 模板、贡献指南、good first issue 清单、PR 会被 CI 友好接住",
+      "check": "用一个新账号提一次 PR，全程按文档走"
+    },
+    {
+      "id": "M12",
+      "title": "冷启动：第一个真实用户",
+      "from": 440,
+      "to": 480,
+      "accept": "至少 1 个非本人的 star / issue / 使用反馈，且有对应的 demo 与发布文案",
+      "check": "GitHub 通知里出现第一个外部用户"
+    }
+  ]
+}

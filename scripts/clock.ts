@@ -2,6 +2,25 @@ import fs from "node:fs";
 import path from "node:path";
 import { ROOT, fmtDur, loadMarks, saveMarks, sessions, totalActiveMs } from "./lib/clock-store.ts";
 
+interface Milestone {
+  id: string;
+  title: string;
+  from: number;
+  to: number;
+  accept: string;
+  check: string;
+  done?: boolean;
+  doneAt?: string;
+  evidence?: string;
+}
+
+const MILESTONES_FILE = path.join(ROOT, "goals", "milestones.json");
+
+function loadMilestones(): { goalHours: number; milestones: Milestone[] } | null {
+  if (!fs.existsSync(MILESTONES_FILE)) return null;
+  return JSON.parse(fs.readFileSync(MILESTONES_FILE, "utf8"));
+}
+
 /**
  * 工作时钟 CLI。我没有内部时钟，所以靠"干活时留下的痕迹 + 相邻间隔"估算有效时长。
  * 相邻记录 ≤5 分钟算连续工作；超过就视为离开，不计入。
@@ -48,6 +67,26 @@ if (cmd === "backfill") {
   process.exit(0);
 }
 
+if (cmd === "milestone") {
+  const id = argv[1];
+  const plan = loadMilestones();
+  if (!plan || !id) {
+    console.error("用法: clock milestone <M01> --evidence \"...\"");
+    process.exit(2);
+  }
+  const m = plan.milestones.find((x) => x.id === id);
+  if (!m) {
+    console.error(`没有这个里程碑：${id}`);
+    process.exit(2);
+  }
+  m.done = true;
+  m.doneAt = new Date().toISOString().slice(0, 10);
+  m.evidence = flag("evidence", "");
+  fs.writeFileSync(MILESTONES_FILE, JSON.stringify(plan, null, 2) + "\n", "utf8");
+  console.log(`✅ ${m.id} ${m.title} 已验收${m.evidence ? `：${m.evidence}` : ""}`);
+  process.exit(0);
+}
+
 if (cmd === "report") {
   const marks = loadMarks();
   const s = sessions(marks);
@@ -77,7 +116,38 @@ if (s.length > 1) {
   lines.push(`按每段平均 ${fmtDur(avg)} 估算，还需约 ${Math.ceil((remaining * 3600000) / Math.max(avg, 1))} 段`);
 }
 
-const out = ["# WORKLOG — 有效工作时长", "", ...lines.map((l) => `- ${l}`), "", "## 会话", ""];
+// ---- 里程碑 ----
+const plan = loadMilestones();
+const msLines: string[] = [];
+if (plan) {
+  const cur = plan.milestones.find((m) => activeHours >= m.from && activeHours < m.to) ??
+    plan.milestones[plan.milestones.length - 1];
+  const intoHours = Math.max(0, activeHours - cur.from);
+  const spanHours = cur.to - cur.from;
+  const pct = Math.min(100, (intoHours / spanHours) * 100);
+  const doneCount = plan.milestones.filter((m) => m.done).length;
+  lines.push(`当前里程碑：${cur.id} ${cur.title}（${intoHours.toFixed(1)}/${spanHours} h，${pct.toFixed(0)}%）`);
+  lines.push(`已验收里程碑：${doneCount}/${plan.milestones.length}`);
+
+  msLines.push("## 里程碑（480 小时拆分）", "");
+  msLines.push("| 里程碑 | 预算 | 状态 | 验收标准 |");
+  msLines.push("| --- | --- | --- | --- |");
+  for (const m of plan.milestones) {
+    const state = m.done
+      ? `✅ ${m.doneAt ?? ""}`
+      : activeHours >= m.to
+        ? "⏳ 到时未验收"
+        : activeHours >= m.from
+          ? "▶ 进行中"
+          : "· 未开始";
+    msLines.push(`| ${m.id} ${m.title} | ${m.from}–${m.to} h | ${state} | ${m.accept} |`);
+  }
+  msLines.push("");
+  msLines.push(`当前里程碑的验收命令：\`${cur.check}\``);
+  msLines.push("");
+}
+
+const out = ["# WORKLOG — 有效工作时长", "", ...lines.map((l) => `- ${l}`), "", ...msLines, "## 会话", ""];
 out.push("| 开始 | 结束 | 有效时长 | 记录数 |");
 out.push("| --- | --- | --- | --- |");
 for (const x of s.slice(-20)) {
