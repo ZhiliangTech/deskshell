@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <b>Put the machine inside the agent: every OS action becomes a declared, asserted, undoable, auditable contract.</b><br>
-  Not "an agent that clicks": the runtime your agent calls when the computer has to behave like a tool.
+  <b>An OS runtime for agents: the machine as a toolbox, every action a declared contract — asserted, undoable, auditable.</b><br>
+  Not "an agent that clicks": deskshell runs <i>inside</i> your agent, and turns the desktop into tools.
 </p>
 
 <p align="center">

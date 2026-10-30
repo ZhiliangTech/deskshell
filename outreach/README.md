@@ -12,6 +12,7 @@
 | [GOOD-FIRST-ISSUES.md](GOOD-FIRST-ISSUES.md) · [.zh-CN](GOOD-FIRST-ISSUES.zh-CN.md) | 12 个带验收标准的任务（悬赏板源文件） | 有人回“我能做什么”时 |
 | [CONTRIBUTOR-LADDER.md](CONTRIBUTOR-LADDER.md) | 五级贡献者阶梯、权利、评审 SLA | 有人问“长期怎么参与”时 |
 | [GOVERNANCE.md](GOVERNANCE.md) | 决策权、RFC、冲突处理 | 有人问“谁说了算”时 |
+| [TARGETS-RUNTIME.md](TARGETS-RUNTIME.md) | **新框架下的第一批**：agent 运行时 / 沙箱 / CUA + 3 封已写好的邮件 | 定位收紧为「agent 的 OS 运行时」之后 |
 | [EMAIL.md](EMAIL.md) | **不用 X** 的触达方案：8 个公开邮箱 + 4 封已写好的邮件 | 不想用社交账号时 |
 | [SEND-QUEUE.md](SEND-QUEUE.md) | 首发 10 人 + 已填好的私信正文（换名字即可发） | 今天就开始发时 |
 | [STATE.md](STATE.md) | **对外唯一口径**：仓库/站点/安装渠道/能说什么（每次迁移或发布后更新） | 写任何对外文案之前 |

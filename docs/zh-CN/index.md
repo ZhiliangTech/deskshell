@@ -4,7 +4,7 @@
 
 ![deskshell demo](assets/hero.gif)
 
-deskshell 不是一个"会点鼠标的 agent"，而是**把整台电脑变成 agent 工具箱的那层运行时**。它把"AI 要做什么"和"怎么保证不出事"彻底分开：
+deskshell 是一个**给 agent 用的 OS 运行时**：不是"会点鼠标的 agent"，而是跑在 agent 内部、把整台电脑变成工具箱的那一层。它把"AI 要做什么"和"怎么保证不出事"彻底分开：
 
 - **Skill** 只描述意图（要做什么），不碰系统 API；
 - **Kernel** 负责权限、预览、执行、断言、回滚、审计；

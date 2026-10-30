@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <b>把电脑塞进 agent 里：每个动作都是可声明、可断言、可撤销、可审计的合同。</b><br>
-  不是"会点鼠标的 agent"，是 agent 要用电脑时底下那层运行时。
+  <b>给 agent 用的 OS 运行时：整台电脑是一个工具箱，每个动作都是一份合同——可声明、可断言、可撤销、可审计。</b><br>
+  不是"会点鼠标的 agent"：deskshell 跑在 agent 内部，把桌面变成工具。
 </p>
 
 <p align="center">

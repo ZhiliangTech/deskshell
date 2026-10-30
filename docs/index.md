@@ -2,7 +2,7 @@
 
 # deskshell docs
 
-> The machine as a toolbox inside your agent. Every OS action is declared, asserted, undoable, and audited — and there is no model in the kernel.
+> **An OS runtime for agents.** The machine as a toolbox; every action a declared contract — asserted, undoable, audited — and no model in the kernel.
 
 deskshell is not an agent that clicks. It is the layer that turns the whole machine into something an agent can call safely: **the OS as a tool, not a surface to poke**. It separates **what to do** from **how to do it safely**:
 
