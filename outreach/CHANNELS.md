@@ -40,9 +40,9 @@
 
 ### 一句话定位（反复用同一句，别换花样）
 
-> **每个动作都必须可验证、可撤销、可审计；内核里没有模型。**
+> **把电脑塞进 agent 里：每个动作可声明、可断言、可撤销、可审计；内核里没有模型。**
 
-English: **Every action is previewed, asserted, undoable, and audited — and there is no model in the kernel.**
+English: **The machine as a toolbox inside the agent: every action is declared, asserted, undoable, audited — no model in the kernel.**
 
 ---
 

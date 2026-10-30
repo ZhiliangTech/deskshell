@@ -12,7 +12,7 @@ For developers who have never heard of this project. One job: get them to spend 
 4. **Do not claim what is not true.** Linux is window-level only — an X11 driver on xdotool + wmctrl exists, control-level AT-SPI2 doesn't. There is no public npm package yet (installer, GitHub Packages, or clone). The recorder doesn't capture drag, right-click menus or wheel.
 5. Replace `{name}`, `{project}`, `{issue_url}`, `{repo_url}`. Never send with a placeholder still in it.
 
-Canonical one-liner: **Every action is previewed, asserted, undoable, and audited — and there is no model in the kernel.**
+Canonical one-liner: **The machine as a toolbox inside your agent — every action is declared, asserted, undoable, audited, and there is no model in the kernel.**
 
 ---
 

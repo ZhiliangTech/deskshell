@@ -2,9 +2,9 @@
 
 # deskshell docs
 
-> A protocol-first shell for AI computer control. Every action is previewed, verified, undoable, and audited.
+> The machine as a toolbox inside your agent. Every OS action is declared, asserted, undoable, and audited — and there is no model in the kernel.
 
-deskshell is not a pile of "AI clicks the mouse" scripts. It separates **what to do** from **how to do it safely**:
+deskshell is not an agent that clicks. It is the layer that turns the whole machine into something an agent can call safely: **the OS as a tool, not a surface to poke**. It separates **what to do** from **how to do it safely**:
 
 - **Skill** — declares intent only (`plan() → Action[]`). Never touches system APIs, never writes rollback code.
 - **Kernel** — permissions, preview, execution, assertions, rollback, journal. The layer with a frozen interface.

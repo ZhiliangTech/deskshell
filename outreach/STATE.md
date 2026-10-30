@@ -26,8 +26,8 @@
 
 ## 对外口径（一句话）
 
-> 每个动作都必须可验证、可撤销、可审计；内核里没有模型。
-> Every action is previewed, asserted, undoable, and audited — and there is no model in the kernel.
+> 把电脑塞进 agent 里：每个动作都可声明、可断言、可撤销、可审计；内核里没有模型。
+> The machine as a toolbox inside the agent: every action is declared, asserted, undoable, audited — and there is no model in the kernel.
 
 ## 不能说 / 不要承诺
 

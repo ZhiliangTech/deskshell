@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <b>AI can drive your computer — but every action should be previewed, verified, undoable, and auditable.</b><br>
-  Not "a script that clicks things": a protocol-first kernel with transactional semantics.
+  <b>Put the machine inside the agent: every OS action becomes a declared, asserted, undoable, auditable contract.</b><br>
+  Not "an agent that clicks": the runtime your agent calls when the computer has to behave like a tool.
 </p>
 
 <p align="center">
@@ -17,6 +17,14 @@
 <p align="center">
   <b>English</b> · <a href="README.zh-CN.md">简体中文</a>
 </p>
+
+## What it is (and is not)
+
+| | |
+| --- | --- |
+| **Is** | the runtime an agent calls to act on a machine: capability → action → post-assertion → undo → journal |
+| **Is not** | an agent, a chat UI, an RPA recorder, or a wrapper around a model API |
+| **Why it exists** | an agent that "just clicks" cannot tell you whether the click worked, and cannot take it back |
 
 ## How it differs
 
