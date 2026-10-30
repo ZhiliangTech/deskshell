@@ -179,6 +179,33 @@ try {
       Start-Sleep -Milliseconds 120
       $data = @{ moved = $true; x = [int]$req.x; y = [int]$req.y; w = [int]$req.w; h = [int]$req.h }
     }
+    'setvalue' {
+      $win = Select-WindowElement $req.titleRegex $req.pid
+      if ($win -eq $null) { throw "window not found" }
+      $el = Find-Element $win $req.selector
+      if ($el -eq $null) { throw "element not found" }
+      $value = if ($req.value -eq $null) { '' } else { [string]$req.value }
+      $p = $null
+      if ($el.TryGetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern, [ref]$p)) {
+        $p.SetValue($value)
+        $data = @{ wrote = $true; via = 'ValuePattern'; value = $value }
+      } else {
+        # 很多旧式控件（含 WinForms 的 TextBox 走 legacy proxy）没有 ValuePattern，
+        # 和 type 一样退回到"聚焦 + 全选 + 粘贴/删除"。
+        Focus-Window $win
+        [System.Windows.Forms.SendKeys]::SendWait('^a')
+        if ($value -eq '') {
+          [System.Windows.Forms.SendKeys]::SendWait('{DEL}')
+        } else {
+          $saved = Save-Clipboard
+          Set-Clipboard -Value $value
+          [System.Windows.Forms.SendKeys]::SendWait('^v')
+          Start-Sleep -Milliseconds 200
+          Restore-Clipboard $saved
+        }
+        $data = @{ wrote = $true; via = 'Clipboard'; value = $value }
+      }
+    }
     'type' {
       $win = Select-WindowElement $req.titleRegex $req.pid
       if ($win -eq $null) { throw "window not found" }

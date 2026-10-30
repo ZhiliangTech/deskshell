@@ -82,6 +82,13 @@ export class MockDriver implements UiDriver {
     if (target) target.value = text;
   }
 
+  async setValue(ref: WindowRef, selector: UiSelector, value: string | null): Promise<void> {
+    this.calls.push(`setValue:${ref.titleRegex}:${selector.automationId ?? selector.name}:${value ?? "(clear)"}`);
+    const target = this.treeData.children.find((c) => c.automationId === selector.automationId);
+    if (!target) throw new Error(`控件不存在：${selector.automationId ?? selector.name}`);
+    target.value = value;
+  }
+
   async keys(ref: WindowRef, combo: string): Promise<void> {
     this.calls.push(`keys:${ref.titleRegex}:${combo}`);
   }

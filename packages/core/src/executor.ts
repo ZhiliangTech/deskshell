@@ -231,6 +231,15 @@ export async function applyUndo(
       await ctx.driver.moveWindow({ titleRegex: undo.window }, undo.rect);
       return;
     }
+    case "ui.value": {
+      if (!ctx.driver?.setValue) {
+        throw new Error(
+          "当前驱动不支持 setValue，无法撤销 ui.type：这个动作在没有 setValue 的平台上不可撤销",
+        );
+      }
+      await ctx.driver.setValue({ titleRegex: undo.window }, undo.selector, undo.value);
+      return;
+    }
     case "noop":
       return;
   }

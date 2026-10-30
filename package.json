@@ -1,6 +1,6 @@
 {
   "name": "@zhiliangtech/deskshell",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "OS runtime for agents: protocol-first kernel with declared capabilities, post-assertions, undo and audit",
   "license": "MIT",
   "type": "module",

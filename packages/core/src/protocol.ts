@@ -27,7 +27,7 @@ export const ASSERTION_KINDS = [
   "ui.exists",
 ] as const;
 
-export const UNDO_KINDS = ["fs.move", "fs.rmdir", "fs.restore", "window.move", "noop"] as const;
+export const UNDO_KINDS = ["fs.move", "fs.rmdir", "fs.restore", "window.move", "ui.value", "noop"] as const;
 
 export const CAPABILITY_IDS = [
   "fs.read",

@@ -78,28 +78,33 @@ R0-可追溯   0.0%
 
 and the process exits non-zero. `scripts/r0-negative-test.ts` asserts exactly that (5/5). So when deskshell reports 100%, it is being scored by a harness that has demonstrably failed another implementation.
 
-## The UI side (and where we are not done)
+## The UI side: 40% → 80%, and why not 100%
 
-Files can be restored byte for byte. Windows and controls cannot — yet. `scripts/recovery-bench-ui.ts` runs the same injection matrix against a mock window and measures **state** instead of bytes (geometry + control values + enabled flags):
+Files can be restored byte for byte. Windows and controls could not — until `ui.value` existed.
+
+`scripts/recovery-bench-ui.ts` runs the same injection matrix against a mock window and measures **state** (geometry + control values + enabled flags):
 
 ```
 | 场景 | 失败注入点 | 状态归零 | 已撤销/已执行 |
 | move-window      | 1 | ✅ | 0/0 |
 | move-window      | 2 | ✅ | 1/1 |
-| type-into-field  | 1 | ❌ | 0/0 |
-| type-into-field  | 2 | ❌ | 1/1 |
+| type-into-field  | 1 | ✅ | 0/0 |
+| type-into-field  | 2 | ✅ | 1/1 |
 | invoke-button    | 1 | ❌ | 0/0 |
 
-R0-UI 状态归零   40.0%（5 次注入）
+R0-UI 状态归零   80.0%（5 次注入）
 R0-UI 回滚       100.0%
-正常路径撤销后一致：1/3
+正常路径撤销后一致：2/3
 ```
 
-The reason is not a bug in the benchmark, it is a gap in the protocol: `window.move` has an undo kind, `ui.type` and `ui.invoke` do not — skills can only write `noop`, which means *typed text and pressed buttons stay*.
+**What changed:** the protocol gained an undo kind `ui.value` — *write the previous value back* (`null` means "this control had no value"). `ui.type` now declares it, so typed text can be reverted. Drivers must implement the optional `setValue` primitive; Windows does (ValuePattern, falling back to focus + select-all + paste), Linux's window-level driver does not and says so.
 
-We publish the 40% instead of hiding it, because:
-- a number that only covers the easy half is advertising;
-- the fix has a name: a `ui.value` undo kind plus a `setValue` driver primitive, and it has to be implemented for the real Windows driver too, not only for the mock. Until then the honest claim is **"file actions are undoable; UI actions are not yet"**.
+**The remaining 20% is not an oversight.** `ui.invoke` cannot be undone — a pressed button stays pressed. The correct answer for it is not an undo but a confirmation before acting (preview + a human nod). So the honest ceiling for UI actions is not 100% until `invoke` is reclassified as *needs confirmation* rather than *undoable*.
+
+Two traps this exposed:
+
+- `null` and `""` are different states. Writing `null` into a control that started as `""` leaves it at `null` — the first version of this bench did exactly that and scored itself down. Restore **the value you read**, not "empty".
+- Mock-only success is not success. The Windows driver's `setValue` was verified on a real window (write, read back, clear); it has no stable automated test because the WinForms fixture exposes a legacy UIA proxy whose Name is the text itself.
 
 ## Limits
 

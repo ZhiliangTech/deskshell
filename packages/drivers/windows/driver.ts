@@ -85,6 +85,10 @@ export class WindowsDriver implements UiDriver {
     await call({ action: "type", titleRegex: ref.titleRegex, pid: ref.pid, selector, text });
   }
 
+  async setValue(ref: WindowRef, selector: UiSelector, value: string | null): Promise<void> {
+    await call({ action: "setvalue", titleRegex: ref.titleRegex, pid: ref.pid, selector, value });
+  }
+
   async keys(ref: WindowRef, combo: string): Promise<void> {
     await call({ action: "keys", titleRegex: ref.titleRegex, pid: ref.pid, combo });
   }

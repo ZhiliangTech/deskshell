@@ -42,6 +42,9 @@ Four things the hardware taught us:
 3. **Focus by pid.** `CGWindowList` reports localized owner names ("终端"), while System Events uses "Terminal"; matching by name fails with `-1719`.
 4. **Buttons often have no title.** Calculator's buttons expose only `AXIdentifier` (`Seven`, `Multiply`, `Equals`), and the display text carries U+200E marks that must be stripped before comparison.
 
+
+- `setValue(ref, selector, value)` — writes a control's value (ValuePattern, falling back to focus + select-all + paste). This is what makes `ui.type` undoable. Verified on a real WinForms window; the fixture's legacy UIA proxy makes it impractical to automate.
+
 **Linux — X11, window-level (verified in CI)**
 
 - Stack: `wmctrl` for the window list, `xdotool` for geometry, activation, typing, keys and moves.

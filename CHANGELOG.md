@@ -2,6 +2,27 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.15.0 — 2026-10-31
+
+R0-UI 从 40% 提到 80%：`ui.type` 现在真的能撤销了。
+
+### Added
+
+- **协议新增撤销种类 `ui.value`**：`{window, selector, value}` —— 把**读到的前值**写回去，`null` 表示"控件本来没有值"。`spec/protocol-v0.json`、`protocol.ts`、`types.ts`、`executor.ts` 同步，协议冻结测试 24/24 仍绿。
+- **驱动原语 `setValue`（可选）**：Windows 驱动实现（ValuePattern；不支持时退回"聚焦 + 全选 + 粘贴/删除"）。已在真实 WinForms 窗口上验证写入、读回、清空。
+- 基准 `type-into-field` 改用 `ui.value` 撤销：**R0-UI 状态归零 40% → 80%**，正常路径撤销一致 1/3 → 2/3。
+
+### Documented — 剩下那 20% 不是漏做
+
+- `ui.invoke` 撤不回来：按钮按下去就是按下去了。对它正确的做法是动手前确认（preview + 人点头），不是 undo。把 `invoke` 重新定义成"需确认"之前，UI 侧的安全上限就不是 100%。
+- `null` ≠ `""`：往初始为 `""` 的控件写回 `null` 会停在 `null`。基准第一版就这么把自己判低了 20 分——**写回你读到的值**。
+
+### Evidence
+
+    regress 48/48
+    R0 文件面：100/100/100（15 次注入）· 正常路径 4/4
+    R0 UI 面：80% 状态归零 · 回滚 100% · 正常路径 2/3
+
 ## 0.14.0 — 2026-10-31
 
 R0 扩到 UI 面。结论不好看，但它是真的。

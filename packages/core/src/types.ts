@@ -36,6 +36,8 @@ export type UndoAction =
   | { kind: "fs.rmdir"; path: string }
   | { kind: "fs.restore"; path: string; content: string | null }
   | { kind: "window.move"; window: string; rect: Rect }
+  /** 把控件值写回（null = 清空）：这是 ui.type 唯一诚实的撤销方式 */
+  | { kind: "ui.value"; window: string; selector: UiSelector; value: string | null }
   | { kind: "noop" };
 
 interface ActionBase {
@@ -193,6 +195,8 @@ export interface UiDriver {
   keys(ref: WindowRef, combo: string): Promise<void>;
   /** 可选能力：不是每个平台都支持窗口几何操作 */
   bounds?(ref: WindowRef): Promise<Rect>;
+  /** 可选能力：把控件值直接写回（撤销 ui.type 用）；不支持就别实现 */
+  setValue?(ref: WindowRef, selector: UiSelector, value: string | null): Promise<void>;
   moveWindow?(ref: WindowRef, rect: Rect): Promise<void>;
 }
 

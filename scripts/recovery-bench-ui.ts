@@ -96,8 +96,9 @@ const SCENARIOS: Scenario[] = [
         window: "Mock Window",
         selector: { automationId: "editor" },
         text: "hello",
-        // 现在没有 ui.value 这类撤销：只能 noop，也就是"打进去的字撤不回来"
-        undo: { kind: "noop" },
+        // 撤销要写回"读到的前值"：这个控件初始是空字符串，不是 null。
+        // null 表示"控件本来没有值"，两者不能混用——否则还原出来的是 null，状态对不上。
+        undo: { kind: "ui.value", window: "Mock Window", selector: { automationId: "editor" }, value: "" },
       },
       {
         id: "type:world",
@@ -105,7 +106,8 @@ const SCENARIOS: Scenario[] = [
         window: "Mock Window",
         selector: { automationId: "editor" },
         text: "world",
-        undo: { kind: "noop" },
+        // 前一步的值是 "hello"：撤销要写回它，而不是清空
+        undo: { kind: "ui.value", window: "Mock Window", selector: { automationId: "editor" }, value: "hello" },
       },
     ],
   },
@@ -220,8 +222,9 @@ console.log(`R0-UI 状态归零   ${pct(residue)}（${rows.length} 次注入）`
 console.log(`R0-UI 回滚       ${pct(rollback)}`);
 console.log(`正常路径撤销后一致：${happyOk}/${happy.length}`);
 console.log("");
-console.log("已知缺口（这些数字就是证据，不是借口）：");
-console.log("- ui.type 与 ui.invoke 没有对应的撤销种类，只能用 noop → 打进控件的字、按下的按钮撤不回来。");
-console.log("- 文件侧 100% 不代表 UI 侧 100%；把两者放一起看，才是这个项目的真实水平。");
+console.log("剩下那 20% 不是遗漏，是设计边界：");
+console.log("- ui.type 现在有 ui.value 撤销（写回读到的前值），所以 type-into-field 全绿。");
+console.log("- ui.invoke 撤不回来：按钮按下去就是按下去了。对它正确的做法不是 undo，而是动手前的确认（preview + 人工点头）。");
+console.log("- 所以 UI 侧的诚实上限不是 100%，除非把 invoke 从「可撤销」重新定义成「需确认」。");
 
 fs.rmSync(here, { recursive: true, force: true });

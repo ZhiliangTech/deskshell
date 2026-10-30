@@ -40,6 +40,9 @@ interface UiDriver {
 3. **聚焦要按 pid**：`CGWindowList` 的 owner 名是本地化的（"终端"），System Events 的进程名是 "Terminal"，按名字匹配会 `-1719`。
 4. **按钮常常没有标题**：macOS 计算器的按钮 `AXTitle` 为空，只能靠 `AXIdentifier`（`Seven` / `Multiply` / `Equals`）定位；显示区文本还带 U+200E 方向标记，比对前要剥掉。
 
+
+- `setValue(ref, selector, value)` —— 直接写回控件值（ValuePattern，不支持时退回聚焦 + 全选 + 粘贴）。`ui.type` 能撤销就是靠它。已在真实 WinForms 窗口上验过；因为那个夹具走的是 legacy UIA proxy，没法稳定自动化。
+
 **Linux — X11，窗口级（CI 实测）**
 
 - 技术栈：`wmctrl` 列窗口，`xdotool` 做几何、激活、输入、按键、移动。
