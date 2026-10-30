@@ -3,6 +3,8 @@
 > 数据来源：`candidates.json`（120 人，GitHub API 实测）+ 各自 top repo 的真实描述。
 > 规则：**一人一稿，第一句必须关于他**；GitHub 没有私信功能，所以渠道写的是"哪里能找到他"（X / 邮箱 / 他自己仓库的相关 issue）。
 > 发之前做三件事：① 打开他的仓库确认描述还成立 ② 把 `{...}` 换成真实内容 ③ 在 TRACKER.csv 记一行。
+> **①不是走过场。** 稿子是某一天写的，对方的 README 每天都在变：2026-10-30 重核时 OpenAdapt 已经从"replay 一份演示"变成了带 `transaction_outcome` 和 effect refutation 的系统，旧开场句直接作废。发之前 48 小时内必重读一次对方 README/描述，改不动就换人。
+> 对方第一次听说这个项目时，除了仓库地址再附一句文档站 `https://zhiliangtech.github.io/deskshell/`——它比 README 更适合当「30 秒看懂」的落点。
 
 ## A 档（直接共建，先发这 6 个）
 
@@ -28,17 +30,23 @@
 
 ## 1. abrichr（OpenAdapt）
 
+> 前提重核 2026-10-30：旧稿写"step 5 fails 就留下半驱动的 UI、没有记录"——**已经不成立**。他们现在的 self-description 是 "checks each save, and stops when something doesn't match"，README 里有序章 `transaction_outcome` 表（VERIFIED / HALTED_BEFORE_EFFECT / RECONCILIATION_REQUIRED / COMPLETED_UNVERIFIED / SAVED_AWAITING_CHECK / REJECTED_POLICY…），并且明说用一次独立读来 refute 声明的 effect。拿旧稿发出去等于告诉他我们没读仓库。
+
 ```text
-Hi abrichr — OpenAdapt replays a demonstration, but when step 5 fails you are left with a half-driven UI and no record of what changed.
+Hi abrichr — the outcomes table is what I read first, so: `RECONCILIATION_REQUIRED` is the value I keep thinking about. You halt at the consequential step, refute the declared effect with an independent read, and hand it to a person — a save may have gone through, check the record.
 
-I built deskshell for exactly that: every action declares a post-assertion and an undo, preview is the default, and a failed assertion rolls the task back into a JSONL journal. The driver interface is frozen (6 required methods), protocol v0 is frozen too.
+What you don't do is unwind, and you're explicit about it: `replay` performs saves you can't undo and doesn't ask first, and the production path covers that with approval gates rather than compensation. That's a design choice, not an oversight, and it's the one I'd like your read on.
 
-I would value your read on it — your recorder sees the same events mine does. If the model is wrong, tell me where. https://github.com/ZhiliangTech/deskshell
+I went the other way: every action declares a post-assertion and an undo, preview is the default, and the first failed assertion rolls back in reverse order into a JSONL journal. A halt then has a defined state to return to — at the cost of needing an undo for every irreversible write, and I don't think that cost survives contact with EHR writes where un-acknowledging a claim isn't a thing.
+
+Which is why I want your critique rather than your agreement. Where does the boundary sit for you? https://github.com/ZhiliangTech/deskshell
 ```
 
-跟进（5 天后，只发一次）：`One more thing worth your 2 minutes: the Linux window-level driver shipped last week, control tree still missing — that is the part I suspect you would do differently.`
+跟进（5 天后，只发一次）：`One more thing worth your 2 minutes: the Linux window-level driver shipped, control tree still missing — that is the part I suspect you would do differently.`
 
 ## 2. AmrDab（clawdcursor）
+
+> 2026-10-30：已改为先在 #267 写技术评论（不带链接），邀约等回复再发。见 TRACKER.csv。
 
 ```text
 Hi AmrDab — clawdcursor gives agents desktop control with a permission gate, which is the right first move. The part I keep hitting is what happens *after* the gate opens: the click returns, and nobody knows whether it worked.
@@ -50,12 +58,14 @@ Your MCP surface and my kernel are complementary — I would like your critique 
 
 ## 3. PM-Shawn（Abu-Cowork）
 
+> 前提重核 2026-10-30：他们有 **Plan Mode**（高风险步骤先出计划、确认后才跑），旧稿装作没有会显得没读仓库。真正的差别不在"敢不敢做"，而在确认之后没有回退。
+
 ```text
-Hi PM-Shawn — "describe the result and it does it" is the right UX, but the moment it touches a real folder, the user needs to be able to take it back.
+Hi PM-Shawn — Plan Mode is the right call for delete/overwrite/send, and it's the half most agents skip. The part I keep hitting is what happens after the confirm: a seven-step job passes the gate, step three writes the wrong thing, and there's nothing to unwind it with.
 
-deskshell is that layer: skills only declare intent, every action must prove success and carry an undo, preview is the default, and one failed assertion rolls the whole task back. Windows/macOS drivers verified; Linux window-level shipped.
+That's the layer I built — skills declare intent, every action carries a post-assertion and an undo, preview is the default, and the first failed assertion rolls the whole task back into a JSONL journal. Windows and macOS drivers are verified; the Linux window layer just shipped, control tree still missing.
 
-If you want, take downloads-cleanup and photo-sort as references — 30 minutes, `node bin/deskshell.ts doctor`. https://github.com/ZhiliangTech/deskshell
+If it's useful, `node bin/deskshell.ts doctor` takes 30 seconds and tells you whether your machine is one of the boring ones. https://github.com/ZhiliangTech/deskshell
 ```
 
 ## 4. ayuayue（PiDeck，中文）

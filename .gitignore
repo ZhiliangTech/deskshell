@@ -5,3 +5,4 @@ node_modules/
 *.log
 packages/drivers/macos/.build/
 .worklog/
+.mail/
