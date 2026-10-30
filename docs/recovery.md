@@ -78,6 +78,29 @@ R0-可追溯   0.0%
 
 and the process exits non-zero. `scripts/r0-negative-test.ts` asserts exactly that (5/5). So when deskshell reports 100%, it is being scored by a harness that has demonstrably failed another implementation.
 
+## The UI side (and where we are not done)
+
+Files can be restored byte for byte. Windows and controls cannot — yet. `scripts/recovery-bench-ui.ts` runs the same injection matrix against a mock window and measures **state** instead of bytes (geometry + control values + enabled flags):
+
+```
+| 场景 | 失败注入点 | 状态归零 | 已撤销/已执行 |
+| move-window      | 1 | ✅ | 0/0 |
+| move-window      | 2 | ✅ | 1/1 |
+| type-into-field  | 1 | ❌ | 0/0 |
+| type-into-field  | 2 | ❌ | 1/1 |
+| invoke-button    | 1 | ❌ | 0/0 |
+
+R0-UI 状态归零   40.0%（5 次注入）
+R0-UI 回滚       100.0%
+正常路径撤销后一致：1/3
+```
+
+The reason is not a bug in the benchmark, it is a gap in the protocol: `window.move` has an undo kind, `ui.type` and `ui.invoke` do not — skills can only write `noop`, which means *typed text and pressed buttons stay*.
+
+We publish the 40% instead of hiding it, because:
+- a number that only covers the easy half is advertising;
+- the fix has a name: a `ui.value` undo kind plus a `setValue` driver primitive, and it has to be implemented for the real Windows driver too, not only for the mock. Until then the honest claim is **"file actions are undoable; UI actions are not yet"**.
+
 ## Limits
 
 - Scenarios are synthetic and file-only. GUI driver failures are not covered yet.

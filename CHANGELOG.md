@@ -2,6 +2,34 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.14.0 — 2026-10-31
+
+R0 扩到 UI 面。结论不好看，但它是真的。
+
+### Added
+
+- **`scripts/recovery-bench-ui.ts`（`npm run r0:ui`）** —— 用 mock 窗口跑同一套注入矩阵，量的是**状态**（窗口几何 + 控件值 + 可用性），不是字节。
+
+```
+R0-UI 状态归零   40.0%（5 次注入）
+R0-UI 回滚       100.0%
+正常路径撤销后一致：1/3
+```
+
+- 文档 `recovery` 页新增「UI 那一面」一节（中英），把 40% 和缺口一起写出来；README 的 R0 段也直接写这个数字。
+
+### The gap this exposes
+
+`window.move` 有撤销种类，`ui.type` 与 `ui.invoke` **没有**——skill 只能写 `noop`，等于"打进去的字、按下的按钮撤不回来"。所以现在诚实的说法是：**文件动作可撤销；UI 动作还不行。**
+
+修法已经有名字：加 `ui.value` 撤销种类 + 驱动层 `setValue` 原语，并且必须给真实 Windows 驱动实现（不能只给 mock）。这条不做完，不会把 40% 改成 100%。
+
+### Evidence
+
+    regress 48/48（r0.ui 把当前数字钉成基线，改动会让它变化）
+    R0 文件面：100/100/100（15 次注入）· 正常路径 4/4
+    R0 UI 面：40% 状态归零 · 回滚 100% · 正常路径 1/3
+
 ## 0.13.2 — 2026-10-31
 
 把"能跑"变成"一句话能跑"：三条命令、三条链接、一份不说谎的对外口径。

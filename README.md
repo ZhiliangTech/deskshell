@@ -67,7 +67,7 @@ R0-可追溯   100.0%
 正常路径撤销后逐字节还原：4/4
 ```
 
-**R0 = recovery rate at zero residue**: inject a failure at every step of every scenario, then check the directory byte for byte, check every completed step was undone, check every step is in the journal. Details and how to add a scenario: [docs/recovery.md](docs/recovery.md).
+**R0 = recovery rate at zero residue**: inject a failure at every step of every scenario, then check the directory byte for byte, check every completed step was undone, check every step is in the journal. The same matrix against **UI actions** currently reports **40%** (window moves roll back; typed text and pressed buttons do not). That number is published on purpose — [docs/recovery.md](docs/recovery.md).
 
 ## Call it from your agent (MCP)
 

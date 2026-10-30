@@ -1,6 +1,6 @@
 {
   "name": "@zhiliangtech/deskshell",
-  "version": "0.13.2",
+  "version": "0.14.0",
   "description": "OS runtime for agents: protocol-first kernel with declared capabilities, post-assertions, undo and audit",
   "license": "MIT",
   "type": "module",
@@ -51,7 +51,8 @@
     "demo": "node apps/cli-demo/thirty-seconds.ts",
     "r0": "node scripts/recovery-bench.ts",
     "r0:negative": "node scripts/r0-negative-test.ts",
-    "mcp": "node packages/mcp/server.ts"
+    "mcp": "node packages/mcp/server.ts",
+    "r0:ui": "node scripts/recovery-bench-ui.ts"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
