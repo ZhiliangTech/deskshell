@@ -161,11 +161,11 @@ const taskId = `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
           doneKeys.has(`${e.taskId}:${e.actionId}`) ? { ...e, status: "rolled-back" as const } : e,
         ),
       );
-      return { mode: "apply", steps, journal: done, rolledBack: done.length + selfUndone };
+      return { mode: "apply", taskId, steps, journal: done, rolledBack: done.length + selfUndone };
     }
   }
 
-  return { mode: "apply", steps, journal: done, rolledBack: 0 };
+  return { mode: "apply", taskId, steps, journal: done, rolledBack: 0 };
 }
 
 
@@ -215,7 +215,7 @@ async function undoLastTask(opts: RunOptions, ctx: SkillContext): Promise<RunRep
       rolled.has(`${e.taskId}:${e.actionId}`) ? { ...e, status: "rolled-back" as const } : e,
     ),
   );
-  return { mode: "undo", steps, journal: target, rolledBack: rolled.size };
+  return { mode: "undo", taskId: lastTask, steps, journal: target, rolledBack: rolled.size };
 }
 
 export function summarizeRisk(actions: Action[]): string {

@@ -230,6 +230,8 @@ export interface ActionSummary {
 
 export interface RunReport {
   mode: RunOptions["mode"];
+  /** 本次运行的任务 id：审计、撤销、对外展示都用它 */
+  taskId?: string;
   steps: StepResult[];
   journal: JournalEntry[];
   rolledBack: number;

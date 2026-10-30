@@ -2,6 +2,27 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.12.0 — 2026-10-30
+
+方向校准：不再往"更聪明的助手"上加功能，开始树"可复现的证明"。
+
+### Added
+
+- **`scripts/recovery-bench.ts` —— R0 指标**：失败后副作用归零率。三个合成场景 × 逐步失败注入，量三件事：残渣是否为零（逐字节）、失败前已执行的步骤是否全部撤销、日志里每步是否带 `taskId`/`actionId`/时间戳/状态。
+- 文档新增 `recovery` 页（中英），把指标定义、当前数字、以及它抓到的问题一起写出来。
+
+### Fixed — 指标上线第一天就抓到的洞
+
+- **失败的那一单事后无法指认**：某步失败时，内核对日志文件写了 `failed` 记录，但 `RunReport.journal` 只收集成功条目，且报告里没有 `taskId`。现在 `RunReport` 带 `taskId`，失败条目也进账；R0-可追溯从 76.9% → 100%。
+
+### Evidence
+
+    R0-残渣     100.0%（13 次失败注入）
+    R0-回滚     100.0%
+    R0-可追溯   100.0%
+    正常路径撤销后逐字节还原：3/3
+    regress 44/44 · 文档站 32 页
+
 ## 0.11.0 — 2026-10-30
 
 M09：把「外人 15 分钟写出第一个 skill」变成一条被测过的路径。

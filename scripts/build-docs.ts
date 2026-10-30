@@ -16,6 +16,7 @@ const ORDER = [
   SKILLS_SLUG,
   "recipes",
   "undo-and-trust",
+  "recovery",
   "recording",
   "drivers",
   "shell",
