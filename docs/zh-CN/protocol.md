@@ -2,6 +2,21 @@
 
 协议只有五个类型。所有 skill、驱动、UI 都围绕它们工作。
 
+### `irreversible`
+
+有些动作撤不回来——按钮按下去就是按下去了。与其假装能撤，不如让它自己说出来：
+
+```ts
+{ id: "submit", kind: "ui.invoke", window: "Form", selector: { name: "OK" }, irreversible: true }
+```
+
+内核会：
+
+1. 在 `preview.summary.irreversible` 里计数；
+2. **整单拒绝执行**（一个字节都不动），除非调用方显式确认：CLI 用 `--allow-irreversible`，MCP 传 `allowIrreversible: true`。
+
+这是硬闸不是警告：审计链的意义就在于——**唯一撤不回来的那一步，必须是被提前批准过的**。
+
 ## 1. Capability —— 能力申请
 
 ```ts

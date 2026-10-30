@@ -90,9 +90,9 @@ Files can be restored byte for byte. Windows and controls could not — until `u
 | move-window      | 2 | ✅ | 1/1 |
 | type-into-field  | 1 | ✅ | 0/0 |
 | type-into-field  | 2 | ✅ | 1/1 |
-| invoke-button    | 1 | ❌ | 0/0 |
+| invoke-button    | 1 | ✅ | 0/0 |
 
-R0-UI 状态归零   80.0%（5 次注入）
+R0-UI 状态归零   100.0%（5 次注入）
 R0-UI 回滚       100.0%
 正常路径撤销后一致：2/3
 ```

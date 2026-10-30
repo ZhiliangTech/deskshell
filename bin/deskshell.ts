@@ -237,7 +237,13 @@ async function runSkill(
     const report = await run(
       skill,
       input,
-      { mode, root, granted, journalPath: path.join(root, ".deskshell", "journal.jsonl") },
+      {
+        mode,
+        root,
+        granted,
+        journalPath: path.join(root, ".deskshell", "journal.jsonl"),
+        allowIrreversible: Boolean(flags["allow-irreversible"]),
+      },
       { driver },
     );
 

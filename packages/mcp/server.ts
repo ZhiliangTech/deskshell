@@ -96,6 +96,7 @@ const TOOLS = [
         skill: { type: "string" },
         root: { type: "string" },
         args: { type: "object" },
+        allowIrreversible: { type: "boolean", description: "显式允许执行不可逆动作（例如按下按钮）" },
       },
       required: ["skill", "root"],
       additionalProperties: false,
@@ -155,7 +156,12 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
   }
 
   if (name === "deskshell_apply") {
-    const report = await run(skill, input, { mode: "apply", root, granted, journalPath }, {});
+    const report = await run(
+      skill,
+      input,
+      { mode: "apply", root, granted, journalPath, allowIrreversible: args.allowIrreversible === true },
+      {},
+    );
     return { skill: ref.name, taskId: report.taskId, steps: report.steps, rolledBack: report.rolledBack };
   }
 

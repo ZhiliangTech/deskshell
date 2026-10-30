@@ -4,6 +4,21 @@
 
 Five types. Everything else — skills, drivers, UI — is built around them.
 
+### `irreversible`
+
+Some actions cannot be undone — a pressed button stays pressed. Rather than pretending, an action can say so:
+
+```ts
+{ id: "submit", kind: "ui.invoke", window: "Form", selector: { name: "OK" }, irreversible: true }
+```
+
+The kernel then:
+
+1. counts it in `preview.summary.irreversible`;
+2. **refuses the whole run** before touching anything, unless the caller confirms with `--allow-irreversible` (CLI) or `allowIrreversible: true` (MCP).
+
+This is a hard gate, not a warning: the point of an audit trail is that the one action you cannot take back was explicitly approved first.
+
 ## 1. Capability
 
 ```ts

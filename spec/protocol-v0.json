@@ -108,5 +108,12 @@
     "任何失败都必须把任务回滚到起始状态",
     "内核不得依赖任何模型",
     "每个动作都必须被 skill 声明的能力覆盖"
+  ],
+  "actionOptional": [
+    "risk",
+    "pre",
+    "post",
+    "undo",
+    "irreversible"
   ]
 }

@@ -25,6 +25,20 @@ export class PolicyError extends Error {
   }
 }
 
+
+/**
+ * 不可逆动作的硬闸：没有显式确认就整单拒绝，**在动手之前**拒绝。
+ * 放过去就没有退路了，所以这里不做"尽量"。
+ */
+function assertIrreversibleConfirmed(actions: Action[], opts: RunOptions): void {
+  const irreversible = actions.filter((a) => a.irreversible);
+  if (irreversible.length === 0 || opts.allowIrreversible) return;
+  throw new Error(
+    `这一步不可逆，需要显式确认：${irreversible.map((a) => a.id).join(", ")}` +
+      "（确认：deskshell run … --allow-irreversible；MCP 传 allowIrreversible: true）",
+  );
+}
+
 export async function run(
   skill: Skill,
   input: SkillInput,
@@ -45,6 +59,8 @@ export async function run(
     throw new PolicyError(violations.flatMap((v) => v.decision.reasons));
   }
 
+  if (opts.mode === "apply") assertIrreversibleConfirmed(actions, opts);
+
   if (opts.mode === "preview") {
     const steps: StepResult[] = actions.map((a) => ({
       actionId: a.id,
@@ -61,6 +77,7 @@ export async function run(
       window: 0,
       undoable: 0,
       notUndoable: 0,
+      irreversible: 0,
       risk: { low: 0, medium: 0, high: 0 },
     };
     for (const a of actions) {
@@ -70,6 +87,7 @@ export async function run(
       else if (a.kind === "fs.write") summary.write++;
       else if (a.kind === "window.move") summary.window++;
       else summary.ui++;
+      if (a.irreversible) summary.irreversible++;
       if (a.undo === null || a.undo === undefined) summary.notUndoable++;
       else summary.undoable++;
       summary.risk[a.risk ?? "low"]++;

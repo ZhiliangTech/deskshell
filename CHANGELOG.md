@@ -2,6 +2,36 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.16.0 — 2026-10-31
+
+不可逆动作不再被假装成"可撤销"：该拦的拦在动手之前。
+
+### Added
+
+- **动作标记 `irreversible`**：`ui.invoke` 这类撤不回来的步骤可以自己声明。内核会
+  ① 在 `preview.summary.irreversible` 里计数；② **在动手之前整单拒绝**，除非显式确认
+  （CLI `--allow-irreversible` / MCP `allowIrreversible: true`）。
+- 协议补 `actionOptional` 清单（`risk / pre / post / undo / irreversible`），spec 与常量同步，冻结测试 24/24 仍绿。
+- `scripts/irreversible-test.ts`（7 条）：拒绝时点名是哪一步、拒绝发生在动手之前（文件没被写、日志没产生）、确认后照常执行。
+
+### Changed — R0-UI 从 80% 到 100%，但定义变了
+
+现在它量的是"**该撤的撤了、该拦的拦住了**"：
+
+```
+R0-UI 状态归零   100.0%（5 次注入）
+R0-UI 回滚       100.0%
+正常路径撤销后一致：3/3
+```
+
+`invoke-button` 归零的方式不是"撤回"，而是"内核拒绝执行，状态一个字节都没动"。把这两种归零混成一个数会骗人，所以文档里写清了判据。
+
+### Evidence
+
+    regress 49/49（新增 irreversible 7 条）
+    R0 文件面 100/100/100 · R0 UI 面 100%（含"拒绝执行"这一类）
+    协议冻结 24/24
+
 ## 0.15.0 — 2026-10-31
 
 R0-UI 从 40% 提到 80%：`ui.type` 现在真的能撤销了。

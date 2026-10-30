@@ -40,6 +40,8 @@ export const CAPABILITY_IDS = [
 ] as const;
 
 /** 动作必填字段（不含 id / pre / post / undo 这些公共字段） */
+export const ACTION_OPTIONAL = ["risk", "pre", "post", "undo", "irreversible"] as const;
+
 export const ACTION_REQUIRED: Record<(typeof ACTION_KINDS)[number], string[]> = {
   "fs.mkdir": ["path"],
   "fs.move": ["from", "to"],

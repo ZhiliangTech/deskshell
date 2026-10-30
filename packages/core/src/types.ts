@@ -45,6 +45,11 @@ interface ActionBase {
   risk?: Risk;
   pre?: Assertion[];
   post?: Assertion[];
+  /**
+   * 这一步本身不可逆（例如按下按钮）。内核不会假装能 undo 它：
+   * preview 会把它单独列出，apply 必须显式确认，否则整单拒绝执行。
+   */
+  irreversible?: boolean;
   /** 撤销这一步的办法；null 表示不可撤销，内核会要求用户显式确认 */
   undo?: UndoAction | null;
   /** 这一步顺手新建的目录（撤销时删掉，避免留空壳） */
@@ -214,6 +219,8 @@ export interface Skill {
 }
 
 export interface RunOptions {
+  /** 显式确认"允许执行不可逆动作"；缺省为 false */
+  allowIrreversible?: boolean;
   mode: "preview" | "apply" | "undo";
   root: string;
   granted: CapabilityId[];
@@ -231,6 +238,8 @@ export interface ActionSummary {
   window: number;
   undoable: number;
   notUndoable: number;
+  /** 标记为不可逆的步数（这些必须显式确认） */
+  irreversible: number;
   risk: { low: number; medium: number; high: number };
 }
 

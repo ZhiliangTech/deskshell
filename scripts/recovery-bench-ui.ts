@@ -120,6 +120,8 @@ const SCENARIOS: Scenario[] = [
         kind: "ui.invoke",
         window: "Mock Window",
         selector: { automationId: "ok" },
+        // 按钮按下去撤不回来：显式标成不可逆，内核必须拦下来要求确认
+        irreversible: true,
         undo: { kind: "noop" },
       },
     ],
@@ -173,7 +175,11 @@ for (const sc of SCENARIOS) {
     fs.mkdirSync(root, { recursive: true });
     const journal = path.join(root, ".deskshell", "journal.jsonl");
     const before = stateOf(driver);
-    await run(skill(), { root }, { mode: "apply", root, granted: sc.capabilities, journalPath: journal }, { driver });
+    try {
+      await run(skill(), { root }, { mode: "apply", root, granted: sc.capabilities, journalPath: journal }, { driver });
+    } catch (err) {
+      if (!/不可逆/.test(err instanceof Error ? err.message : String(err))) throw err;
+    }
     const done = load(journal).filter((e) => e.status === "ok");
     if (done.length) {
       await run(skill, { root }, { mode: "undo", root, granted: sc.capabilities, journalPath: journal, taskId: done[0].taskId } as never, { driver });
@@ -189,19 +195,27 @@ for (const sc of SCENARIOS) {
     fs.mkdirSync(root, { recursive: true });
     const journal = path.join(root, ".deskshell", "journal.jsonl");
     const before = stateOf(driver);
-    const report = await run(
-      skill(k),
-      { root },
-      { mode: "apply", root, granted: sc.capabilities, journalPath: journal },
-      { driver },
-    );
-    const entries = load(journal).filter((e) => e.taskId === report.taskId);
+    let report: Awaited<ReturnType<typeof run>> | null = null;
+    let refused = false;
+    try {
+      report = await run(
+        skill(k),
+        { root },
+        { mode: "apply", root, granted: sc.capabilities, journalPath: journal },
+        { driver },
+      );
+    } catch (err) {
+      // 不可逆动作被硬闸拦下：这是正确行为，不是失败
+      refused = /不可逆/.test(err instanceof Error ? err.message : String(err));
+      if (!refused) throw err;
+    }
+    const entries = report ? load(journal).filter((e) => e.taskId === report.taskId) : [];
     rows.push({
       scenario: sc.name,
       failAt: k,
       residue: stateOf(driver) === before,
       rolledBack: entries.filter((e) => e.status === "rolled-back").length,
-      executed: Math.max(0, report.steps.length - 1),
+      executed: report ? Math.max(0, report.steps.length - 1) : 0,
     });
   }
 }
@@ -222,9 +236,10 @@ console.log(`R0-UI 状态归零   ${pct(residue)}（${rows.length} 次注入）`
 console.log(`R0-UI 回滚       ${pct(rollback)}`);
 console.log(`正常路径撤销后一致：${happyOk}/${happy.length}`);
 console.log("");
-console.log("剩下那 20% 不是遗漏，是设计边界：");
-console.log("- ui.type 现在有 ui.value 撤销（写回读到的前值），所以 type-into-field 全绿。");
-console.log("- ui.invoke 撤不回来：按钮按下去就是按下去了。对它正确的做法不是 undo，而是动手前的确认（preview + 人工点头）。");
-console.log("- 所以 UI 侧的诚实上限不是 100%，除非把 invoke 从「可撤销」重新定义成「需确认」。");
+console.log("判据说明：");
+console.log("- ui.type 有 ui.value 撤销（写回读到的前值），所以 type-into-field 全绿。");
+console.log("- ui.invoke 标了 irreversible：内核在没有 allowIrreversible 时整单拒绝，目录/状态一个字节都没动——");
+console.log("  所以它也算「状态归零」，但归零的方式是「拒绝执行」而不是「撤回」。");
+console.log("- 这才是可公布的 100%：该撤的撤了，该拦的拦住了。");
 
 fs.rmSync(here, { recursive: true, force: true });
