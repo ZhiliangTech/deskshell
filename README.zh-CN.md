@@ -18,6 +18,69 @@
   <a href="README.md">English</a> · <b>简体中文</b>
 </p>
 
+## 30 秒：它搞砸了，而且一点痕迹都不留
+
+```bash
+node apps/cli-demo/thirty-seconds.ts
+```
+
+五步跑在一个沙盒里。第四步成功，**第五步失败**，然后全部自动退回：
+
+```
+  [1-mkdir]     ok
+  [2-write-a]   ok
+  [3-write-b]   ok
+  [4-move]      ok
+  [5-write-c]   FAIL 后置断言失败：{"kind":"path.exists","path":".../this-will-never-exist"}
+
+↩ 自动回滚（逆序）：5 处
+   undo 4-move      move b.txt → .../done/b.txt
+   undo 3-write-b   write b.txt (1 chars)
+   undo 2-write-a   write a.txt (1 chars)
+   undo 1-mkdir     mkdir .../uploads
+
+目录状态   before: 空
+           after : 空   ✅ 逐字节一致
+```
+
+注意最后那条日志：**失败的那一步也在日志里**。失败的任务仍然是可审计的任务。
+
+这不是承诺，是测试——`scripts/thirty-seconds-test.ts` 会在三种情况下让构建失败：退出码非零、日志不是正好 5 行、目录没有逐字节还原。
+
+## R0 —— 别人不报的那个数
+
+所有 computer-use 项目都报成功率，没有人报"失败之后留下了什么"。
+
+```
+node scripts/recovery-bench.ts
+```
+
+```
+R0-残渣     100.0%（15 次失败注入）
+R0-回滚     100.0%
+R0-可追溯   100.0%
+正常路径撤销后逐字节还原：4/4
+```
+
+**R0 = 失败后副作用归零率**：给每个场景的每一步都注入一次失败，然后逐字节比对目录、核对已执行步骤是否全部撤销、核对每一步是否都在日志里。定义与"如何加场景"见 [docs/zh-CN/recovery.md](docs/zh-CN/recovery.md)。
+
+## 从你的 agent 里调用（MCP）
+
+内核同时是一个 MCP server：agent 可以"先看计划 → 执行 → 需要时撤回"，而不是凭感觉点鼠标。
+
+```bash
+node packages/mcp/server.ts     # stdio JSON-RPC：initialize / tools/list / tools/call
+```
+
+| 工具 | 作用 |
+| --- | --- |
+| `deskshell_skills` | 列出已安装技能 |
+| `deskshell_preview` | 只读：能力申请单 + 步骤 + 汇总 |
+| `deskshell_apply` | 执行，返回 `taskId` |
+| `deskshell_undo` | 撤销那个 `taskId` |
+
+不引 SDK、不引依赖。`scripts/mcp-test.ts` 会真的起进程按客户端方式对话（14/14）。详见 [docs/zh-CN/mcp.md](docs/zh-CN/mcp.md)。
+
 ## 它是什么，不是什么
 
 | | |
@@ -90,7 +153,7 @@ node bin/deskshell.ts doctor
 
 > 部分网络打不开 npmjs.com 的**网页**，但 registry API 是通的——安装脚本因此走 API 下载。公共 npm 包还卡在 registry 侧的 2FA 审批；这期间用安装脚本、GitHub Packages（`@zhiliangtech/deskshell`，0.9.0–0.11.0），或者直接从 Git 装：`npm i -g github:ZhiliangTech/deskshell`。
 
-## 30 秒跑起来
+## 30 秒装好跑通
 
 ```bash
 node bin/deskshell.ts doctor                        # 环境自检

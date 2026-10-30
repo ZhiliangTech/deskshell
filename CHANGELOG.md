@@ -2,6 +2,27 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.13.0 — 2026-10-30
+
+三根支柱补齐：能看懂的瞬间、能复现的证明、能接进来的接口。
+
+### Added
+
+- **30 秒 demo**（`apps/cli-demo/thirty-seconds.ts`）：四步成功、第五步失败、全部退回、目录逐字节一致、5 条日志（含失败那步）。三条不变量由 `scripts/thirty-seconds-test.ts` 钉住。README 第一屏直接贴真实输出（中英）。
+- **MCP adapter**（`packages/mcp/server.ts`）：手写 stdio JSON-RPC，零依赖，四个 tool —— `deskshell_skills` / `deskshell_preview` / `deskshell_apply` / `deskshell_undo`。`scripts/mcp-test.ts` 起真进程按客户端协议对话 14 条。
+- R0 基准新增 `move-into-new-dir` 场景，文档 `recovery` / `mcp` 两页（中英）。
+
+### Fixed — demo 抓到两个真 bug
+
+- **顺手建的目录撤销后留空壳**：`fs.move` / `fs.write` 会 `mkdir -p` 父目录，但撤销只把文件搬回去，目录留在原地。现在执行时记录 `createdDirs`，撤销按由深到浅删空目录（非空就留着）。R0 残渣因此从 93.3% → 100%。
+- **失败自撤被静默跳过**：`execResult` 声明在 `try` 内部，`catch` 里引用它抛 `ReferenceError`，而那个 `catch` 又把错误吞掉 —— 结果是"回滚看起来跑了，失败那步的副作用却没撤"。声明提到 `try` 外后修复。
+
+### Evidence
+
+    regress 46/46
+    demo 5/5 · MCP 14/14 · R0 15 次注入 100/100/100 · 正常路径 4/4 逐字节还原
+    文档站 34 页（17 EN + 17 中文）
+
 ## 0.12.0 — 2026-10-30
 
 方向校准：不再往"更聪明的助手"上加功能，开始树"可复现的证明"。

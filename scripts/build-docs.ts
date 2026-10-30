@@ -19,6 +19,7 @@ const ORDER = [
   "recovery",
   "recording",
   "drivers",
+  "mcp",
   "shell",
   "internals",
   "versioning",

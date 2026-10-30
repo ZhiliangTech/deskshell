@@ -101,26 +101,62 @@ export async function checkAssertion(a: Assertion, ctx: ExecContext): Promise<bo
   }
 }
 
-export async function execute(action: Action, ctx: ExecContext): Promise<void> {
+
+/**
+ * 列出"为了让 path 可写而不得不新建"的目录（由浅到深）。
+ * 这些目录是这一步的副作用，撤销时要一并清掉，否则目录里会留下空壳。
+ */
+export function implicitDirs(target: string): string[] {
+  const dirs: string[] = [];
+  let dir = path.dirname(target);
+  while (!fs.existsSync(dir)) {
+    dirs.unshift(dir);
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return dirs;
+}
+
+/** 撤销时按"由深到浅"删掉空目录；非空就留着（里面有别人的东西） */
+export function removeImplicitDirs(dirs: string[] | undefined): void {
+  if (!dirs?.length) return;
+  for (const dir of [...dirs].reverse()) {
+    try {
+      if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
+    } catch {
+      /* 删不掉就算了，不能因为清理空目录而让撤销失败 */
+    }
+  }
+}
+
+export interface ExecResult {
+  /** 这一步顺手新建的目录（撤销时删掉） */
+  createdDirs?: string[];
+}
+
+export async function execute(action: Action, ctx: ExecContext): Promise<ExecResult | void> {
   switch (action.kind) {
     case "fs.mkdir":
       fs.mkdirSync(action.path, { recursive: true });
       return;
     case "fs.move": {
+      const createdDirs = implicitDirs(action.to);
       fs.mkdirSync(path.dirname(action.to), { recursive: true });
       if (fs.existsSync(action.to)) {
         throw new Error(`目标已存在，拒绝覆盖：${action.to}`);
       }
       fs.renameSync(action.from, action.to);
-      return;
+      return { createdDirs };
     }
     case "fs.delete":
       fs.rmSync(action.path, { recursive: true, force: true });
       return;
     case "fs.write": {
+      const createdDirs = implicitDirs(action.path);
       fs.mkdirSync(path.dirname(action.path), { recursive: true });
       fs.writeFileSync(action.path, action.content, "utf8");
-      return;
+      return { createdDirs };
     }
     case "ui.invoke": {
       if (!ctx.driver) throw new Error("ui.invoke 需要 UI 驱动");
@@ -149,6 +185,8 @@ export async function execute(action: Action, ctx: ExecContext): Promise<void> {
 export interface UndoGuard {
   /** 任务写入时文件的 sha256 */
   expectedHash?: string;
+  /** 执行那一步时顺手新建的目录，撤销后要删掉 */
+  createdDirs?: string[];
 }
 
 const sha256 = (buf: Buffer): string => createHash("sha256").update(buf).digest("hex");
@@ -163,6 +201,7 @@ export async function applyUndo(
       fs.mkdirSync(path.dirname(undo.to), { recursive: true });
       if (fs.existsSync(undo.to)) fs.rmSync(undo.to, { force: true });
       fs.renameSync(undo.from, undo.to);
+      removeImplicitDirs(guard.createdDirs);
       return;
     }
     case "fs.rmdir": {

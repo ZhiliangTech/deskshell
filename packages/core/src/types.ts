@@ -45,6 +45,8 @@ interface ActionBase {
   post?: Assertion[];
   /** 撤销这一步的办法；null 表示不可撤销，内核会要求用户显式确认 */
   undo?: UndoAction | null;
+  /** 这一步顺手新建的目录（撤销时删掉，避免留空壳） */
+  createdDirs?: string[];
 }
 
 export interface MkdirAction extends ActionBase {

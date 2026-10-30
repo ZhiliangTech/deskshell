@@ -126,6 +126,33 @@ const scenarioList: Scenario[] = [
       return actions;
     },
   },
+  {
+    name: "move-into-new-dir",
+    // 关键：archive/ 目录没有对应的 mkdir 动作，是 fs.move 顺手建的。
+    // 如果撤销不清理"顺手建的目录"，这里就会留下空壳。
+    fixture: (root) => {
+      fs.writeFileSync(path.join(root, "payload.txt"), "P");
+    },
+    capabilities: ["fs.write", "fs.read"],
+    plan: (root) => [
+      {
+        id: "move:payload->archive",
+        kind: "fs.move",
+        from: path.join(root, "payload.txt"),
+        to: path.join(root, "archive", "deep", "payload.txt"),
+        post: [{ kind: "path.exists", path: path.join(root, "archive", "deep", "payload.txt") }],
+        undo: { kind: "fs.move", from: path.join(root, "archive", "deep", "payload.txt"), to: path.join(root, "payload.txt") },
+      },
+      {
+        id: "write:extra",
+        kind: "fs.write",
+        path: path.join(root, "extra.txt"),
+        content: "E",
+        post: [{ kind: "path.exists", path: path.join(root, "extra.txt") }],
+        undo: { kind: "fs.restore", path: path.join(root, "extra.txt"), content: null },
+      },
+    ],
+  },
 ];
 
 function snapshot(dir: string): Record<string, string> {

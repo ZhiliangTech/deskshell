@@ -86,6 +86,10 @@ const taskId = `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   for (const action of actions) {
     let phase: "pre" | "exec" | "post" = "pre";
+    // 声明在 try 外：catch 里的"自撤"要用它带来的 createdDirs。
+    // 放在 try 内会被作用域隔开，catch 引用就 ReferenceError，而那个 catch 又会把错误吞掉，
+    // 结果就是"自撤静默失效、目录里留下半成品"——这个坑真的踩过一次。
+    let execResult: Awaited<ReturnType<typeof execute>>;
     try {
       for (const pre of action.pre ?? []) {
         if (!(await checkAssertion(pre, execCtx))) {
@@ -93,7 +97,7 @@ const taskId = `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         }
       }
       phase = "exec";
-      await execute(action, execCtx);
+      execResult = await execute(action, execCtx);
       phase = "post";
       for (const post of action.post ?? []) {
         if (!(await checkAssertion(post, execCtx))) {
@@ -115,6 +119,9 @@ const taskId = `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         status: "ok",
         hash,
         undo: action.undo ?? undefined,
+        ...(execResult && "createdDirs" in execResult && execResult.createdDirs?.length
+          ? { createdDirs: execResult.createdDirs }
+          : {}),
       };
       append(opts.journalPath, entry);
       done.push(entry);
@@ -143,7 +150,7 @@ const taskId = `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       // move 的 undo 是 move(to→from)，会把本来就在 to 上的文件搬走甚至覆盖 from。
       if (action.undo && phase !== "pre" && selfUndoSafe(action.undo)) {
         try {
-          await applyUndo(action.undo, execCtx);
+          await applyUndo(action.undo, execCtx, { createdDirs: execResult && "createdDirs" in execResult ? execResult.createdDirs : undefined });
           selfUndone = 1;
         } catch {
           selfUndone = 0;
@@ -151,7 +158,7 @@ const taskId = `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       }
 
       for (const e of [...done].reverse()) {
-        if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
+        if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash, createdDirs: e.createdDirs });
         e.status = "rolled-back";
       }
       const doneKeys = new Set(done.map((e) => `${e.taskId}:${e.actionId}`));
@@ -196,7 +203,7 @@ async function undoLastTask(opts: RunOptions, ctx: SkillContext): Promise<RunRep
 
   for (const e of [...target].reverse()) {
     try {
-      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
+      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash, createdDirs: e.createdDirs });
       rolled.add(`${e.taskId}:${e.actionId}`);
       e.status = "rolled-back";
       steps.push({ actionId: e.actionId, status: "ok", detail: `撤销 ${e.summary}` });
@@ -239,7 +246,7 @@ export async function undoTask(
   for (const e of [...target].reverse()) {
     const key = `${e.taskId}:${e.actionId}`;
     try {
-      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
+      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash, createdDirs: e.createdDirs });
       rolled.add(key);
       steps.push({ actionId: e.actionId, status: "ok", detail: `撤销 ${e.summary}` });
     } catch (err) {
@@ -272,7 +279,7 @@ export async function undoAll(opts: RunOptions, ctx: SkillContext = {}): Promise
   for (const e of [...done].reverse()) {
     const key = `${e.taskId}:${e.actionId}`;
     try {
-      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash });
+      if (e.undo) await applyUndo(e.undo, execCtx, { expectedHash: e.hash, createdDirs: e.createdDirs });
       rolled.add(key);
       steps.push({ actionId: e.actionId, status: "ok", detail: `撤销 ${e.summary}` });
     } catch (err) {

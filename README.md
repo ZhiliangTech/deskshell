@@ -18,6 +18,74 @@
   <b>English</b> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+## 30 seconds: it breaks, and nothing is left behind
+
+```bash
+node apps/cli-demo/thirty-seconds.ts
+```
+
+Five steps run against a sandbox. The fourth succeeds, the **fifth fails**, and everything undoes itself:
+
+```
+  [1-mkdir]     ok
+  [2-write-a]   ok
+  [3-write-b]   ok
+  [4-move]      ok
+  [5-write-c]   FAIL 后置断言失败：{"kind":"path.exists","path":".../this-will-never-exist"}
+
+↩ auto-rollback (reverse order): 5 处
+   undo 4-move      move b.txt → .../done/b.txt
+   undo 3-write-b   write b.txt (1 chars)
+   undo 2-write-a   write a.txt (1 chars)
+   undo 1-mkdir     mkdir .../uploads
+
+目录状态   before: 空
+           after : 空   ✅ 逐字节一致
+
+日志（.deskshell/journal.jsonl，5 行）
+  {"ts":...,"action":"1-mkdir","status":"rolled-back"}
+  …
+  {"ts":...,"action":"5-write-c","status":"failed"}
+```
+
+That last line matters: **the step that failed is in the journal too**. A run that fails is still a run you can audit.
+
+The claim is a test, not a promise — `scripts/thirty-seconds-test.ts` fails the build if the exit code is non-zero, if the journal is not exactly 5 lines, or if the directory is not byte-identical afterwards.
+
+## R0 — the number nobody else reports
+
+Every computer-use project publishes a success rate. None publish what a failure leaves behind.
+
+```
+node scripts/recovery-bench.ts
+```
+
+```
+R0-残渣     100.0%（15 次失败注入）
+R0-回滚     100.0%
+R0-可追溯   100.0%
+正常路径撤销后逐字节还原：4/4
+```
+
+**R0 = recovery rate at zero residue**: inject a failure at every step of every scenario, then check the directory byte for byte, check every completed step was undone, check every step is in the journal. Details and how to add a scenario: [docs/recovery.md](docs/recovery.md).
+
+## Call it from your agent (MCP)
+
+The kernel is also an MCP server, so an agent can plan, act, and take it back instead of guessing:
+
+```bash
+node packages/mcp/server.ts     # stdio JSON-RPC: initialize / tools/list / tools/call
+```
+
+| Tool | What it does |
+| --- | --- |
+| `deskshell_skills` | list installed skills |
+| `deskshell_preview` | read-only: capability sheet + steps + summary |
+| `deskshell_apply` | run it, returns `taskId` |
+| `deskshell_undo` | roll back that `taskId` |
+
+No SDK, no dependencies. `scripts/mcp-test.ts` spawns the server and talks to it like a client would (14/14). Details: [docs/mcp.md](docs/mcp.md).
+
 ## What it is (and is not)
 
 | | |
