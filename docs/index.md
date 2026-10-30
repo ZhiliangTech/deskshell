@@ -10,6 +10,16 @@ deskshell is not an agent that clicks. It is the layer that turns the whole mach
 - **Kernel** — permissions, preview, execution, assertions, rollback, journal. The layer with a frozen interface.
 - **Driver** — platform-specific (Windows UIA / macOS AX / Mock), fully replaceable.
 
+## Three commands, thirty seconds
+
+```bash
+npm run demo     # four steps succeed, the fifth fails, everything rolls back, directory is byte-identical
+npm run r0       # R0: residue / rollback / traceability rates under 15 injected failures
+npm run mcp      # the same kernel as an MCP server (skills / preview / apply / undo)
+```
+
+Each one is backed by a test that fails the build if the claim stops being true: `scripts/thirty-seconds-test.ts`, `scripts/recovery-bench.ts`, `scripts/mcp-test.ts`.
+
 ## Build it with us
 
 Twelve scoped tasks, each with an acceptance command — and no cash bounty. What you get instead: ownership of what you build, your name in the contributors file, and a roadmap vote after two merged PRs.

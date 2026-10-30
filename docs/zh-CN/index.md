@@ -10,6 +10,16 @@ deskshell 是一个**给 agent 用的 OS 运行时**：不是"会点鼠标的 ag
 - **Kernel** 负责权限、预览、执行、断言、回滚、审计；
 - **Driver** 负责具体平台的操作（Windows UIA / macOS AX / Linux AT-SPI）。
 
+## 三条命令，三十秒
+
+```bash
+npm run demo     # 四步成功、第五步失败、全部退回、目录逐字节一致
+npm run r0       # R0：15 次失败注入下的残渣/回滚/可追溯率
+npm run mcp      # 同一个内核包成 MCP server（skills / preview / apply / undo）
+```
+
+三条都各有一个测试，声称一旦不成立就让构建变红：`scripts/thirty-seconds-test.ts`、`scripts/recovery-bench.ts`、`scripts/mcp-test.ts`。
+
 ## 一起把它做出来
 
 12 个已经拆好的任务，每个都带可跑的验收命令——没有现金悬赏。你拿到的是：做出来的东西归你维护、名字进贡献者名单、两个 PR 合并后有路线图投票权。

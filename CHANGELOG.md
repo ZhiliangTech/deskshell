@@ -2,6 +2,25 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.13.2 — 2026-10-31
+
+把"能跑"变成"一句话能跑"：三条命令、三条链接、一份不说谎的对外口径。
+
+### Added
+
+- **npm 短别名**：`npm run demo` / `npm run r0` / `npm run mcp`（外加 `npm run r0:negative`）——不用记路径。
+- **文档首页三条命令**（中英），每条都注明"声称一旦不成立就让构建变红"的对应测试。
+
+### Changed
+
+- **`outreach/STATE.md` 更新到 0.13.1 事实**：regress 43/43 → 47/47，latest 0.11.0 → 0.13.1，文档站 15 页 → 17 页；新增「三根支柱」一节（三条命令 + 现在的事实）；「不能说的话」补两条——R0 没跑过别的方案、MCP 没真实客户端证据。
+
+### Evidence
+
+    regress 47/47
+    npm run demo / npm run r0 / npm run mcp 实跑通过
+    文档站 34 页
+
 ## 0.13.1 — 2026-10-30
 
 把「别人能跑」补成两件可执行的事。
