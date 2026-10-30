@@ -40,6 +40,44 @@ The first run reported **R0-traceable = 76.9%**. Cause: when a step fails, the k
 
 A metric that never finds anything is decoration. This one found a hole in the audit trail on day one.
 
+## Running the same matrix on another tool
+
+The point of publishing R0 is that someone else can run it. Any tool can be plugged in by implementing three methods:
+
+```ts
+// scripts/my-tool-adapter.ts
+import type { R0Adapter } from "./recovery-bench.ts";
+
+export function createAdapter(): R0Adapter {
+  return {
+    name: "my-tool",
+    async apply(root, steps, failAt) {
+      // run steps 1..failAt-1 for real, stop at failAt, return counts
+      return { executed: failAt - 1, rolledBack: /* how many you undid */ 0 };
+    },
+    async undo(root) { /* undo the last run */ },
+    journalLines(root) { return null; },  // null = no audit log
+  };
+}
+```
+
+```bash
+node scripts/recovery-bench.ts --adapter scripts/my-tool-adapter.ts
+```
+
+### Proof the harness can fail something
+
+A benchmark that passes everything is advertising, not measurement. `scripts/r0-adapter-naive.ts` is a tool that writes files and has **no undo and no journal**; running it through the same fixtures gives:
+
+```
+R0-残渣     0.0%
+R0-回滚     0.0%
+R0-可追溯   0.0%
+正常路径撤销后逐字节还原：0/4
+```
+
+and the process exits non-zero. `scripts/r0-negative-test.ts` asserts exactly that (5/5). So when deskshell reports 100%, it is being scored by a harness that has demonstrably failed another implementation.
+
 ## Limits
 
 - Scenarios are synthetic and file-only. GUI driver failures are not covered yet.

@@ -1,6 +1,7 @@
 // 用 GitHub Git Data API 推送本地目录（绕过 github.com 的 git 写通道）
 // 用法: node scripts/push-to-github.mjs --owner <owner> --repo <repo> [--branch main] [--msg "..."]
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import os from "node:os";
 import { tick } from "./lib/clock-store.ts";
@@ -35,7 +36,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-async function call(url, method = "GET", body) {
+async function call(url, method = "GET", body, attempt = 0) {
   const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
   const text = await res.text();
   let json;
@@ -44,11 +45,20 @@ async function call(url, method = "GET", body) {
   } catch {
     json = { raw: text };
   }
-  if (!res.ok) throw new Error(`${method} ${url} → ${res.status} ${text.slice(0, 200)}`);
+  if (!res.ok) {
+    // GitHub 的"二次限流"就是 403/429：并发上传 blob 很容易触发，退避重试即可
+    const retryable = res.status === 403 || res.status === 429 || res.status >= 500;
+    if (retryable && attempt < 4) {
+      const wait = 800 * 2 ** attempt;
+      await new Promise((r) => setTimeout(r, wait));
+      return call(url, method, body, attempt + 1);
+    }
+    throw new Error(`${method} ${url} → ${res.status} ${text.slice(0, 200)}`);
+  }
   return json;
 }
 
-const SKIP = new Set([".git", ".demo", ".tmp", "site", "node_modules", ".build", ".worklog", ".deskshell"]);
+const SKIP = new Set([".git", ".demo", ".tmp", "site", "node_modules", ".build", ".worklog", ".deskshell", ".mail"]);
 const files = [];
 (function walk(dir) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -74,22 +84,52 @@ if (!head) {
   console.log("已用 README 初始化仓库");
 }
 
-async function upload(file) {
-  const content = fs.readFileSync(file).toString("base64");
-  const rel = path.relative(".", file).split(path.sep).join("/");
-  const blob = await call(`${api}/git/blobs`, "POST", { content, encoding: "base64" });
-  return { path: rel, mode: "100644", type: "blob", sha: blob.sha };
+// 远端已有的 blob 不再重传：内容 sha 一致就复用远端 sha。
+// 这样一次推送只上传真正改动的文件，也不会撞上二级限流。
+const remoteBlobs = new Map();
+if (head) {
+  try {
+    const tree = await call(`${api}/git/trees/${head.object.sha}?recursive=1`);
+    for (const e of tree.tree) if (e.type === "blob") remoteBlobs.set(e.path, e.sha);
+  } catch {}
+}
+
+const localSha = (buf) =>
+  crypto.createHash("sha1").update(Buffer.concat([Buffer.from(`blob ${buf.length}\0`), buf])).digest("hex");
+
+async function uploadWithRetry(payload) {
+  let last;
+  for (let i = 0; i < 6; i++) {
+    try {
+      return await call(`${api}/git/blobs`, "POST", payload);
+    } catch (e) {
+      last = e;
+      const m = String(e.message);
+      if (!/→ (403|429|500|502|503)/.test(m)) throw e;
+      await new Promise((r) => setTimeout(r, 1500 * Math.pow(2, i)));
+    }
+  }
+  throw last;
 }
 
 const results = [];
-const CONCURRENCY = 4;
-for (let i = 0; i < files.length; i += CONCURRENCY) {
-  const chunk = files.slice(i, i + CONCURRENCY);
-  const done = await Promise.all(chunk.map(upload));
-  results.push(...done);
-  process.stdout.write(`\r已上传 ${results.length}/${files.length}`);
+let uploaded = 0;
+let unchanged = 0;
+for (const file of files) {
+  const rel = path.relative(".", file).split(path.sep).join("/");
+  const buf = fs.readFileSync(file);
+  const sha = localSha(buf);
+  if (remoteBlobs.get(rel) === sha) {
+    results.push({ path: rel, mode: "100644", type: "blob", sha });
+    unchanged++;
+    continue;
+  }
+  const blob = await uploadWithRetry({ content: buf.toString("base64"), encoding: "base64" });
+  results.push({ path: rel, mode: "100644", type: "blob", sha: blob.sha });
+  uploaded++;
+  process.stdout.write(`\r已上传 ${uploaded}（未变 ${unchanged}）/${files.length}`);
 }
-process.stdout.write("\n");
+process.stdout.write(`\n合计：上传 ${uploaded}，复用远端 ${unchanged}\n`);
 
 const tree = await call(`${api}/git/trees`, "POST", { tree: results });
 const commit = await call(`${api}/git/commits`, "POST", {

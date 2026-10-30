@@ -2,6 +2,22 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.13.1 — 2026-10-30
+
+把「别人能跑」补成两件可执行的事。
+
+### Added
+
+- **R0 适配器接口**：`scripts/recovery-bench.ts --adapter <file>`。任何工具实现 `apply / undo / journalLines` 三个方法就能用同一套夹具量。模板与说明写进 `docs/recovery.md`。
+- **反向验证**：`scripts/r0-adapter-naive.ts` 是一个「只写不回滚、没有日志」的对照实现，同一套夹具跑出来 R0-残渣 0%、可追溯 0%、退出码非零；`scripts/r0-negative-test.ts` 断言这件事（5/5）。**一个永远过的基准是广告，不是测量。**
+- **MCP 客户端接入**：`docs/mcp.md` 补 Claude Desktop（`%APPDATA%\Claude\claude_desktop_config.json`）与 Cursor（`.cursor/mcp.json` / `~/.cursor/mcp.json`）的确切路径，以及 30 秒四步验证法。
+
+### Evidence
+
+    regress 47/47
+    R0 正向 100/100/100（15 次注入）· 反向 0/0/0（证明会判人失败）
+    文档站 34 页
+
 ## 0.13.0 — 2026-10-30
 
 三根支柱补齐：能看懂的瞬间、能复现的证明、能接进来的接口。

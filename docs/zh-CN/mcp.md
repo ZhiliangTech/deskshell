@@ -34,6 +34,41 @@ node packages/mcp/server.ts
 2. `deskshell_apply` —— 执行，记下返回的 `taskId`；
 3. `deskshell_undo` —— 用户说"放回去"时，把 `taskId` 还回去。
 
+## 接到真实客户端里
+
+服务说的是标准 MCP over stdio，所以配置形状到哪都一样，只是文件位置不同。
+
+**Claude Desktop**
+
+| 系统 | 文件 |
+| --- | --- |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+
+```json
+{
+  "mcpServers": {
+    "deskshell": {
+      "command": "node",
+      "args": ["C:/path/to/deskshell/packages/mcp/server.ts"]
+    }
+  }
+}
+```
+
+**Cursor** —— 同一个对象，放在项目根的 `.cursor/mcp.json` 或全局 `~/.cursor/mcp.json`。
+
+**其它客户端** —— 这个服务只需要 stdin/stdout；能起子进程的客户端都能用。
+
+### 30 秒验证
+
+1. 重启客户端，让它重新读配置；
+2. 问它：*"列出 deskshell 的技能"* → 它应该调 `deskshell_skills`，回来一串 `downloads-cleanup`、`dedupe-folders`…；
+3. 问它：*"预览 downloads-cleanup 在 <某个目录>"* → `deskshell_preview` 返回能力申请单和步骤，**那个目录一个文件都没动**；
+4. 说 *"执行"*，再说 *"撤回去"* → `deskshell_apply` 返回 `taskId`，`deskshell_undo` 拿它撤回。
+
+如果第 2 步什么都没返回，多半是客户端找不到 `node`——`command` 里用绝对路径，再看客户端自己的 MCP 日志。
+
 ## 协议级测试
 
 `scripts/mcp-test.ts` 会真的起一个服务进程，按客户端的方式一问一答：

@@ -13,6 +13,7 @@
 | 贡献者板 | <https://github.com/ZhiliangTech/deskshell/issues/3> |
 | 安装脚本 | `https://raw.githubusercontent.com/ZhiliangTech/deskshell/main/install.ps1` |
 | 回归套件 | `node scripts/regress.ts` → **43/43 passed**（本机实测） |
+| 恢复基准 | `node scripts/recovery-bench.ts` → R0 残渣/回滚/可追溯 **100%**（15 次失败注入），正常路径撤销后逐字节还原 **4/4**（运营侧复跑，2026-10-30） |
 
 ## 安装渠道（全部实测）
 

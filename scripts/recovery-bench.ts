@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { run, undoTask } from "../packages/core/src/kernel.ts";
 import { load } from "../packages/core/src/journal.ts";
 import type { Action, CapabilityId, Skill } from "../packages/core/src/types.ts";
@@ -22,6 +23,60 @@ import type { Action, CapabilityId, Skill } from "../packages/core/src/types.ts"
  */
 
 const here = path.resolve(".demo/recovery-bench");
+
+/**
+ * 适配器接口：想用同一套夹具量别的工具，实现这三个方法就行。
+ * 见 scripts/r0-adapter-template.ts。
+ */
+export interface R0Adapter {
+  name: string;
+  /** 跑一遍；failAt 指定在第几步注入失败（1-based） */
+  apply(root: string, steps: number, failAt: number): Promise<{ executed: number; rolledBack: number }>;
+  /** 撤销这一单 */
+  undo(root: string): Promise<void>;
+  /** 日志行数（可追溯性用）；拿不到就返回 null */
+  journalLines(root: string): number | null;
+}
+
+const DESKSHELL_ADAPTER: R0Adapter = {
+  name: "deskshell",
+  async apply(root, _steps, failAt) {
+    const sc = currentScenario;
+    const report = await run(
+      makeSkill(sc, root, failAt),
+      { root },
+      { mode: "apply", root, granted: sc.capabilities, journalPath: path.join(root, ".deskshell", "journal.jsonl") },
+      {},
+    );
+    const entries = load(path.join(root, ".deskshell", "journal.jsonl")).filter((e) => e.taskId === report.taskId);
+    return {
+      executed: Math.max(0, report.steps.length - 1),
+      rolledBack: entries.filter((e) => e.status === "rolled-back").length,
+    };
+  },
+  async undo(root) {
+    const journal = path.join(root, ".deskshell", "journal.jsonl");
+    const done = load(journal).filter((e) => e.status === "ok");
+    if (done.length === 0) return;
+    await undoTask(done[done.length - 1].taskId, { mode: "undo", root, granted: [], journalPath: journal }, {});
+  },
+  journalLines(root) {
+    const journal = path.join(root, ".deskshell", "journal.jsonl");
+    return fs.existsSync(journal) ? fs.readFileSync(journal, "utf8").trim().split("\n").filter(Boolean).length : 0;
+  },
+};
+
+let currentScenario: Scenario;
+let adapter: R0Adapter = DESKSHELL_ADAPTER;
+const adapterArg = process.argv.indexOf("--adapter");
+if (adapterArg > -1) {
+  const file = process.argv[adapterArg + 1];
+  const mod = (await import(pathToFileURL(path.resolve(file)).href)) as { createAdapter?: () => R0Adapter };
+  if (!mod.createAdapter) throw new Error(`${file} 没有导出 createAdapter()`);
+  adapter = mod.createAdapter();
+  console.log(`adapter: ${adapter.name}
+`);
+}
 
 interface Scenario {
   name: string;
@@ -225,55 +280,36 @@ const rows: Row[] = [];
 const happy: Array<{ scenario: string; steps: number; byteIdentical: boolean }> = [];
 
 for (const sc of scenarioList) {
-  // ① 正常路径 + 撤销：逐字节还原
+  currentScenario = sc;
+
+  // ① 正常路径 + 撤销：逐字节还原（适配器无关，只看目录）
   const rootOk = freshRoot(sc.name, sc.fixture);
   const beforeOk = snapshot(rootOk);
-  const journalOk = path.join(rootOk, ".deskshell", "journal.jsonl");
-  const skillOk = makeSkill(sc, rootOk);
-  const applied = await run(
-    skillOk,
-    { root: rootOk },
-    { mode: "apply", root: rootOk, granted: sc.capabilities, journalPath: journalOk },
-    {},
-  );
-  const taskId = load(journalOk).find((e) => e.status === "ok")?.taskId;
-  if (taskId) await undoTask(taskId, { mode: "undo", root: rootOk, granted: [], journalPath: journalOk }, {});
+  const total = sc.plan(freshRoot(`${sc.name}-probe`, sc.fixture)).length;
+  await adapter.apply(rootOk, total, 0);
+  await adapter.undo(rootOk);
   happy.push({
     scenario: sc.name,
-    steps: applied.steps.length,
+    steps: total,
     byteIdentical: same(beforeOk, snapshot(rootOk)),
   });
 
   // ② 逐步注入失败
-  const total = sc.plan(freshRoot(`${sc.name}-probe`, sc.fixture)).length;
   for (let k = 1; k <= total; k++) {
     const root = freshRoot(`${sc.name}-f${k}`, sc.fixture);
     const before = snapshot(root);
-    const journal = path.join(root, ".deskshell", "journal.jsonl");
-    const report = await run(
-      makeSkill(sc, root, k),
-      { root },
-      { mode: "apply", root, granted: sc.capabilities, journalPath: journal },
-      {},
-    );
-
+    const result = await adapter.apply(root, total, k);
     const after = snapshot(root);
-    // 从日志文件按 taskId 取账：失败项写在文件里，但不在 report.journal（那个只装成功的）
-    const entries = load(journal).filter((e) => e.taskId === report.taskId);
-    const rolledBack = entries.filter((e) => e.status === "rolled-back").length;
-    // 失败前"已经动过手"的步数 = 本次尝试的步数 - 1（最后一步是失败那步）
-    const executed = Math.max(0, report.steps.length - 1);
-    const traceable =
-      entries.length > 0 &&
-      entries.every((e) => Boolean(e.taskId) && Boolean(e.actionId) && Number.isFinite(e.ts));
+    const lines = adapter.journalLines(root);
+    const traceable = lines === null ? false : lines > 0;
 
     rows.push({
       scenario: sc.name,
       steps: total,
       failAt: k,
       residue: same(before, after),
-      rolledBack,
-      completed: executed,
+      rolledBack: result.rolledBack,
+      completed: result.executed,
       traceable,
     });
     fs.rmSync(root, { recursive: true, force: true });

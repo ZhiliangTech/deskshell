@@ -94,6 +94,21 @@ No SDK, no dependencies. `scripts/mcp-test.ts` spawns the server and talks to it
 | **Is not** | an agent, a chat UI, an RPA recorder, or a wrapper around a model API |
 | **Why it exists** | an agent that "just clicks" cannot tell you whether the click worked, and cannot take it back |
 
+## Proof (run it yourself)
+
+```bash
+node scripts/recovery-bench.ts
+```
+
+```
+R0-residue     100.0%   (15 failure injections)
+R0-rollback    100.0%
+R0-traceable   100.0%
+happy-path undo restores byte-for-byte: 4/4
+```
+
+Every computer-use project reports a success rate. This is the other number: what a failure leaves behind.
+
 ## How it differs
 
 | | Typical agent / automation script | deskshell |

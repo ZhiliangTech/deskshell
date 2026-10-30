@@ -34,6 +34,41 @@ Then an agent can do this instead of guessing:
 2. `deskshell_apply` — run it, keep the returned `taskId`;
 3. `deskshell_undo` — hand the `taskId` back if the user says "put it back".
 
+## Wire it into a real client
+
+The server speaks plain MCP over stdio, so the config is the same shape everywhere — only the file location differs.
+
+**Claude Desktop**
+
+| OS | File |
+| --- | --- |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+
+```json
+{
+  "mcpServers": {
+    "deskshell": {
+      "command": "node",
+      "args": ["C:/path/to/deskshell/packages/mcp/server.ts"]
+    }
+  }
+}
+```
+
+**Cursor** — same object, in `.cursor/mcp.json` at the project root or `~/.cursor/mcp.json` globally.
+
+**Anything else** — the server only needs stdin/stdout; if your client can spawn a process, it can use this.
+
+### Verify in 30 seconds
+
+1. restart the client so it reloads the config;
+2. ask it: *"list the deskshell skills"* → it should call `deskshell_skills` and come back with `downloads-cleanup`, `dedupe-folders`, …;
+3. ask it: *"preview downloads-cleanup on <some folder>"* → `deskshell_preview` returns the capability sheet and steps, and **the folder is untouched**;
+4. say *"do it"*, then *"undo that"* → `deskshell_apply` returns a `taskId`, `deskshell_undo` takes it back.
+
+If step 2 returns nothing, the client could not reach `node` — use an absolute path in `command`, and check the client's own MCP log.
+
 ## Protocol test
 
 `scripts/mcp-test.ts` spawns the server and talks to it the way a client would:

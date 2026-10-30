@@ -9,3 +9,5 @@ Wh1isper,agent-platform,B,converge-ai-labs/agent-foundation,protocol review,emai
 MongLong0214,mcp-server,B,MongLong0214/logic-pro-mcp,spec review,GitHub issue,2026-11-03,2026-11-08,2026-11-15,,planned,
 divshekhar,verification,B,reticlehq/reticle,undo semantics review,GitHub issue,2026-11-06,2026-11-11,2026-11-18,,planned,
 echoVic,coding-agent,B,echoVic/orca-agent,write one skill,email,2026-11-06,2026-11-11,2026-11-18,,planned,
+e2b,agent-runtime-infra,A,e2b-dev/E2B,sandbox contract seam,email,2026-10-30,2026-11-04,2026-11-11,,sent,"邮件已发 hello@e2b.dev · 主题: your sandbox gives the agent a machine - who gives it a contract? · 2026-10-30 17:52 · messageId b0b52370"
+trycua,agent-runtime-cua,A,trycua/cua,benchmark recovery axis,email,2026-10-30,2026-11-04,2026-11-11,,sent,"邮件已发 gh@trycua.com · 主题: your benchmark measures whether the agent finishes - does it measure whether it could have stopped? · 18:08 · messageId f9280452"

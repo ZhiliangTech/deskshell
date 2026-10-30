@@ -89,6 +89,21 @@ node packages/mcp/server.ts     # stdio JSON-RPC：initialize / tools/list / too
 | **不是** | 一个 agent、一个聊天界面、一个 RPA 录制器，或一层模型 API 的包装 |
 | **为什么需要它** | "只会点鼠标"的 agent 既不知道点没点中，也没法把点到的东西还回去 |
 
+## 证明（你自己跑）
+
+```bash
+node scripts/recovery-bench.ts
+```
+
+```
+R0-残渣     100.0%（15 次失败注入）
+R0-回滚     100.0%
+R0-可追溯   100.0%
+正常路径撤销后逐字节还原：4/4
+```
+
+所有 computer-use 项目都在报成功率。这是另一个数：**失败之后留下了什么。**
+
 ## 它和别的方案的区别
 
 | | 普通 agent / 自动化脚本 | deskshell |

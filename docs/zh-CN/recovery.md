@@ -35,6 +35,44 @@ R0-可追溯   100.0%
 
 一个从不发现问题的指标只是装饰。这个指标上线第一天就在审计链上找到个洞。
 
+## 用同一套夹具量别的工具
+
+发布 R0 的意义就在于别人能跑。任何工具只要实现三个方法就能接进来：
+
+```ts
+// scripts/my-tool-adapter.ts
+import type { R0Adapter } from "./recovery-bench.ts";
+
+export function createAdapter(): R0Adapter {
+  return {
+    name: "my-tool",
+    async apply(root, steps, failAt) {
+      // 真实执行 1..failAt-1，在 failAt 停手，返回计数
+      return { executed: failAt - 1, rolledBack: /* 你撤回了多少 */ 0 };
+    },
+    async undo(root) { /* 撤销最近一次 */ },
+    journalLines(root) { return null; },  // null = 没有审计日志
+  };
+}
+```
+
+```bash
+node scripts/recovery-bench.ts --adapter scripts/my-tool-adapter.ts
+```
+
+### 证明这套基准真的会判人失败
+
+一个永远都过的基准是广告，不是测量。`scripts/r0-adapter-naive.ts` 是一个"只写不回滚、也没有日志"的工具，用同一套夹具跑出来是：
+
+```
+R0-残渣     0.0%
+R0-回滚     0.0%
+R0-可追溯   0.0%
+正常路径撤销后逐字节还原：0/4
+```
+
+进程退出码非零。`scripts/r0-negative-test.ts` 就是断言这件事（5/5）。所以当 deskshell 报 100% 时，它是由一套**已经证明能把别人判失败**的夹具量出来的。
+
 ## 边界
 
 - 场景是合成的，只覆盖文件操作。GUI 驱动的失败还没纳入。
