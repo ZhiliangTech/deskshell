@@ -2,6 +2,27 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.4 — 2026-10-31
+
+为公共 npm 发布做体检时，抓到两个"装上就是坏的"问题（不是文档问题，是包的问题）：
+
+1. **`apps/mcp/` 没被打进包里。** `deskshell mcp install` 会 `import ../apps/mcp/install.ts`，
+   而 `files` 白名单里没有它 —— 上一版发出去的话，装完跑这个命令直接模块找不到。已加进 `files`。
+2. **MCP `serverInfo.version` 写死成 `0.13.0`**，从 0.13 到 0.18 一路没变，客户端看到的版本是假的。
+   现在从 `package.json` 读，读不到才回 `unknown`。
+
+验证方式不是"读代码觉得对"，而是**把打包产物真的装一遍**：
+
+```
+npm pack → npm i -g --prefix .demo/gtest <tgz>
+mcp install --print        → 指向已安装的 server.ts（存在）
+MCP initialize + tools/list → serverInfo.version=0.18.4，4 个工具
+```
+
+公共 npm 这一步仍停在"需要维护者凭据"：本机没有 `~/.npmrc`、没有 token，`npm publish --dry-run`
+到 registry.npmjs.org 已经通过（62 个文件、87.4 kB、shasum 正常），只差登录 + OTP。
+
+
 ## 0.18.3 — 2026-10-31
 
 `docs/install.md` 第 5 节从"猜"改成"实测"：公共 registry 上 `@zhiliangtech/deskshell` 的 `latest` 是 **0.10.0**（2026-10-29），

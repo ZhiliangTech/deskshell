@@ -1,10 +1,27 @@
 import fs from "node:fs";
 import { createInterface } from "node:readline";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { run, undoTask } from "../core/src/kernel.ts";
 import { load } from "../core/src/journal.ts";
 import type { CapabilityId, Skill } from "../core/src/types.ts";
+
+/** 版本只有一个来源：package.json。找不到就明说不知道，别编。 */
+function serverVersion(): string {
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    for (const rel of ["../../package.json", "../package.json", "./package.json"]) {
+      const candidate = path.resolve(here, rel);
+      if (fs.existsSync(candidate)) {
+        const pkg = JSON.parse(fs.readFileSync(candidate, "utf8")) as { version?: string };
+        if (pkg.version) return pkg.version;
+      }
+    }
+  } catch {
+    /* 落到 unknown */
+  }
+  return "unknown";
+}
 
 /**
  * MCP adapter：把内核包成三个 tool，任何 MCP 客户端（Claude Desktop / Cursor /
@@ -195,7 +212,8 @@ rl.on("line", async (line) => {
         reply(req.id, {
           protocolVersion: (req.params?.protocolVersion as string) ?? "2024-11-05",
           capabilities: { tools: {} },
-          serverInfo: { name: "deskshell", version: "0.13.0" },
+          // 版本从 package.json 读：写死过一次（0.13.0 挂了五个版本没人发现）
+          serverInfo: { name: "deskshell", version: serverVersion() },
         });
         return;
       case "notifications/initialized":
