@@ -2,6 +2,14 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.3 — 2026-10-31
+
+`docs/install.md` 第 5 节从"猜"改成"实测"：公共 registry 上 `@zhiliangtech/deskshell` 的 `latest` 是 **0.10.0**（2026-10-29），
+新版本在 GitHub Packages 与 release 资产里。往前有两条路，都写清了：
+
+- 本机：`node scripts/publish-npm-public.ts` 先体检，`--apply --otp <6 位>` 真发；
+- CI：配一次 `NPM_TOKEN` secret，`publish.yml` 的 `npm-public` 作业就会在每次 `v*` tag 自动发——没配这个 secret，那个作业整段跳过，这就是 latest 停在 0.10.0 的原因之一。
+
 ## 0.18.2 — 2026-10-31
 
 修一个被 CI 抓到的真实问题：`mcp-install-test` 把 Windows 的目录布局写死了，

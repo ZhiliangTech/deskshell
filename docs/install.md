@@ -79,13 +79,23 @@ node scripts/publish-npm-unscoped.ts     # unscoped: deskshell (repo untouched, 
 
 Both scripts bootstrap an npm CLI from the registry, so no local npm install is needed.
 
-**Current state (2026-10-30):** the name `deskshell` on the public registry holds only a `0.0.0-stage` placeholder. npm 12 stages a brand-new package and requires a **2FA proof-of-presence approval** before the real version becomes visible, so a publish needs the one-time password at publish time:
+**Current state (measured 2026-10-31):** the public registry `@zhiliangtech/deskshell` has **`0.10.0` as `latest`** (published 2026-10-29), plus an older `0.0.0-stage` placeholder. Newer versions are on GitHub Packages and in the release assets, not on public npm.
+
+Two ways to move public npm forward:
 
 ```bash
-NPM_OTP=<6 digits> NPM_NAME=deskshell node scripts/publish-npm-unscoped.ts
+# A. from this machine — needs npm login + a one-time password
+node scripts/publish-npm-public.ts                  # says exactly what is blocking (login? name? version?)
+node scripts/publish-npm-public.ts --apply --otp 123456
+
+# B. from CI — set the NPM_TOKEN repository secret once
+#    the `npm-public` job in publish.yml then publishes on every v* tag;
+#    without the secret that whole job skips (that is why latest is still 0.10.0)
 ```
 
-Until that approval lands, the supported channels are §1 (installer), §2 (GitHub Packages — 0.9.0, 0.10.0, 0.11.0 are live) and §4 (Git). `.github/workflows/publish.yml` publishes to GitHub Packages on every `v*` tag, skips versions that already exist, and only touches public npm when the `NPM_TOKEN` secret is set.
+`node scripts/npm-token.ts` still works if the npm **website** is blocked but the registry API is not.
+
+`.github/workflows/publish.yml` publishes to GitHub Packages on every `v*` tag, skips versions that already exist, and only touches public npm when the `NPM_TOKEN` secret is set.
 
 ## What "it works" looks like
 
