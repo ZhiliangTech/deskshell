@@ -1,22 +1,40 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 /**
  * 公共 npm 的发布前检查与发布。
  *
- * 这块一直卡在"维护者要用 2FA 批准"上，所以脚本只做两件事：
- *   1. 默认 `--check`：把"到底卡在哪"一次说清（登录状态、名字占用、版本是否已发）；
- *   2. `--apply --otp 123456`：真的发，OTP 只在本次进程里用，不落盘。
+ * 三条路，按账号的 2FA 配置走：
+ *   1. 默认（不发布）：把"到底卡在哪"一次说清（登录状态、名字占用、版本是否已发）；
+ *   2. `--apply`：终端里当场问 6 位验证码（TOTP 认证器的码 30 秒过期，拷来就晚了）；
+ *   3. `--apply --token npm_xxx`（或环境变量 NPM_TOKEN）：用 Automation token 发，
+ *      不需要验证码。token 写进临时 npmrc（600），发完立刻删，不进命令行历史。
  *
  * 用法：
- *   node scripts/publish-npm-public.ts                 # 只检查
- *   node scripts/publish-npm-public.ts --apply --otp 123456
+ *   node scripts/publish-npm-public.ts
+ *   node scripts/publish-npm-public.ts --apply
+ *   NPM_TOKEN=npm_xxx node scripts/publish-npm-public.ts --apply
  */
 
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
-const otpIndex = args.indexOf("--otp");
-const otp = otpIndex > -1 ? args[otpIndex + 1] : undefined;
+const otpIndexOf = (): number => args.findIndex((a) => a === "--otp" || a.startsWith("--otp="));
+const otpAt = otpIndexOf();
+const otp =
+  otpAt > -1
+    ? (args[otpAt].includes("=") ? args[otpAt].split("=")[1] : args[otpAt + 1])?.trim()
+    : undefined;
+const tokenAt = args.indexOf("--token");
+const tokenFileAt = args.indexOf("--token-file");
+const token =
+  (tokenAt > -1 ? args[tokenAt + 1] : undefined)?.trim() ||
+  (tokenFileAt > -1 && fs.existsSync(args[tokenFileAt + 1])
+    ? fs.readFileSync(args[tokenFileAt + 1], "utf8").trim()
+    : undefined) ||
+  process.env.NPM_TOKEN?.trim() ||
+  undefined;
 
 const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")) as { name: string; version: string };
 const rows: string[] = [];
@@ -71,6 +89,40 @@ say(`发布策略：publishConfig 里指向 GitHub Packages；公共 npm 需要�
 if (!apply) {
   say("");
   say("这只是检查。真要发：node scripts/publish-npm-public.ts --apply");
+} else if (token) {
+  // Automation token：不需要验证码。写进临时 npmrc（600），发完删掉，
+  // 这样 token 不会出现在命令行历史里。
+  say("");
+  say(`用 token 发布（${token.slice(0, 8)}…，共 ${token.length} 字符）……`);
+  const npmrc = path.join(os.tmpdir(), `deskshell-npmrc-${Date.now()}`);
+  fs.writeFileSync(npmrc, `//registry.npmjs.org/:_authToken=${token}\n`, { mode: 0o600 });
+  try {
+    const r = run([
+      "publish",
+      "--access",
+      "public",
+      "--registry",
+      "https://registry.npmjs.org",
+      "--userconfig",
+      npmrc,
+    ]);
+    if (r.ok) {
+      say(`已发布：${pkg.name}@${pkg.version}`);
+    } else {
+      say(`发布失败：\n${r.out.slice(-800)}`);
+      if (/EOTP|one-time password/i.test(r.out)) {
+        say("");
+        say("这个 token 不是 Automation 类型：普通 token 仍要验证码。");
+        say("去 npmjs.com → Access Tokens → Generate New Token → 选 Automation。");
+      } else if (/401|403|E401|E403/.test(r.out)) {
+        say("");
+        say("token 被拒：确认它有 publish 权限，且没被撤销/过期。");
+      }
+      process.exitCode = 1;
+    }
+  } finally {
+    fs.rmSync(npmrc, { force: true });
+  }
 } else {
   // 2FA 码 30 秒过期：靠 --otp 从别处拷过来经常来不及。
   // 所以在终端里直接问，敲完立刻发。
@@ -82,18 +134,20 @@ if (!apply) {
       try {
         say("");
         say("账号是 auth-and-writes，发布要一次性验证码（认证器上现在那个 6 位）。");
-        code = (await rl.question("验证码：")).trim();
+        say("如果你的认证器根本不显示数字，那是 WebAuthn/passkey —— 命令行用不了，");
+        say("请改用 Automation token：node scripts/publish-npm-public.ts --apply --token npm_xxx");
+        code = (await rl.question("验证码（或直接回车取消）：")).trim();
       } finally {
         rl.close();
       }
       if (!/^\d{6}$/.test(code)) {
-        say("不是 6 位数字，取消。");
+        say("取消。");
         process.exitCode = 2;
         process.exit(2);
       }
     } else {
       say("");
-      say("非交互环境：请用 --otp=<6 位码> 传入。");
+      say("非交互环境：用 --otp=<6 位码>，或用 NPM_TOKEN 传 Automation token。");
       process.exitCode = 2;
       process.exit(2);
     }
@@ -101,8 +155,15 @@ if (!apply) {
 
   say("");
   say("开始发布……");
-  const args = ["publish", "--access", "public", "--registry", "https://registry.npmjs.org", `--otp=${code}`];
-  const r = run(args);
+  const publishArgs = [
+    "publish",
+    "--access",
+    "public",
+    "--registry",
+    "https://registry.npmjs.org",
+    `--otp=${code}`,
+  ];
+  const r = run(publishArgs);
   if (r.ok) {
     say(`已发布：${pkg.name}@${pkg.version}`);
   } else {

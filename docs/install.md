@@ -86,12 +86,21 @@ Two ways to move public npm forward:
 ```bash
 # A. from this machine — needs npm login + a one-time password
 node scripts/publish-npm-public.ts                  # says exactly what is blocking (login? name? version?)
-node scripts/publish-npm-public.ts --apply --otp 123456
+node scripts/publish-npm-public.ts --apply          # prompts for the 6-digit code, then publishes
 
 # B. from CI — set the NPM_TOKEN repository secret once
 #    the `npm-public` job in publish.yml then publishes on every v* tag;
 #    without the secret that whole job skips (that is why latest is still 0.10.0)
 ```
+
+**If your authenticator shows no digits**, the account is enrolled with a security key / passkey, not a TOTP app. `--otp` only accepts TOTP codes, so use a token instead:
+
+```bash
+# npmjs.com → Access Tokens → Generate New Token → Automation → copy npm_...
+node scripts/publish-npm-public.ts --apply --token-file .token     # or NPM_TOKEN=npm_... 
+```
+
+The token is written to a temporary `npmrc` (mode 600), used for that one publish, and deleted immediately — it never appears in shell history.
 
 `node scripts/npm-token.ts` still works if the npm **website** is blocked but the registry API is not.
 
