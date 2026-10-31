@@ -60,7 +60,33 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: node scripts/regress.ts
         if: steps.gate.outputs.ok == 'true'
-      - run: npm publish --access public
+      - id: exists
         if: steps.gate.outputs.ok == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version --registry https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION 已经在公共 npm 上，跳过发布"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.gate.outputs.ok == 'true' && steps.exists.outputs.skip != 'true'
+        run: npm publish --access public --registry https://registry.npmjs.org
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - if: steps.gate.outputs.ok == 'true' && steps.exists.outputs.skip != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          echo "等 registry 处理完再核对（上传后有一段处理窗口，立刻查会 404）"
+          for i in 1 2 3 4 5 6; do
+            sleep 20
+            if LATEST=$(npm view "$NAME" version --registry https://registry.npmjs.org 2>/dev/null); then
+              echo "公共 npm latest = $LATEST"
+              break
+            fi
+          done

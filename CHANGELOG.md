@@ -2,6 +2,23 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.7 — 2026-10-31
+
+**打 tag 就自动发公共 npm，不用再本机敲命令。**
+
+### 做了什么
+
+- `NPM_TOKEN` 已写进仓库 Actions Secrets（用仓库公钥 crypto_box_seal 加密，明文没上过线）。
+- `publish.yml` 的 `npm-public` 作业补了三件事：
+  1. **版本已存在就跳过**（`npm view` 探测），避免 `E409 Cannot publish over previously staged version` 这种噪音；
+  2. 发布显式带 `--registry https://registry.npmjs.org`（`publishConfig` 指向 GitHub Packages，不显式覆盖会发错地方）；
+  3. 发完**轮询 registry 直到能查到版本**再报成功——上传后有一段处理窗口，立刻查是 404。
+
+### 为什么加轮询
+
+上一版我栽在这里：npm 说 `+ @zhiliangtech/deskshell@0.18.5`，我立刻去查 registry 是 404，就下了"要网页批准"的结论；一分钟后再查它自己就上架了。现在 CI 里把这段等待写成显式步骤，两次都看到数字才算过。
+
+
 ## 0.18.6 — 2026-10-31
 
 **`npm i -g @zhiliangtech/deskshell` 现在装到的就是最新版（0.18.6），公共 npm 通了。**
