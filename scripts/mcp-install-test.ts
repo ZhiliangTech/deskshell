@@ -98,7 +98,8 @@ fs.mkdirSync(base, { recursive: true });
   fs.mkdirSync(home, { recursive: true });
   check("没装客户端时判定为 no", clientPresent("claude", home) === "no");
   const installed = path.join(base, "hasclient");
-  fs.mkdirSync(path.join(installed, "AppData", "Roaming", "Claude"), { recursive: true });
+  // 别硬编码 AppData：macOS / Linux 上 Claude 的目录是另一个（这正是 CI 抓到的）
+  fs.mkdirSync(path.dirname(plan("claude", installed).file), { recursive: true });
   check("装了客户端时判定为 yes", clientPresent("claude", installed) === "yes");
 }
 

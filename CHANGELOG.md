@@ -2,6 +2,18 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.2 — 2026-10-31
+
+修一个被 CI 抓到的真实问题：`mcp-install-test` 把 Windows 的目录布局写死了，
+在 Linux/macOS 上（Claude 配置在 `Library/Application Support/Claude`）判定就错，
+于是 `regress` 在 CI 上 52/53，publish workflow 连带失败。
+
+- 测试改成用 `path.dirname(plan("claude", home).file)` 造目录，跟实现同一套推导，不再硬编码。
+- 本地是 Windows，所以这个问题只有在 CI 上才暴露——0.18.1 的 tag 是红的，记在这里，不掩盖。
+
+    regress 53/53（本地 Windows）
+    ci/publish 在 0.18.2 上重跑
+
 ## 0.18.1 — 2026-10-31
 
 `mcp install` 之前会往一个不存在的客户端目录里写配置——写成功了，但用户打开客户端什么也看不到。现在先判断客户端在不在：
