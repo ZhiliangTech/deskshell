@@ -44,7 +44,7 @@ run(
 
 // 3) CLI：能列出公开 skill
 run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("10 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.16.0"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.16.1"));
 
 // 4) CLI：--json 输出可被程序消费
 run(
@@ -93,6 +93,7 @@ run("mcp.tools", ["scripts/mcp-test.ts"], (o) => o.includes("14/14 passed"));
 run("demo.30s", ["scripts/thirty-seconds-test.ts"], (o) => o.includes("5/5 passed"));
 run("r0.negative", ["scripts/r0-negative-test.ts"], (o) => o.includes("5/5 passed"));
 // 这些数字是"现在的真实水平"，不是目标：改动 UI 撤销能力时它们应该上升。
+run("cli.irreversible", ["scripts/cli-irreversible-test.ts"], (o) => o.includes("9/9 passed"));
 run("irreversible", ["scripts/irreversible-test.ts"], (o) => o.includes("7/7 passed"));
 run("r0.ui", ["scripts/recovery-bench-ui.ts"], (o) => o.includes("R0-UI 状态归零   100.0%") && o.includes("R0-UI 回滚       100.0%"));
 run("recovery.r0", ["scripts/recovery-bench.ts"], (o) => o.includes("R0-残渣     100.0%") && o.includes("R0-可追溯   100.0%"));

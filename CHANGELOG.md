@@ -2,6 +2,22 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.16.1 — 2026-10-31
+
+把不可逆闸门从"只有报错"补成"能确认"。
+
+### Added
+
+- **`--ask` 在交互终端里会问一次不可逆步骤**：`有 N 步不可逆（撤不回来），确认执行？[y/N]`。拒绝则整单不执行。
+- 闸门拒绝的退出码从 1 改成 **2**（"等你确认"不是"程序出错"，和 `--ask` 取消保持一致），JSON 模式下 `error: "needs-confirmation"`。
+- `scripts/cli-irreversible-test.ts`（9 条）：非交互必须显式 `--allow-irreversible`、被拒时文件一个字节不动、确认后照常执行、`preview` 永不需要确认。
+- 文档 `undo-and-trust` 补「当一步撤不回来」（中英）。
+
+### Evidence
+
+    regress 50/50（新增 cli.irreversible 9 条）
+    CLI 实跑：拒绝 → exit 2 且 b.txt 未删、a.txt 未写；确认 → 两步都生效
+
 ## 0.16.0 — 2026-10-31
 
 不可逆动作不再被假装成"可撤销"：该拦的拦在动手之前。

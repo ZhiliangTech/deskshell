@@ -2,8 +2,8 @@ handle,segment,tier,repo,ask,channel,first_touch_date,followup1_date,followup2_d
 abrichr,automation-replay,A,OpenAdaptAI/OpenAdapt,protocol review + recorder input,email,2026-10-30,2026-11-04,2026-11-11,,sent,"邮件已发 richard.abrich@mldsai.com（04:10Z，已在已发送核对）；无回信、无退信；正文编码为 GBK，下封改 UTF-8"
 AmrDab,desktop-control,A,AmrDab/clawdcursor,MCP adapter alignment,GitHub issue,2026-10-30,2026-11-04,2026-11-11,yes,replied,"2026-10-30 06:32 回信（#267）：采纳两点——成功 AX 调用不算证据、用 IsSecureEventInputEnabled + ioreg 命名持有者；承诺修好后回帖。我方已二次回复（6518762700）建议记录 pre-state 以便 CI 复现"
 PM-Shawn,office-agent,A,PM-Shawn/Abu-Cowork,write 2 skills,email,2026-10-30,2026-11-04,2026-11-11,,planned,"文案已就绪（X @pmshawn_x）；等待人工发布"
-ayuayue,agent-workbench,A,ayuayue/PiDeck,protocol review / skill,email,2026-10-31,2026-11-05,2026-11-12,,planned,
-gnh1201,windows-industrial,A,gnh1201/welsonjs,recorder input coverage,email,2026-10-31,2026-11-05,2026-11-12,,planned,
+ayuayue,agent-workbench,A,ayuayue/PiDeck,protocol review / skill,email,2026-10-31,2026-11-05,2026-11-12,,planned,"仓库只有 1 个开放 PR、无 issue，没有可介入的技术线程；GitHub 评论这条路走不通。邮件版待发（缺 MAIL 凭据）"
+gnh1201,windows-industrial,A,gnh1201/welsonjs,recorder input coverage,email,2026-10-31,2026-11-05,2026-11-12,,sent,"2026-10-31 在 #474（验证 WelsonJS MCP 与 Claude Code/Codex CLI）写技术评论：stdout 只能有 JSON-RPC、手写 initialize/tools/list 管道自测、Windows 下 command 与 cwd 三个坑；不带链接不提项目。邮件版仍待发（缺 MAIL 凭据）"
 lukemarsden,agent-fleet,A,helixml/helix,undo boundary review,email,2026-11-01,2026-11-06,2026-11-13,,planned,
 Wh1isper,agent-platform,B,converge-ai-labs/agent-foundation,protocol review,email,2026-11-03,2026-11-08,2026-11-15,,planned,
 MongLong0214,mcp-server,B,MongLong0214/logic-pro-mcp,spec review,GitHub issue,2026-11-03,2026-11-08,2026-11-15,,planned,

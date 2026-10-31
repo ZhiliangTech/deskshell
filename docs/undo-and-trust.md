@@ -128,3 +128,17 @@ Any `n` cancels the whole task with exit code 2 and **no side effects** — no j
 - external side effects cannot be undone (an HTTP request already left); such actions are `undo: null` and rejected;
 - if a file changes underneath during undo, `fs.restore` overwrites it — that needs explicit confirmation;
 - cross-volume moves are not atomic on every platform; the journal is what makes retries possible.
+
+## When a step cannot be undone
+
+An action can declare `irreversible: true` (a pressed button, a sent email). The kernel refuses the whole run **before touching anything** unless you say yes:
+
+```bash
+deskshell run submit-form --mode apply                 # → exit 2: 这一步不可逆，需要显式确认
+deskshell run submit-form --mode apply --ask            # interactive: asks once, then runs
+deskshell run submit-form --mode apply --allow-irreversible   # CI: explicit flag
+```
+
+`preview` never needs confirmation — it is read-only. MCP callers pass `allowIrreversible: true` instead.
+
+Why a hard gate instead of a warning: for the one class of action you cannot take back, "I clicked past a warning" is not consent.

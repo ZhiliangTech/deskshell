@@ -233,6 +233,36 @@ async function runSkill(
     if (!json) out(`示例: examples/${flags.example}.json`);
   }
 
+  // 不可逆步骤：--ask 时在这里问一次；不问就靠 --allow-irreversible，否则内核硬拒
+  let allowIrreversible = Boolean(flags["allow-irreversible"]);
+  if (mode === "apply" && !allowIrreversible && flags.ask && process.stdin.isTTY) {
+    const preview = await run(
+      skill,
+      input,
+      { mode: "preview", root, granted, journalPath: path.join(root, ".deskshell", "journal.jsonl") },
+      { driver },
+    );
+    const irreversible = preview.summary?.irreversible ?? 0;
+    if (irreversible > 0) {
+      const { createInterface } = await import("node:readline/promises");
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      let answer = "";
+      try {
+        answer = await rl.question(`有 ${irreversible} 步不可逆（撤不回来），确认执行？[y/N] `);
+      } finally {
+        rl.close();
+      }
+      const ok = /^y(es)?$/i.test(answer.trim());
+      if (!ok) {
+        const msg = "已取消：不可逆步骤未获确认，任务不会执行";
+        if (json) out(JSON.stringify({ ok: false, cancelled: true, error: msg }));
+        else out(msg);
+        return 2;
+      }
+      allowIrreversible = true;
+    }
+  }
+
   try {
     const report = await run(
       skill,
@@ -242,7 +272,7 @@ async function runSkill(
         root,
         granted,
         journalPath: path.join(root, ".deskshell", "journal.jsonl"),
-        allowIrreversible: Boolean(flags["allow-irreversible"]),
+        allowIrreversible,
       },
       { driver },
     );
@@ -289,6 +319,12 @@ async function runSkill(
     if (err instanceof PolicyError) {
       if (json) out(JSON.stringify({ ok: false, error: "policy", reasons: err.reasons }));
       else out(c(31, "拒绝：") + err.reasons.join("; "));
+      return 2;
+    }
+    // 不可逆闸门是"等你确认"，不是程序出错：退出码 2，和 --ask 取消保持一致
+    if (err instanceof Error && /不可逆/.test(err.message)) {
+      if (json) out(JSON.stringify({ ok: false, error: "needs-confirmation", message: err.message }));
+      else out(c(33, "需要确认：") + err.message);
       return 2;
     }
     throw err;

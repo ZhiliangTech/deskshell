@@ -128,3 +128,17 @@ GUI 类 skill 是**带理由跳过**并打印出来的，不会静默略过—�
 - 外部副作用无法撤销（例如已经发出的网络请求），这类动作必须走 `undo: null` 并被拒绝；
 - 文件内容在撤销期间被外部修改时，`fs.restore` 会覆盖，需要用户确认；
 - 跨卷移动在部分平台上不是原子操作，失败时依赖日志重试。
+
+## 当一步撤不回来
+
+动作可以声明 `irreversible: true`（按下的按钮、发出去的邮件）。内核会**在动手之前**整单拒绝，除非你明确点头：
+
+```bash
+deskshell run submit-form --mode apply                        # → 退出码 2：这一步不可逆，需要显式确认
+deskshell run submit-form --mode apply --ask                   # 交互：问一次，再执行
+deskshell run submit-form --mode apply --allow-irreversible     # CI：显式开关
+```
+
+`preview` 永远不需要确认——它是只读的。MCP 调用方则传 `allowIrreversible: true`。
+
+为什么是硬闸而不是警告：对唯一撤不回来的那类动作，"我把警告点掉了"不构成同意。
