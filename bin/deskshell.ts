@@ -711,6 +711,13 @@ switch (cmd) {
       console.log(p.json);
       break;
     }
+    const present = mod.clientPresent(client, home) as "yes" | "no";
+    if (present === "no" && !flags.force) {
+      console.error(`没找到 ${client} 的安装目录（${home}）。`);
+      console.error("先把客户端装上，或者确认路径没错；就是要写的话加 --force。");
+      process.exitCode = 2;
+      break;
+    }
     try {
       const r = mod.install(client, home) as { file: string; backup?: string; servers: string[]; changed: boolean };
       if (!r.changed) {

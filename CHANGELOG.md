@@ -2,6 +2,15 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.1 — 2026-10-31
+
+`mcp install` 之前会往一个不存在的客户端目录里写配置——写成功了，但用户打开客户端什么也看不到。现在先判断客户端在不在：
+
+    没找到 claude 的安装目录（<home>）。
+    先把客户端装上，或者确认路径没错；就是要写的话加 --force。
+
+退出码 2，不写任何文件。测试补了 2 条（装了 / 没装）。
+
 ## 0.18.0 — 2026-10-31
 
 三件"需要外部输入"的事，全部做成**你自己花几分钟就能验证**的形态。

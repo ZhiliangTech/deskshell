@@ -74,6 +74,23 @@ export function install(client: ClientKind, home = os.homedir()): InstallResult 
   return { file, backup, servers, changed: true };
 }
 
+
+/**
+ * 客户端是不是真的装了？
+ *
+ * 往一个不存在的客户端目录里写配置不会报错，只会让人以为"配好了"然后什么也没发生。
+ * 所以先看一眼：目录或可执行文件在不在。判断不了就返回 unknown，不拦。
+ */
+export function clientPresent(client: ClientKind, home = os.homedir()): "yes" | "no" {
+  const dir =
+    client === "claude"
+      ? process.platform === "win32"
+        ? path.join(home, "AppData", "Roaming", "Claude")
+        : path.join(home, "Library", "Application Support", "Claude")
+      : path.join(home, ".cursor");
+  return fs.existsSync(dir) ? "yes" : "no";
+}
+
 /** 给测试用：只在临时 home 里跑，不碰真实客户端配置 */
 export function homeForTest(base: string): string {
   fs.mkdirSync(base, { recursive: true });

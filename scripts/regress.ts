@@ -44,7 +44,7 @@ run(
 
 // 3) CLI：能列出公开 skill
 run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("10 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.18.0"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.18.1"));
 
 // 4) CLI：--json 输出可被程序消费
 run(
@@ -90,7 +90,7 @@ run("journal.failed", ["bin/deskshell.ts", "journal", "--root", ".demo/fail-stor
 
 // 4) 驱动契约（内存驱动，验证内核对平台无感）
 run("mcp.tools", ["scripts/mcp-test.ts"], (o) => o.includes("14/14 passed"));
-run("mcp.install", ["scripts/mcp-install-test.ts"], (o) => o.includes("15/15 passed"));
+run("mcp.install", ["scripts/mcp-install-test.ts"], (o) => o.includes("17/17 passed"));
 run("r0.remote", ["scripts/r0-remote.ts"], (o) => o.includes("跳过"));
 run("terminal.svg", ["scripts/terminal-svg-test.ts"], (o) => o.includes("7/7 passed"));
 run("demo.30s", ["scripts/thirty-seconds-test.ts"], (o) => o.includes("5/5 passed"));

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { install, plan } from "../apps/mcp/install.ts";
+import { clientPresent, install, plan } from "../apps/mcp/install.ts";
 
 /**
  * `deskshell mcp install` 的契约：
@@ -90,6 +90,16 @@ fs.mkdirSync(base, { recursive: true });
   }
   check("坏 JSON 会报错", /不是合法 JSON/.test(message), message.slice(0, 60));
   check("坏 JSON 不被覆盖", fs.readFileSync(file, "utf8") === "{ this is not json");
+}
+
+// ⑥ 客户端没装：要能被判出来，别让人以为配好了
+{
+  const home = path.join(base, "noclient");
+  fs.mkdirSync(home, { recursive: true });
+  check("没装客户端时判定为 no", clientPresent("claude", home) === "no");
+  const installed = path.join(base, "hasclient");
+  fs.mkdirSync(path.join(installed, "AppData", "Roaming", "Claude"), { recursive: true });
+  check("装了客户端时判定为 yes", clientPresent("claude", installed) === "yes");
 }
 
 console.log(checks.join("\n"));
