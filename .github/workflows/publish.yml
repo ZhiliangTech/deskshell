@@ -82,11 +82,17 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
           echo "等 registry 处理完再核对（上传后有一段处理窗口，立刻查会 404）"
-          for i in 1 2 3 4 5 6; do
+          # 查的是"这个版本在不在"，不是 dist-tag —— dist-tag 比版本本身慢一拍，
+          # 0.18.7 那次就是这里误读成 0.18.6。
+          for i in 1 2 3 4 5 6 7 8; do
             sleep 20
-            if LATEST=$(npm view "$NAME" version --registry https://registry.npmjs.org 2>/dev/null); then
-              echo "公共 npm latest = $LATEST"
-              break
+            if PUBLISHED=$(npm view "$NAME@$VERSION" version --registry https://registry.npmjs.org 2>/dev/null); then
+              echo "公共 npm 上已存在 $PUBLISHED"
+              npm view "$NAME" version --registry https://registry.npmjs.org | sed 's/^/公共 npm latest = /'
+              exit 0
             fi
           done
+          echo "80 秒内还没查到 $NAME@$VERSION —— 去 https://www.npmjs.com/package/$NAME?activeTab=versions 人工确认"
+          exit 1
