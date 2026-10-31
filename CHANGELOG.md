@@ -2,6 +2,27 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.5 — 2026-10-31
+
+### 修了发布脚本里的一个 Windows 坑（这才是「未登录 + 发布失败(空)」的真因）
+
+`execFileSync("npm.cmd", …)` 在 Windows 上会直接抛 `EINVAL`（Node 20 起，`.cmd` 必须有 shell 才能执行）。
+症状极具误导性：
+
+- `npm whoami` 那一步失败 → 脚本报 **「未登录」**，哪怕你刚 `npm login` 成功；
+- `npm publish` 那一步失败 → 错误对象里没有 stdout/stderr → 打出 **「发布失败：」** 后面一片空白。
+
+现在：Windows 上走 `shell: true`，并且失败时至少把错误码或异常信息打出来。跑一次就能看到真实原因。
+
+### 顺带
+
+- `--otp` 改成 `--otp=<code>`（npm 文档的形式），没有 OTP 时也先试一次，被 2FA 挡住才提示补码。
+- 登录状态、公共 npm 上的现有版本、以及"卡在哪一步"都在同一次输出里。
+
+**当前真实状态**：`npm whoami` → `zhiliangtech` ✓；`npm publish` → `EOTP`（账号开了 auth-and-writes，发布必须带实时 6 位码）。
+公开 registry 上仍是 `0.10.0`，本地的 `0.18.5` 已发到 GitHub Packages + Release。
+
+
 ## 0.18.4 — 2026-10-31
 
 为公共 npm 发布做体检时，抓到两个"装上就是坏的"问题（不是文档问题，是包的问题）：

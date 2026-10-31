@@ -28,11 +28,17 @@ const say = (s: string): void => {
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 const run = (argv: string[]): { ok: boolean; out: string } => {
   try {
-    const out = execFileSync(npm, argv, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    // Windows 上 .cmd 不能直接 execFile：Node 会抛 EINVAL，「未登录」和「发布失败(空)」都是它
+    const out = execFileSync(npm, argv, {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      shell: process.platform === "win32",
+    });
     return { ok: true, out: out.trim() };
   } catch (err) {
-    const e = err as { stdout?: string; stderr?: string };
-    return { ok: false, out: `${e.stdout ?? ""}${e.stderr ?? ""}`.trim() };
+    const e = err as { stdout?: string; stderr?: string; message?: string; code?: string };
+    const text = `${e.stdout ?? ""}${e.stderr ?? ""}`.trim();
+    return { ok: false, out: text || e.message || e.code || "npm 没有输出" };
   }
 };
 
@@ -64,26 +70,24 @@ say(`发布策略：publishConfig 里指向 GitHub Packages；公共 npm 需要�
 
 if (!apply) {
   say("");
-  say("这只是检查。真要发：node scripts/publish-npm-public.ts --apply --otp <6 位验证码>");
+  say("这只是检查。真要发：node scripts/publish-npm-public.ts --apply [--otp 123456]");
 } else {
-  if (!otp) {
-    say("");
-    say("需要 --otp：公共 npm 的发布要用 2FA 验证码批准（一次性的，脚本不保存）");
-    process.exitCode = 2;
+  // 有 OTP 就带上；没有也先试一次——`npm login --auth-type=web` 拿到的 token 可能已经够用，
+  // 真被 2FA 挡住时 npm 会明确报 EOTP，那时候再补 --otp。
+  say("");
+  say(`开始发布${otp ? "（带 OTP）" : "（不带 OTP，先试试）"}……`);
+  const args = ["publish", "--access", "public", "--registry", "https://registry.npmjs.org"];
+  if (otp) args.push(`--otp=${otp}`);
+  const r = run(args);
+  if (r.ok) {
+    say(`已发布：${pkg.name}@${pkg.version}`);
   } else {
-    say("");
-    say("开始发布……");
-    const r = run([
-      "publish",
-      "--access",
-      "public",
-      "--registry",
-      "https://registry.npmjs.org",
-      "--otp",
-      otp,
-    ]);
-    say(r.ok ? `已发布：${pkg.name}@${pkg.version}` : `发布失败：\n${r.out.slice(-600)}`);
-    if (!r.ok) process.exitCode = 1;
+    say(`发布失败：\n${r.out.slice(-800)}`);
+    if (/EOTP|one-time password/i.test(r.out)) {
+      say("");
+      say("这是 2FA 挡的：重跑一次并带上 --otp <6 位验证码>。");
+    }
+    process.exitCode = 1;
   }
 }
 
