@@ -43,7 +43,7 @@ No build step: the CLI is TypeScript run directly by Node's type stripping.
 
 ## 4. From Git, no registry at all
 
-Public npm has `@zhiliangtech/deskshell` but it is pinned at **0.10.0** (measured: `latest=0.10.0`); newer versions need the maintainer's 2FA approval. If `registry.npmjs.org` is slow, npm can install straight from the repo:
+Public npm **works**: `npm i -g @zhiliangtech/deskshell` installs **0.18.6** (measured `latest=0.18.6`). If `registry.npmjs.org` is slow, npm can install straight from the repo:
 
 ```bash
 npm i -g github:ZhiliangTech/deskshell
@@ -79,7 +79,7 @@ node scripts/publish-npm-unscoped.ts     # unscoped: deskshell (repo untouched, 
 
 Both scripts bootstrap an npm CLI from the registry, so no local npm install is needed.
 
-**Current state (measured 2026-10-31):** the public registry `@zhiliangtech/deskshell` has **`0.10.0` as `latest`** (published 2026-10-29), plus an older `0.0.0-stage` placeholder. Newer versions are on GitHub Packages and in the release assets, not on public npm.
+**Current state (measured 2026-10-31):** public registry `@zhiliangtech/deskshell` → **`latest = 0.18.6`**, versions `0.0.0-stage, 0.10.0, 0.18.5, 0.18.6`. Verified end-to-end: `npm i -g @zhiliangtech/deskshell@latest` then `deskshell mcp install --print` resolves to the installed `packages/mcp/server.ts`.
 
 Two ways to move public npm forward:
 
@@ -90,7 +90,7 @@ node scripts/publish-npm-public.ts --apply          # prompts for the 6-digit co
 
 # B. from CI — set the NPM_TOKEN repository secret once
 #    the `npm-public` job in publish.yml then publishes on every v* tag;
-#    without the secret that whole job skips (that is why latest is still 0.10.0)
+#    without the secret that whole job skips (local token publish is the working path today)
 ```
 
 **If your authenticator shows no digits**, the account is enrolled with a security key / passkey, not a TOTP app. `--otp` only accepts TOTP codes, so use a token instead:

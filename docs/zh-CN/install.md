@@ -85,7 +85,7 @@ node scripts/publish-npm-unscoped.ts     # 无 scope：deskshell（临时副本�
 NPM_OTP=<6 位码> NPM_NAME=deskshell node scripts/publish-npm-unscoped.ts
 ```
 
-在批准落地之前，可用渠道是 §1（安装脚本）、§2（GitHub Packages，0.9.0 / 0.10.0 / 0.11.0 都在）和 §4（Git）。`.github/workflows/publish.yml` 会在每个 `v*` tag 上发 GitHub Packages，已存在的版本自动跳过；只有配了 `NPM_TOKEN` secret 时才碰公共 npm。
+公共 npm 现在**可用**：`latest=0.18.6`（2026-10-31 实测）。其它渠道：§1（安装脚本）、§2（GitHub Packages）、§4（Git）。`.github/workflows/publish.yml` 会在每个 `v*` tag 上发 GitHub Packages，已存在的版本自动跳过；只有配了 `NPM_TOKEN` secret 时才碰公共 npm。
 
 ## "装好了"长什么样
 

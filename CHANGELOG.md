@@ -2,6 +2,39 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.6 — 2026-10-31
+
+**`npm i -g @zhiliangtech/deskshell` 现在装到的就是最新版（0.18.6），公共 npm 通了。**
+
+### 怎么通的
+
+账号是 `auth-and-writes`，但认证器只绑了 passkey/security key，出不了 6 位码，
+所以 `--otp` 这条路走不了。换 **Automation token** 发布：
+
+```bash
+NPM_TOKEN=npm_xxx node scripts/publish-npm-public.ts --apply
+# 或 node scripts/publish-npm-public.ts --apply --token-file .token
+```
+
+token 写进临时 npmrc（600），只用于这一次 publish，结束即删。
+
+### 途中两个坑（都记下来，免得再踩）
+
+1. **`execFileSync("npm.cmd")` 在 Windows 抛 EINVAL** —— 表现为"未登录"和"发布失败(空)"，
+   和白屏报错差不多没用。已改走 `shell: true`。
+2. **`E409 Cannot publish over previously staged version`** 不是"要去网页批准"。
+   npm 上传后有一段处理时间，这期间重发同版本会 409，`npm stage list` 还显示"没有暂存版本"——
+   我只看了 409 的字面意思就下了"需要网页批准"的结论，那是错的。等一分钟再看，0.18.5 自己就上架了。
+
+### 实测（2026-10-31）
+
+```
+registry: versions = 0.0.0-stage, 0.10.0, 0.18.5, 0.18.6 ; dist-tags.latest = 0.18.6
+npm i -g @zhiliangtech/deskshell@latest   → 0.18.6
+deskshell mcp install --print             → 指向已安装且存在的 packages/mcp/server.ts
+```
+
+
 ## 0.18.5 — 2026-10-31
 
 ### 修了发布脚本里的一个 Windows 坑（这才是「未登录 + 发布失败(空)」的真因）
