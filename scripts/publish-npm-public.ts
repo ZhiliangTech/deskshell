@@ -70,14 +70,38 @@ say(`发布策略：publishConfig 里指向 GitHub Packages；公共 npm 需要�
 
 if (!apply) {
   say("");
-  say("这只是检查。真要发：node scripts/publish-npm-public.ts --apply [--otp 123456]");
+  say("这只是检查。真要发：node scripts/publish-npm-public.ts --apply");
 } else {
-  // 有 OTP 就带上；没有也先试一次——`npm login --auth-type=web` 拿到的 token 可能已经够用，
-  // 真被 2FA 挡住时 npm 会明确报 EOTP，那时候再补 --otp。
+  // 2FA 码 30 秒过期：靠 --otp 从别处拷过来经常来不及。
+  // 所以在终端里直接问，敲完立刻发。
+  let code = otp;
+  if (!code) {
+    if (process.stdin.isTTY) {
+      const { createInterface } = await import("node:readline/promises");
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      try {
+        say("");
+        say("账号是 auth-and-writes，发布要一次性验证码（认证器上现在那个 6 位）。");
+        code = (await rl.question("验证码：")).trim();
+      } finally {
+        rl.close();
+      }
+      if (!/^\d{6}$/.test(code)) {
+        say("不是 6 位数字，取消。");
+        process.exitCode = 2;
+        process.exit(2);
+      }
+    } else {
+      say("");
+      say("非交互环境：请用 --otp=<6 位码> 传入。");
+      process.exitCode = 2;
+      process.exit(2);
+    }
+  }
+
   say("");
-  say(`开始发布${otp ? "（带 OTP）" : "（不带 OTP，先试试）"}……`);
-  const args = ["publish", "--access", "public", "--registry", "https://registry.npmjs.org"];
-  if (otp) args.push(`--otp=${otp}`);
+  say("开始发布……");
+  const args = ["publish", "--access", "public", "--registry", "https://registry.npmjs.org", `--otp=${code}`];
   const r = run(args);
   if (r.ok) {
     say(`已发布：${pkg.name}@${pkg.version}`);
@@ -85,7 +109,7 @@ if (!apply) {
     say(`发布失败：\n${r.out.slice(-800)}`);
     if (/EOTP|one-time password/i.test(r.out)) {
       say("");
-      say("这是 2FA 挡的：重跑一次并带上 --otp <6 位验证码>。");
+      say("码被拒（过期或重复使用）。再跑一次，输入认证器上**当下**那一个。");
     }
     process.exitCode = 1;
   }
