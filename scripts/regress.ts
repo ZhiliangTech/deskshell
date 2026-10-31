@@ -44,7 +44,7 @@ run(
 
 // 3) CLI：能列出公开 skill
 run("cli.list", ["bin/deskshell.ts", "list"], (o) => o.includes("10 个 skill"));
-run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.16.1"));
+run("cli.version", ["bin/deskshell.ts", "version"], (o) => o.includes("deskshell 0.17.0"));
 
 // 4) CLI：--json 输出可被程序消费
 run(
@@ -90,6 +90,7 @@ run("journal.failed", ["bin/deskshell.ts", "journal", "--root", ".demo/fail-stor
 
 // 4) 驱动契约（内存驱动，验证内核对平台无感）
 run("mcp.tools", ["scripts/mcp-test.ts"], (o) => o.includes("14/14 passed"));
+run("terminal.svg", ["scripts/terminal-svg-test.ts"], (o) => o.includes("7/7 passed"));
 run("demo.30s", ["scripts/thirty-seconds-test.ts"], (o) => o.includes("5/5 passed"));
 run("r0.negative", ["scripts/r0-negative-test.ts"], (o) => o.includes("5/5 passed"));
 // 这些数字是"现在的真实水平"，不是目标：改动 UI 撤销能力时它们应该上升。

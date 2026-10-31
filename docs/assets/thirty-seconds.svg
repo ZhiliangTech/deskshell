@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="576" viewBox="0 0 880 576" role="img" aria-label="deskshell 30-second demo: four steps succeed, the fifth fails, everything rolls back, directory is byte-identical">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#111418"/>
+      <stop offset="100%" stop-color="#0b0e12"/>
+    </linearGradient>
+  </defs>
+  <rect width="880" height="576" rx="12" fill="url(#bg)" stroke="#2a3038"/>
+  <rect width="880" height="36" rx="12" fill="#171b21"/>
+  <rect y="24" width="880" height="12" fill="#171b21"/>
+  <circle cx="22" cy="18" r="5.5" fill="#ff5f56"/>
+  <circle cx="42" cy="18" r="5.5" fill="#ffbd2e"/>
+  <circle cx="62" cy="18" r="5.5" fill="#27c93f"/>
+  <text x="440" y="22" fill="#8b949e" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="12">node apps/cli-demo/thirty-seconds.ts</text>
+  <text x="20" y="56" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve"> </text>
+  <text x="20" y="76" fill="#e5e7eb" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">deskshell — 30 秒看一件事：AI 搞砸了，能不能一点痕迹都不留</text>
+  <text x="20" y="96" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">沙盒：.demo\thirty-seconds</text>
+  <text x="20" y="116" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve"> </text>
+  <text x="20" y="136" fill="#4ade80" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  [1-mkdir] ok   </text>
+  <text x="20" y="156" fill="#4ade80" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  [2-write-a] ok   </text>
+  <text x="20" y="176" fill="#4ade80" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  [3-write-b] ok   </text>
+  <text x="20" y="196" fill="#4ade80" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  [4-move] ok   </text>
+  <text x="20" y="216" fill="#ff6b6b" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  [5-write-c] FAIL 后置断言没通过（故意的）</text>
+  <text x="20" y="236" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve"> </text>
+  <text x="20" y="256" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">↩ 自动回滚（逆序）：5 步</text>
+  <text x="20" y="276" fill="#93c5fd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">   undo 4-move  move b.txt → .\done\b.txt</text>
+  <text x="20" y="296" fill="#93c5fd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">   undo 3-write-b  write b.txt (1 chars)</text>
+  <text x="20" y="316" fill="#93c5fd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">   undo 2-write-a  write a.txt (1 chars)</text>
+  <text x="20" y="336" fill="#93c5fd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">   undo 1-mkdir  mkdir .\uploads</text>
+  <text x="20" y="356" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve"> </text>
+  <text x="20" y="376" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">目录状态   before: 空</text>
+  <text x="20" y="396" fill="#4ade80" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">           after : 空   ✅ 逐字节一致</text>
+  <text x="20" y="416" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve"> </text>
+  <text x="20" y="436" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">日志（.demo\thirty-seconds\.deskshell\journal.jsonl，5 行，可 diff、可审计）</text>
+  <text x="20" y="456" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  {&quot;ts&quot;:…,&quot;action&quot;:&quot;1-mkdir&quot;,&quot;status&quot;:&quot;rolled-back&quot;}</text>
+  <text x="20" y="476" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  {&quot;ts&quot;:…,&quot;action&quot;:&quot;2-write-a&quot;,&quot;status&quot;:&quot;rolled-back&quot;}</text>
+  <text x="20" y="496" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  {&quot;ts&quot;:…,&quot;action&quot;:&quot;3-write-b&quot;,&quot;status&quot;:&quot;rolled-back&quot;}</text>
+  <text x="20" y="516" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  {&quot;ts&quot;:…,&quot;action&quot;:&quot;4-move&quot;,&quot;status&quot;:&quot;rolled-back&quot;}</text>
+  <text x="20" y="536" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" xml:space="preserve">  {&quot;ts&quot;:…,&quot;action&quot;:&quot;5-write-c&quot;,&quot;status&quot;:&quot;failed&quot;}</text>
+</svg>

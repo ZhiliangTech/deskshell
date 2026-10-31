@@ -130,7 +130,9 @@ const report = await run(
 
 for (const step of report.steps) {
   const mark = step.status === "ok" ? "ok  " : "FAIL";
-  say(`  [${step.actionId}] ${mark} ${step.detail ?? ""}`);
+  // 失败原因说人话：完整断言 JSON 里带绝对路径，会把终端截图撑爆
+  const detail = step.status === "ok" ? "" : "后置断言没通过（故意的）";
+  say(`  [${step.actionId}] ${mark} ${detail}`);
   await sleep(180);
 }
 
@@ -138,7 +140,8 @@ const undone = report.rolledBack;
 say("");
 say(`↩ 自动回滚（逆序）：${undone} 步`);
 for (const e of report.journal.slice().reverse()) {
-  say(`   undo ${e.actionId}  ${e.summary}`);
+  // 摘要里带绝对路径：截图里换成相对形式，读起来更清爽
+  say(`   undo ${e.actionId}  ${e.summary.split(root).join(".")}`);
   await sleep(120);
 }
 

@@ -20,6 +20,11 @@
 
 ## 30 seconds: it breaks, and nothing is left behind
 
+![deskshell 30-second demo](docs/assets/thirty-seconds.svg)
+
+<sub>Rendered from the command's real output (`scripts/make-terminal-svg.ts`) — regenerate it and it changes with the code.</sub>
+
+
 ```bash
 node apps/cli-demo/thirty-seconds.ts
 ```
@@ -66,6 +71,13 @@ R0-回滚     100.0%
 R0-可追溯   100.0%
 正常路径撤销后逐字节还原：4/4
 ```
+
+| Surface | What is measured | Now |
+| --- | --- | --- |
+| **Files** | byte-identical restore, every step undone, every step journaled | **100% / 100% / 100%** (15 injected failures) |
+| **UI** | window geometry, control values, and *refusing* irreversible steps | **100%** (5 injected failures) |
+
+The UI number only reads 100% because "refused before touching anything" counts as zero residue — see [docs/recovery.md](docs/recovery.md).
 
 **R0 = recovery rate at zero residue**: inject a failure at every step of every scenario, then check the directory byte for byte, check every completed step was undone, check every step is in the journal. The same matrix against **UI actions** now reports **80%** (window moves roll back; typed text and pressed buttons do not). That number is published on purpose — [docs/recovery.md](docs/recovery.md).
 

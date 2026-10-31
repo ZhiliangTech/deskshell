@@ -2,6 +2,25 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.17.0 — 2026-10-31
+
+README 第一屏终于有"当场跑出来的画面"，而不是一张过期的截图。
+
+### Added
+
+- **`scripts/make-terminal-svg.ts`**（`npm run render:terminal`）：把 30 秒 demo 的**真实输出**渲染成 SVG 终端截图。时间戳在渲染前抹掉，所以图是确定的、可复现的；改代码重跑一次，图就跟着变。
+- **README 第一屏**（中英）放上这张图，并补一张 R0 对比表：文件面 100/100/100（15 次注入）· UI 面 100%（5 次注入，含"拒绝执行"这一类）。
+- `scripts/terminal-svg-test.ts`（7 条）：渲染能跑、图里有失败/回滚/逐字节一致、是合法 SVG、时间戳已抹掉。
+
+### Changed
+
+- demo 的失败行改成说人话（`后置断言没通过（故意的）`），不再把整段断言 JSON 连绝对路径糊在终端里；撤销行的绝对路径也换成相对形式——截图因此从 89 字符降到可读范围。
+
+### Evidence
+
+    regress 51/51（新增 terminal.svg 7 条）
+    docs/assets/thirty-seconds.svg（25 行真实输出，5.6 KB）
+
 ## 0.16.1 — 2026-10-31
 
 把不可逆闸门从"只有报错"补成"能确认"。
