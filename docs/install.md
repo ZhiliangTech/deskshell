@@ -43,7 +43,7 @@ No build step: the CLI is TypeScript run directly by Node's type stripping.
 
 ## 4. From Git, no registry at all
 
-If `registry.npmjs.org` itself is slow or the package is not published yet, npm can install straight from the repo:
+Public npm has `@zhiliangtech/deskshell` but it is pinned at **0.10.0** (measured: `latest=0.10.0`); newer versions need the maintainer's 2FA approval. If `registry.npmjs.org` is slow, npm can install straight from the repo:
 
 ```bash
 npm i -g github:ZhiliangTech/deskshell

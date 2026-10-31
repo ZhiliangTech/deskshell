@@ -2,6 +2,43 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.18.0 — 2026-10-31
+
+三件"需要外部输入"的事，全部做成**你自己花几分钟就能验证**的形态。
+
+### 新增：MCP 一条命令接入
+
+    deskshell mcp install --client claude     # 合并进 %APPDATA%\Claude\claude_desktop_config.json
+    deskshell mcp install --client cursor     # ~/.cursor/mcp.json
+    deskshell mcp install --client claude --print   # 只看不改
+
+合并而不是覆盖：别人已有的 MCP server 一个不动，写前备份，重复跑幂等，坏 JSON 报错不覆盖。`scripts/mcp-install-test.ts`（15 条）把这些都钉住了。
+
+### 新增：R0 搬到别的机器上复算
+
+    R0_SSH_HOST=your-box R0_SSH_USER=root node scripts/r0-remote.ts
+
+打包 → 上传 → 远端跑文件面与 UI 面两套基准。e2b / daytona / trycua 的盒子都能用，只要 ssh 能进；没设环境变量就干净跳过并说明缺什么。
+
+### 新增：把别人的工具放进同一把尺子
+
+- `scripts/r0-adapter-template.ts`：适配器骨架，只填 `apply` / `undo` / `journalLines` / `snapshot` 四个空。
+- `docs/r0-compare`（中英）：说清三种常见作弊（自己 rm -rf 重建、拿动作条数冒充审计、只跑成功场景）为什么会被基准当场揭穿，以及 e2b / daytona / trycua / 自己的 Docker 各自缺什么。
+
+### 纠正：公共 npm 的真实状态
+
+实测 registry：`@zhiliangtech/deskshell` **已经有 0.10.0，`latest=0.10.0`**（2026-10-29 发布），`0.0.0-stage` 是更早的占位。之前文档里"公共 npm 不可用"是错的，已改。发新版本需要 `npm login` + OTP：
+
+    node scripts/publish-npm-public.ts                  # 一次说清卡在哪
+    node scripts/publish-npm-public.ts --apply --otp 123456
+
+OTP 只在进程内使用，不落盘。
+
+### Evidence
+
+    regress 53/53（新增 mcp.install 15 条、r0.remote 跳过路径）
+    文档站 36 页（新增 r0-compare 中英各一页）
+
 ## 0.17.0 — 2026-10-31
 
 README 第一屏终于有"当场跑出来的画面"，而不是一张过期的截图。

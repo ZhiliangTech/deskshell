@@ -37,6 +37,7 @@ function usage(): void {
   deskshell undo --task <id> [--root DIR]  撤销某个任务
   deskshell undo --last [N] | --since <30m>  撤销最近 N 个（默认 1）任务 / 一段时间内的任务
   deskshell add <path> [--dir DIR] [--force]  安装外部 skill（默认 ~/.deskshell/skills）
+  deskshell mcp install --client claude|cursor  把 deskshell 挂进 MCP 客户端配置（--print 只看不改）
 
 run 选项:
   --mode preview|apply|undo   默认 preview
@@ -689,6 +690,44 @@ switch (cmd) {
     break;
   }
 
+  case "mcp": {
+    const sub = positional[1];
+    if (sub !== "install") {
+      console.error("用法: deskshell mcp install --client claude|cursor [--print] [--home DIR]");
+      process.exitCode = 2;
+      break;
+    }
+    const client = (flags.client ?? "claude") as "claude" | "cursor";
+    if (client !== "claude" && client !== "cursor") {
+      console.error(`不认识的客户端：${client}（支持 claude / cursor）`);
+      process.exitCode = 2;
+      break;
+    }
+    const home = flags.home ?? os.homedir();
+    const mod = await import(pathToFileURL(path.join(HERE, "..", "apps", "mcp", "install.ts")).href);
+    if (flags.print) {
+      const p = mod.plan(client, home);
+      console.log(`目标文件：${p.file}`);
+      console.log(p.json);
+      break;
+    }
+    try {
+      const r = mod.install(client, home) as { file: string; backup?: string; servers: string[]; changed: boolean };
+      if (!r.changed) {
+        console.log(`已经是配好的：${r.file}`);
+      } else {
+        console.log(`已写入：${r.file}`);
+        if (r.backup) console.log(`原文件已备份：${r.backup}`);
+        console.log(`现有 MCP server：${r.servers.join(", ")}`);
+        console.log("");
+        console.log("下一步：重启客户端，然后问它「列出 deskshell 的技能」。");
+      }
+    } catch (err) {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exitCode = 1;
+    }
+    break;
+  }
   case "add": {
     const src = positional[1];
     if (!src) {

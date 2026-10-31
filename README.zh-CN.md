@@ -178,7 +178,7 @@ git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> 部分网络打不开 npmjs.com 的**网页**，但 registry API 是通的——安装脚本因此走 API 下载。公共 npm 包还卡在 registry 侧的 2FA 审批；这期间用安装脚本、GitHub Packages（`@zhiliangtech/deskshell`，0.9.0–0.11.0），或者直接从 Git 装：`npm i -g github:ZhiliangTech/deskshell`。
+> 部分网络打不开 npmjs.com 的**网页**，但 registry API 是通的——安装脚本因此走 API 下载。公共 npm 上的 `@zhiliangtech/deskshell` **实测 `latest=0.10.0`**（发新版本要维护者 2FA 批准；`node scripts/publish-npm-public.ts` 会一次说清卡在哪）。要最新代码用安装脚本、GitHub Packages，或直接从 Git 装：`npm i -g github:ZhiliangTech/deskshell`。
 
 ## 30 秒装好跑通
 

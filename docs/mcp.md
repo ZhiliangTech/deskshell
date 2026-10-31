@@ -90,3 +90,13 @@ The point of that test is not to check our own code — it is to prove the wire 
 - Tools are listed with `inputSchema`, but there is no per-tool prompt template yet; clients must pass `skill` by name (use `deskshell_skills` to discover them).
 - No auth, no sandbox negotiation: `root` is whatever the caller passes, and the capability policy is per-skill scope.
 - Undo granularity is per task, not per step.
+
+## One command instead of hand-editing JSON
+
+```bash
+deskshell mcp install --client claude     # %APPDATA%\Claude\claude_desktop_config.json
+deskshell mcp install --client cursor     # ~/.cursor/mcp.json
+deskshell mcp install --client claude --print   # just show the JSON, change nothing
+```
+
+It merges (never replaces) `mcpServers`: your other MCP servers stay exactly as they were, and the original file is backed up before writing. Re-running it is a no-op. A malformed existing config is reported, not overwritten.

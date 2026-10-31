@@ -33,7 +33,7 @@
 | GitHub Packages | `npm config set @zhiliangtech:registry https://npm.pkg.github.com` + token → `npm i -g @zhiliangtech/deskshell` | 可用，0.9.0 起每版都发，**latest = 0.13.1** |
 | Git 直装 | `npm i -g github:ZhiliangTech/deskshell` | 可用，不经过任何 registry |
 | Release 资产 | 每个 tag 都带 `zhiliangtech-deskshell-<ver>.tgz` | 可用（v0.9.0 起） |
-| 公共 npm | `npm i -g deskshell` | **不可用**：registry 上只有 `0.0.0-stage` 占位，真版本要维护者用 2FA 批准（见 docs/install.md §5） |
+| 公共 npm | `npm i -g @zhiliangtech/deskshell` | **能装，但停在 0.10.0**：registry 实测 `latest=0.10.0`（2026-10-29 发布）；`0.0.0-stage` 是更早的占位。发新版本要维护者 `npm login` + OTP，`node scripts/publish-npm-public.ts` 一次说清卡在哪 |
 
 ## 对外口径（一句话）
 
@@ -43,7 +43,7 @@
 ## 不能说 / 不要承诺
 
 - 没有现金悬赏，`bounty` 只表示"可认领"。被问钱就直接说没有。
-- 公共 npm 还不能用，不要写 `npm i -g deskshell`。
+- 公共 npm 上是 **0.10.0**（不是最新版）。说“能用”必须补一句“版本停在 0.10.0”；不带 scope 的 `npm i -g deskshell` 仍然是错的。
 - Linux 是「窗口层已实现（xdotool + wmctrl）、控件层待 AT-SPI2」，不是"没驱动"。
 - 没有用户数、star 数、融资、合作方可以引用。
 - R0 是我们自己量的，**还没有跑过别的方案**，不要说"比 X 强"；要说"这套夹具任何人可以拿去跑，包括跑我们"。

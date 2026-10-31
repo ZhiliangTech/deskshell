@@ -90,3 +90,13 @@ PASS  未知技能返回 isError=true
 - tool 带 `inputSchema`，但还没有 per-tool 的提示模板；`skill` 要按名字传（先用 `deskshell_skills` 发现）。
 - 没有鉴权、没有沙箱协商：`root` 由调用方给，能力策略按每个 skill 的 scope 走。
 - 撤销粒度是"一单任务"，不是单步。
+
+## 一条命令，不用手改 JSON
+
+```bash
+deskshell mcp install --client claude     # %APPDATA%\Claude\claude_desktop_config.json
+deskshell mcp install --client cursor     # ~/.cursor/mcp.json
+deskshell mcp install --client claude --print   # 只打印 JSON，什么都不改
+```
+
+它是**合并**而不是覆盖 `mcpServers`：你原来的其它 MCP server 一个都不动，写之前先备份原文件，重复跑等于没跑。现有配置不是合法 JSON 时它报错，不会覆盖。
