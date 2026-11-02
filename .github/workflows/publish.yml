@@ -13,7 +13,7 @@ jobs:
   github-packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -51,7 +51,7 @@ jobs:
             echo "ok=false" >> "$GITHUB_OUTPUT"
             echo "NPM_TOKEN 未配置，跳过公共 npm 发布"
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.gate.outputs.ok == 'true'
       - uses: actions/setup-node@v4
         if: steps.gate.outputs.ok == 'true'
