@@ -7,7 +7,7 @@ node scripts/recovery-bench.ts          # table
 node scripts/recovery-bench.ts --json   # same numbers, machine-readable
 ```
 
-Three scenarios (nested writes, overwrite + move, folder taxonomy) are run twice:
+Five scenarios (writes into new directories, explicit nested writes, overwrite + move, folder taxonomy, and moves into new directories) are run twice:
 
 1. **happy path**, then `undo` — the directory must come back byte for byte;
 2. **failure injection** at step k, for every k — the kernel must roll back and leave nothing.
@@ -18,23 +18,29 @@ Three scenarios (nested writes, overwrite + move, folder taxonomy) are run twice
 | --- | --- |
 | **R0-residue** | after an injected failure, is the directory byte-identical to before? |
 | **R0-rollback** | were all steps executed before the failure actually undone? |
-| **R0-traceable** | does every step in the journal carry `taskId` + `actionId` + timestamp + status? |
+| **R0-traceable** | does the adapter report at least one journal line for the failed run? |
+
+The traceability score currently checks log presence, not each step's identifiers or fields. These synthetic scenarios inject a failing post-assertion; they do not establish recovery from every possible filesystem error, process crash, or failed undo.
 
 ## Current result
 
 ```
 | 场景 | 计划步数 | 失败注入点 | 残渣归零 | 已撤销/已执行 | 可追溯 |
+| write-into-new-dir  | 2 | 1..2 | ✅ | 0/0 1/1     | ✅ |
 | nested-writes       | 3 | 1..3 | ✅ | 0/0 1/1 2/2 | ✅ |
 | move-and-overwrite  | 3 | 1..3 | ✅ | 0/0 1/1 2/2 | ✅ |
 | folder-taxonomy     | 7 | 1..7 | ✅ | 0/0 … 6/6   | ✅ |
+| move-into-new-dir   | 2 | 1..2 | ✅ | 0/0 1/1     | ✅ |
 
-R0-残渣     100.0%（13 次失败注入）
+R0-残渣     100.0%（17 次失败注入）
 R0-回滚     100.0%
 R0-可追溯   100.0%
-正常路径撤销后逐字节还原：3/3
+正常路径撤销后逐字节还原：5/5
 ```
 
 ## What this metric already caught
+
+The `write-into-new-dir` scenario covers a regression where `fs.restore` deleted a newly written file but left its automatically created parent directories. The dedicated `scripts/write-recovery-test.ts` also checks that pre-existing directories and files added by others are preserved.
 
 The first run reported **R0-traceable = 76.9%**. Cause: when a step fails, the kernel wrote a `failed` entry to the journal file, but `RunReport.journal` only collected successful entries and the report carried **no `taskId`** — so a failing run could not be cited afterwards. Both are fixed (`RunReport.taskId`, failure entries included), and the metric is now 100%.
 
@@ -73,12 +79,12 @@ A benchmark that passes everything is advertising, not measurement. `scripts/r0-
 R0-残渣     0.0%
 R0-回滚     0.0%
 R0-可追溯   0.0%
-正常路径撤销后逐字节还原：0/4
+正常路径撤销后逐字节还原：0/5
 ```
 
 and the process exits non-zero. `scripts/r0-negative-test.ts` asserts exactly that (5/5). So when deskshell reports 100%, it is being scored by a harness that has demonstrably failed another implementation.
 
-## The UI side: 40% → 80%, and why not 100%
+## The UI side: recovery and refusal before execution
 
 Files can be restored byte for byte. Windows and controls could not — until `ui.value` existed.
 
@@ -99,7 +105,7 @@ R0-UI 回滚       100.0%
 
 **What changed:** the protocol gained an undo kind `ui.value` — *write the previous value back* (`null` means "this control had no value"). `ui.type` now declares it, so typed text can be reverted. Drivers must implement the optional `setValue` primitive; Windows does (ValuePattern, falling back to focus + select-all + paste), Linux's window-level driver does not and says so.
 
-**The remaining 20% is not an oversight.** `ui.invoke` cannot be undone — a pressed button stays pressed. The correct answer for it is not an undo but a confirmation before acting (preview + a human nod). So the honest ceiling for UI actions is not 100% until `invoke` is reclassified as *needs confirmation* rather than *undoable*.
+The 100% injected-failure result includes rejecting the irreversible button action before it runs. That refusal leaves the initial state unchanged; it does not demonstrate undoing a pressed button. When explicitly allowed to run, the button action cannot be restored, which is why happy-path undo is 2/3.
 
 Two traps this exposed:
 
@@ -109,5 +115,5 @@ Two traps this exposed:
 ## Limits
 
 - Scenarios are synthetic and file-only. GUI driver failures are not covered yet.
-- 13 injections is a start, not a benchmark suite. Adding a scenario should be a 20-line change (`scenarioList` in the script).
+- 17 injections cover these five scenarios only. Add scenarios in `scenarioList` to expand the evidence.
 - R0 measures *our* kernel. Running other tools through the same harness is the point of publishing it — that has not been done yet.

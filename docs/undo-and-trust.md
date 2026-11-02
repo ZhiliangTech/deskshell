@@ -8,10 +8,10 @@ The hard part of this project is not "can it operate the computer". It is "after
 
 Undo is not "run something roughly opposite". It is **restoring the exact state before the task started**.
 
-- move: move it back, and refuse to overwrite an existing file;
+- move: move it back to the recorded source path;
 - mkdir: remove the directory, only if empty;
-- write: delete the file if it did not exist; otherwise write the previous content back;
-- actions with external effects (send email, call an API, hard delete): marked `undo: null` and rejected by the kernel.
+- write: delete the file if it did not exist; otherwise write the previous content back. Remove empty parent directories created by the write, preserving existing directories and other files;
+- missing/null `undo` or `irreversible: true`: require explicit confirmation before apply. These actions cannot be restored. `fs.delete` without an undo is always rejected, including when confirmation is supplied.
 
 ## Failure rolls back
 
@@ -19,13 +19,13 @@ When any step fails, the kernel:
 
 1. stops the remaining steps;
 2. **undoes the failing action's own side effects** (a file written before its assertion failed must disappear);
-3. rolls back the successful steps in reverse order;
-4. marks them `rolled-back` in the journal;
-5. returns the failure reason.
+3. attempts to roll back the successful steps in reverse order, continuing if an individual undo fails;
+4. marks only successfully undone steps `rolled-back` in the journal;
+5. returns the execution failure and any recovery failures.
 
 Step 2 fixed a real bug in v0.1: originally only "previously successful steps" were rolled back, so "write file, then fail an assertion" left an orphan file — and that orphan then blocked removal of its parent directory with `ENOTEMPTY`.
 
-The guarantee: a task either completes fully, or returns to its starting point. There is no "half-changed" state.
+Recovery returns the task to its starting point when all required undos succeed. Confirmed irreversible actions, missing undo records, or undo failures can leave changes behind; the report must expose that incomplete recovery instead of claiming success.
 
 Watch it happen:
 
@@ -52,7 +52,7 @@ In the kernel:
 
 ## Permission boundaries
 
-- capabilities must be declared, justified, and scoped;
+- capabilities must be declared, justified, and scoped; an empty declaration does not authorize any action;
 - an ungranted capability rejects the whole task (not "skip that step");
 - authorization is per task, not permanent.
 
@@ -77,6 +77,8 @@ deskshell undo --since 30m         # everything started in the last 30 minutes (
 ```
 
 Batch modes undo newest-first and print one line per task. If an undo fails — for example a file changed — that task stays un-rolled-back, the others still roll back, and the exit code is non-zero. Partial success is reported, never hidden.
+
+An entry without an undo produces a failed step, contributes nothing to `rolledBack`, and keeps its original journal status. This also applies to older journals that lack an undo. Repeating undo returns zero steps only after all entries have actually been rolled back.
 
 ## When the file changed since
 
@@ -125,13 +127,13 @@ Any `n` cancels the whole task with exit code 2 and **no side effects** — no j
 
 ## Known boundaries
 
-- external side effects cannot be undone (an HTTP request already left); such actions are `undo: null` and rejected;
-- if a file changes underneath during undo, `fs.restore` overwrites it — that needs explicit confirmation;
+- external side effects cannot be undone (an HTTP request already left); missing/null `undo` requires explicit confirmation, and confirmed changes may remain after a later failure;
+- `fs.restore` rejects overwriting a file whose recorded write hash no longer matches;
 - cross-volume moves are not atomic on every platform; the journal is what makes retries possible.
 
 ## When a step cannot be undone
 
-An action can declare `irreversible: true` (a pressed button, a sent email). The kernel refuses the whole run **before touching anything** unless you say yes:
+An action can declare `irreversible: true` (a pressed button, a sent email). Missing/null `undo` is also classified as irreversible. The kernel refuses the whole run **before touching anything** unless you say yes:
 
 ```bash
 deskshell run submit-form --mode apply                 # → exit 2: 这一步不可逆，需要显式确认
@@ -140,5 +142,7 @@ deskshell run submit-form --mode apply --allow-irreversible   # CI: explicit fla
 ```
 
 `preview` never needs confirmation — it is read-only. MCP callers pass `allowIrreversible: true` instead.
+
+Confirmation permits execution; it does not make the action reversible or bypass other policy checks. An explicit `irreversible: true` prevents an attached undo, including `noop`, from being recorded as a recovery operation. `fs.delete` with missing/null `undo` remains prohibited.
 
 Why a hard gate instead of a warning: for the one class of action you cannot take back, "I clicked past a warning" is not consent.

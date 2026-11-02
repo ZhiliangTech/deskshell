@@ -2,6 +2,129 @@
 
 This project follows semantic versioning. During `0.x`, breaking changes are listed here with migration notes.
 
+## 0.19.0 — 2026-11-02
+
+### 撤销语义：撤销不能成为后门（第二轮独立审计后的修复）
+
+这一轮只有一个主题：**动作路径有两层检查，撤销路径一层都没有**。审计用 14 个探针把这半条不变量补了回来。
+
+- **撤销路径纳入策略**：`checkAction` 现在检查 `undo` 里的 `path/from/to`，`applyUndo` 执行前再查一次。计划阶段只做词法检查（同一批动作会自己改目录拓扑，拿检查那一刻的 junction 否定合法撤销计划是误伤），真正撤销时解析真实路径。修复前 `write.undo→root外` 能凭空在 root 外写出文件，`move.undo` 能把文件搬出 root，`mkdir.undo` 能删掉 root 外目录。
+- **不可逆闸门改白名单**：`undo.kind` 不在 `{fs.move, fs.rmdir, fs.restore, ui.value, window.move, noop}` 内一律视为占位；`fs.delete` 只承认"带原文的 `fs.restore`"（`fs.rmdir` 还原不了文件内容，`content:null` 等于再删一次）。修复前 `NoOp`/`NOOP`/`"noop "`/`{}`/`{kind:0}`/`bogus`/`fs.restore+null`/`fs.rmdir` 共 9 个变体都能把文件永久删掉，同时日志写 `rolled-back`。
+- **`applyUndo` 补 `default: throw`**：未知撤销类型以前静默 return，等于"撤销成功、文件早没了"。
+- **未知动作类型被拒**：不在 `ACTION_CAPABILITY` 里的 `kind` 现在报 `未知动作类型`，不再"不执行、不查能力、还记一条 ok"。
+- **任务根本身不可操作**：`fs.delete <root>` / `fs.move <root>` 这类动作现在被拒（`isInside` 的 `rel === ""` 曾把它当"在 root 内"）。
+- **硬链接穿透被拦**：写入目标 `lstat().nlink > 1` 直接拒绝——NTFS 硬链接不是 reparse point，两层路径检查都看不出它会改到 root 外同一份内容。
+- **TOCTOU 窗口关掉**：宿主钩子 `beforeAction` 挪到逐动作策略复查**之前**。之前钩子里把目录换成 junction，写动作就落到 root 外。
+- **撤销不再静默丢内容**：`fs.write` 覆盖已有文件、而 undo 只会删除它时，按不可逆处理（需要 `--allow-irreversible` 或 `allowIrreversible`）；`fs.restore` 在目标位存在但没有内容指纹时一律拒绝（旧日志、>64 MiB 文件、读不回来的文件都算"证明不了归属"）。
+- **失败动作自撤修好**：`selfUndoSafe` 对 `fs.restore` 不再要求"目标文件还在"。之前"删除成功 → 后置断言失败"这条最常见的路径永远不自撤，文件悄无声息地消失，报告里只说断言失败。
+- **账本可用性**：轮转文件只认普通文件（同名的目录以前让 `load()` 抛 EISDIR，`history`/`undo` 全挂），单文件读失败降级为空。
+- **新增回归** `scripts/undo-integrity-test.ts`（15 项，`undo.integrity`）：上面每条都有用例，修复前 14/15 是红的。全量回归 **80/80**。
+- **MCP 不再被一行 `null` 打崩**：非对象 JSON 现在回 `-32600` 并继续服务（以前 `TypeError` 直接退出），`scripts/mcp-test.ts` 覆盖（15/15）。
+- `scripts/regress.ts` 的版本断言改为读 `package.json`，不再硬编码 `0.18.7`。
+- `README` 中英文的 relay 段落标明**后端是占位实现**（`stubBackend()` 确定性回显，写回内容带 `[stub]`），并说明真模型接缝在哪；`docs/zh-CN/index.md` 两张图改成正确相对路径（`../brand/`、`../assets/`）。
+
+**迁移说明**：`fs.delete` 只接受 `undo: { kind: "fs.restore", path, content: "<原文>" }`；`fs.write` 覆盖已有文件时需要能还原原内容的 undo，否则要显式 `--allow-irreversible`；历史日志里没有 `hash` 的条目，撤销时会被拒绝覆盖而不是静默覆盖。
+
+### 时间轴：对象的历史（"电脑有历史"的最小可见形态）
+
+- 账本记录新增 `object` 字段（文件类是相对 root 的路径，UI 类是窗口名），写进 `JOURNAL_FIELDS` 与冻结的 `spec/protocol-v0.json`；`protocol-freeze-test` 现在会拦住这侧的漂移。
+- 新增 `deskshell timeline [--root DIR] [--object PATH] [--since 7d] [--json]`：把账本**按对象归组**，显示"谁、什么时候、改了什么、现在还能不能撤"。这是 `fourth-layer.md` 里第一个可演示的形态——任务列表回答"我跑过什么"，时间轴回答"这个东西经历了什么"。
+- 新增 `packages/ledger/src/timeline.ts`（`buildTimeline` / `parseSince`）与 `scripts/timeline-test.ts`（6/6）：对象归组、撤回后状态翻转、失败段落也进时间轴、`--object`/`--since` 过滤、旧日志缺 `object` 不崩、`30m/24h/7d/毫秒` 解析。
+- **已知限制写成断言**：对象身份暂时等于路径，改名/移动会断成两条历史（语义身份是 RFC 0003 的待办原语）。这条限制由测试守着，不是注释里的愿望。
+- 全量回归 **75/75**（新增 `timeline`），4 项桌面检查照常跳过。
+
+### relay：AI 的输入输出总线（最小可用）
+
+- 新增 `deskshell relay`：拿一段材料 → 打印**外发清单**（后端/厂商、字节数、sha256；清单里不出现任何绝对路径）→ 把结果**写回真实文件**（走内核，可撤销、进账本）→ `deskshell undo` 逐字节退回。
+- 后端可插拔：当前只有 `stubBackend()`（确定性回显，用于验证管线）；真模型接缝是 `packages/models/src/deepseek.ts` 需要新增一个与 `propose()` 同等有界的 `complete()`，接上之前不提供 `--backend deepseek` 这个看起来能用其实不通的选项。
+- 新增 `scripts/relay-test.ts`（7/7）：清单不含路径、dry-run 不调用后端不写盘、写新文件可撤销、覆盖原有文件含 CRLF 逐字节还原、空输入/超限/路径型标签被拒。
+- README 中英文首屏改为"结果 + 后果"：**让 AI 的活落到你的文件里，做错了能退回原样**；架构与协议表述下沉。
+- 新增 `docs/zh-CN/product-doctrine.md`：约束是纪律不是卖点；审批门槛由**可逆性**决定（能撤的不问，不能撤的问一次）；默认值应全开，前提是先把"可撤"做到位。
+- 新增 `docs/zh-CN/relay-spec.md`：与"划词问答/豆包"类的结构差分表（气泡 vs 可撤回的文件 + 账本），以及"一天用不到 10 次即不成立"的验证判据。
+
+### 评审修复：撤销诚实度、逐动作策略、打包与文档构建
+
+这一轮是独立评审后的修补，主题只有一个：**撤不掉就承认撤不掉**，以及让"重新装一遍就能跑"真的成立。
+
+- `fs.delete` 的 `undo: { kind: "noop" }` 占位现在被策略拒绝。之前它绕过了"硬删必须可还原"的闸门：文件真被删掉，preview 报 `undoable:1`，`undoTask` 报成功，日志最终标 `rolled-back`——三重谎报叠在不可恢复的删除上。`fs.move` / `fs.write` 的 `noop` 占位同样算不可逆，需要显式确认。
+- 路径检查从"批次开始时查一次"改成**每个动作执行前复查**。同批两步（先把 root 内的 junction 挪走，再往它的位置写）之前能写出 task root，现在第二步会被拒并回滚已完成步骤。
+- 撤销的破坏性写入补上内容指纹：`fs.move` 的撤销不再无条件删掉目标位文件，`fs.delete` 的撤销也记录被删内容的 sha256；目标位被别人改过就报告失败并保留现场，不再静默覆盖。
+- 审计日志抗损：半行 JSON 不再让整份账本不可读，坏行原样保留；回滚收尾写账失败不再顶掉原始失败原因。轮转文件名改为跟随主文件名，自定义 `audit.jsonl` 的历史能被 `load()` 读回。
+- 嵌套 `fs.mkdir` 撤销时清掉顺带创建的父目录；`fs.rmdir` 的撤销也走同一套空目录清理。
+- 协议冻结补漏：`irreversible` / `createdDirs` 进入 `spec/protocol-v0.json` 的动作公共字段与日志字段，`protocol-freeze-test` 现在真的比对公共字段、日志字段与日志状态（之前这四项在 spec 里没人校验）。
+- 打包：`package.json` 的 `files` 从逐文件白名单改为覆盖 `apps/`、`scripts/`、`snapshots/`、`docs/`、`brand/`，修掉"`npm i -g` 之后 `npm run demo`、`npm run clock` 直接找不到文件"的问题；新增 `scripts/packaging-test.ts`，用 `npm pack --dry-run --json` 的真实清单断言每个 npm script 的入口都在包里，并禁止 `.demo`/`node_modules`/`site`/`.mail`/`outreach` 混进发布包。
+- 文档构建：`fs.cpSync` 在 Windows + Node 22.23.4 上会触发访问违例（进程直接消失、退出码 139），`scripts/build-docs.ts` 因此静默失败、`site/` 只剩 `style.css`。新增 `packages/core/src/copy.ts` 的 `copyTree()`（readdir + copyFileSync），文档构建、无 scope 发布脚本、`deskshell add` 统一改用它。文档站恢复 36 页。
+- 新增 `npm run cleanroom`（`scripts/cleanroom.ts`）：把源码复制到系统临时目录跑一遍无桌面回归。"独立副本回归"从手工仪式变成一条命令。
+- 新增 `scripts/undo-honesty-test.ts`（9 项）：noop 占位、撤销覆盖、日志坏行、轮转命名、同批越界、嵌套 mkdir 逐条覆盖。
+- 应用宿主：`notepad.apply` / `sessions.run` 对 `running`/`cancelling` 的任务明确报 `TASK_STATE` / `SESSION_STATE`，不再静默返回快照让调用方以为没生效；`sessions.prepare` 返回 notepad plan 的 `preview`，人类批准前能逐字核对要写进副本的正文。
+- 凭据错误带上固定 `code`（`WINDOWS_CREDENTIAL_STORE_REQUIRED` / `CREDENTIAL_OPERATION_FAILED` / `INVALID_CREDENTIAL_*`），并保留脚本自报的阶段与异常类型，不再一律压成 `HOST_OPERATION_FAILED`。
+
+### 迁移说明（本轮的破坏性变更）
+
+- 技能里给 `fs.delete` 写 `undo: { kind: "noop" }` 现在会被拒绝；要删除就必须提供真正的还原动作（`fs.restore`），并显式 `irreversible: true` 时需要 `--allow-irreversible`。
+- 旧日志里的 `fs.move` 撤销没有内容指纹（`hash` 字段缺失），目标位已有文件时现在会拒绝覆盖。这类历史任务的撤销需要人工核对后重跑。
+- `apps/` `scripts/` 现在整体进发布包，包体积变大（约 250 个文件）；这是"无构建步骤、直接跑 TypeScript"的必然代价。
+
+### 应用任务与有界多轮
+
+- 新增记事本固定文本另存副本合同：完整文件与缓冲证据、三阶段执行、独立磁盘核验、人工改动拒绝、取消及中断保留现场；不宣称已恢复应用撤销栈或会话历史。
+- 新增 SQLite 持久会话与轮次、精确摘要授权、范围检查、有界重规划、次数/时限/日预算、取消与迟到结果隔离。一次批准后可在固定任务范围内持续执行，模型不能扩大授权。
+- 常驻服务与 CLI 新增 `notepad-*` 和 `session-*`，共享变更锁、控制令牌和用户预算。关停支持未决效果检查、并发调用共同失败、状态查询与安全重试。
+- 真实 DeepSeek 在合成编辑器上三轮完成任务；真实记事本的截图引导编辑与另存也通过磁盘核验。原生 UIA 配置尚未验收，生产写入保持禁用，不能视为全自动桌面产品完成。具体证据与限制见 [STATUS](STATUS.md)。
+- 独立副本无桌面回归 68/68、4 项跳过；应用运行时34、多轮协调16、应用适配11、IPC/CLI9、原生协议21项专项检查通过。
+
+### 常驻文件智能体版本
+
+- 新增隐藏常驻宿主与受认证回环 IPC，`deskshell agent` 和仓库 `agent` 命令共用任务入口。运行期间可跨进程查看状态和停止；任务/控制令牌分离，模型不能批准执行、恢复或提高预算。
+- 状态目录与任务根必须分离，范围拒绝发生在 ACL 修改之前；Windows 状态目录和端点文件仅授予当前账户访问。无开机启动注册。
+- 照片整理可显式加入完整内容去重，重复副本移入 `_duplicates` 待确认，原始文件不删除、不覆盖。
+- 新增逐步 intent/verified 持久记录、普通撤销和中断核查固定计划；恢复需独立预览和批准。人工修改或未知对象归属时拒绝猜测。修复 intent 持久提交期间发生人工占位而可能覆盖的窗口，并加入故障注入回归。
+- 新增全用户共享的持久 UTC 日预算（默认 10 次/0.10 USD 估算），跨进程原子预留、取消/未知保留记账、配置不清用量。
+- 一次真实 DeepSeek 请求驱动 7 步合成整理，独立批准 7 步撤销后原始完整快照相等；宿主重启保持任务与预算。完整无桌面回归 63/63、4 项跳过，本地打包安装 18/18。修复并发宿主启动时竞争退出一方过早报错的问题；详情见 [STATUS](STATUS.md)。
+- TaskStore schema 升至 2，事务迁移 v1；旧任务没有步骤证据时不会猜测恢复归属。旧 v0、Shell、MCP 尚未整体迁移，研究 RFC 仍为 Draft。
+
+### 首个文件智能体任务
+
+- 新增仓库内 `agent` CLI：自然语言与显式云端选择、固定计划审阅、精确摘要批准执行、持久状态、未执行任务取消与运行时 Ctrl+C。
+- 新增受信照片月整理技能与独立完整树验证，使用修改时间和 Asia/Shanghai 时区；复用既有月份目录，拒绝覆盖，保留非目标资源。云端只接收用户输入目标与固定技能说明，不自动上传目录观察。
+- 宿主每个动作前让出事件循环，处理取消后重新观察，避免连续同步文件操作阻塞停止信号。失败和部分效果仍保留现场，不隐式撤销。
+- 新增照片技能 14 组、智能体集成 12 组测试，运行时扩展到 19/19；完整无桌面回归 59/59、4 项桌面检查跳过。一次真实 API 提案经独立批准后完成 5 步合成任务，跨进程记录及独立内容复核通过；此结果不代表完整 G1/G3 或真实应用验收完成。
+- 详见 [文件任务使用说明](docs/zh-CN/agent-file-task.md)。
+
+### DeepSeek 接入预验证
+
+- 新增受限技能提案适配器，固定官方端点与 `deepseek-flash` 非思考模式，本地校验工具、版本和参数；具备实例内预算预留、超时、取消、响应大小限制及错误去敏，无自动重试。
+- 新增 Windows 剪贴板导入入口：DPAPI CurrentUser 加密并以私有 ACL 保存于用户配置目录，密钥不写入项目文件或日志。
+- 新增 `npm run runtime:cloud-demo -- --live`：一次有预算的合成请求，经校验后仅生成 TaskHost 预览。2026-10-31 真实连接通过，778 token，任务处于待批准状态；17 组离线适配器检查通过并纳入回归。完整无桌面回归 57/57、4 项桌面检查跳过。
+- 尚未交付持久每日预算、完整规划循环、用户资源外发授权界面或真实应用验证；详情见 [模型接入](docs/zh-CN/model-backends.md)。
+
+### G1 任务宿主原型
+
+- 新增可嵌入 TaskService、固定文件计划、可信调用方独立持有的批准对象，以及 Node 内置 SQLite 的持久计划、授权消费与唯一执行认领；不增加第三方依赖。
+- 新增 `runActions()` 执行已保存动作，支持宿主 taskId、动作边界取消和执行钩子。旧 `run()` 默认补偿语义保持；新宿主显式关闭自动补偿，失败保留现场并报告需处理。
+- 原型只支持受限目录中的新建目录、普通文件移动和新建文本文件，附快照失效与独立目标验证。三入口迁移、可信 IPC、普通撤销、G2 恢复与完整模型规划循环尚未交付。
+- 新增四套测试分别 18/18、14/14、12/12、16/16；完整无桌面回归 56/56、4 项跳过。说明见 [任务宿主](docs/zh-CN/task-runtime.md)。
+
+### 修复
+
+- 空能力声明不再跳过动作权限检查，动作必须被技能声明且获准的能力覆盖。
+- 缺失/null `undo` 与显式 `irreversible: true` 均纳入不可逆确认；预览如实显示不可撤销，撤销不会把没有恢复操作的步骤记为成功。
+- 自动回滚遇到个别撤销失败后继续处理其它步骤，仅成功项计入 `rolledBack` 并标为 `rolled-back`，报告保留恢复失败原因。
+- `fs.restore` 清理该次写入自动创建的空父目录，保留原本存在或包含其它文件的目录；R0 新增自动创建父目录的写入场景。
+- MCP 预览、执行和撤销接入与 CLI 共用的平台驱动创建逻辑，并发现用户技能目录中的技能。
+
+### 验证
+
+- `node scripts/regress.ts --headless`：52/52 通过，明确跳过 4 项真实桌面检查；默认命令仍保留完整检查。
+- 新增权限与撤销测试 13/13、嵌套写入恢复测试 6/6、MCP MockDriver 集成测试 19/19；文件 R0 扩展到 17 次失败注入、5 个正常路径撤销场景。
+
+### 迁移说明
+
+- 协议仍为 v0，`post`/`undo` 字段仍可选。建议每步提供有意义的 `post`；本次未增加断言必填要求。
+- 原先依赖空 `capabilities` 执行动作的技能必须补齐能力声明与授权。
+- 可逆动作应补齐有效 `undo`。其它动作缺失/null `undo` 或标记 `irreversible: true` 时，调用方需显式确认（CLI `--allow-irreversible`；MCP `allowIrreversible: true`）。`fs.delete` 缺失/null `undo` 始终被拒绝，确认不绕过该策略。
+- `irreversible: true` 优先于附带的 `undo`，包括 `noop`。旧日志中缺失 `undo` 的已执行条目，撤销时现在报告失败并保持未撤销状态；调用方应检查每步结果，不能只看是否返回报告。
+
 ## 0.18.7 — 2026-10-31
 
 **打 tag 就自动发公共 npm，不用再本机敲命令。**

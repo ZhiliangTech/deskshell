@@ -6,3 +6,14 @@ node_modules/
 packages/drivers/macos/.build/
 .worklog/
 .mail/
+
+# 本地运营/采集数据：含第三方个人信息，不跟着源码进版本库
+outreach/
+
+# harness 面板与编辑器临时产物
+.dsh-ops/
+*.TMP
+.*.tmpdir/
+
+# 一次性排查脚本（例如轮询 registry 的 .w.mjs）
+/.w.mjs

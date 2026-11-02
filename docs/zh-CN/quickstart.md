@@ -125,7 +125,7 @@ node apps/cli-demo/ui.ts --root .demo/archive --mode undo
 node apps/ui-smoke/main.ts
 ```
 
-启动记事本 → 通过 UIA `ValuePattern` 写入文本 → 回读校验 → 关闭进程。用于验证输入链路是否可用。
+这是旧通用驱动的输入冒烟：启动记事本、写入、回读并关闭其测试进程，不验证文档另存或完整任务。新 agent 使用独立原生记事本驱动，实际编辑与保存方法、宿主批准及源文保留见[首个应用](first-application.md)；不要把通用 ValuePattern 写回成功当作新记事本的 dirty 状态或保存已验证。
 
 ## 权限拒绝长什么样
 

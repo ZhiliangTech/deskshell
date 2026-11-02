@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { copyTree } from "../packages/core/src/copy.ts";
 
 const dry = process.argv.includes("--dry-run");
 const root = path.resolve(import.meta.dirname, "..");
@@ -40,11 +41,11 @@ fs.writeFileSync(path.join(work, "package.json"), JSON.stringify(outPkg, null, 2
 for (const entry of pkg.files ?? []) {
   const src = path.join(root, entry);
   if (!fs.existsSync(src)) continue;
-  fs.cpSync(src, path.join(work, entry), { recursive: true });
+  copyTree(src, path.join(work, entry));
 }
 for (const f of ["README.md", "LICENSE", "CHANGELOG.md"]) {
   const src = path.join(root, f);
-  if (fs.existsSync(src)) fs.cpSync(src, path.join(work, f));
+  if (fs.existsSync(src)) copyTree(src, path.join(work, f));
 }
 
 const cli = await npmCli();

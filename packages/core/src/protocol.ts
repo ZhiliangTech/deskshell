@@ -40,7 +40,25 @@ export const CAPABILITY_IDS = [
 ] as const;
 
 /** 动作必填字段（不含 id / pre / post / undo 这些公共字段） */
-export const ACTION_OPTIONAL = ["risk", "pre", "post", "undo", "irreversible"] as const;
+export const ACTION_OPTIONAL = ["risk", "pre", "post", "undo", "irreversible", "createdDirs"] as const;
+
+/** 日志条目字段与状态：冻结测试拿它跟 spec 对齐，别让它们变成文档里的死字 */
+export const JOURNAL_FIELDS = [
+  "ts",
+  "taskId",
+  "skill",
+  "actionId",
+  "kind",
+  "object",
+  "summary",
+  "status",
+  "hash",
+  "detail",
+  "undo",
+  "createdDirs",
+] as const;
+
+export const JOURNAL_STATUS = ["ok", "failed", "rolled-back"] as const;
 
 export const ACTION_REQUIRED: Record<(typeof ACTION_KINDS)[number], string[]> = {
   "fs.mkdir": ["path"],

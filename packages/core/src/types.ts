@@ -50,7 +50,7 @@ interface ActionBase {
    * preview 会把它单独列出，apply 必须显式确认，否则整单拒绝执行。
    */
   irreversible?: boolean;
-  /** 撤销这一步的办法；null 表示不可撤销，内核会要求用户显式确认 */
+  /** 撤销这一步的办法；缺省或 null 表示不可撤销，执行前需显式确认（无 undo 的 fs.delete 仍拒绝） */
   undo?: UndoAction | null;
   /** 这一步顺手新建的目录（撤销时删掉，避免留空壳） */
   createdDirs?: string[];
@@ -126,12 +126,16 @@ export interface JournalEntry {
   skill?: string;
   actionId: string;
   kind: string;
+  /** 这条记录触及的对象：文件类是相对 root 的路径，UI 类是窗口名（时间轴按它归组） */
+  object?: string;
   summary: string;
   status: "ok" | "rolled-back" | "failed";
   detail?: string;
-  /** fs.write 成功后写入内容的 sha256，撤销前用来判断文件有没有被别人改过 */
+  /** 写入内容的 sha256：撤销前用来判断目标位有没有被别人改过 */
   hash?: string;
   undo?: UndoAction;
+  /** 执行那一步时顺手新建的目录，撤销后要清掉 */
+  createdDirs?: string[];
 }
 
 export interface SkillManifest {
@@ -238,7 +242,7 @@ export interface ActionSummary {
   window: number;
   undoable: number;
   notUndoable: number;
-  /** 标记为不可逆的步数（这些必须显式确认） */
+  /** 不可逆的步数：显式标记或缺少 undo；可执行的不可逆动作必须显式确认 */
   irreversible: number;
   risk: { low: number; medium: number; high: number };
 }

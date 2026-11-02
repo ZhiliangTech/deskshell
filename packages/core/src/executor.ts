@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { checkUndo } from "./policy.ts";
 import type {
   Action,
   Assertion,
@@ -133,30 +134,51 @@ export function removeImplicitDirs(dirs: string[] | undefined): void {
 export interface ExecResult {
   /** 这一步顺手新建的目录（撤销时删掉） */
   createdDirs?: string[];
+  /** 这一步留下的内容指纹（撤销前用来判断目标位有没有被别人改过） */
+  hash?: string;
+}
+
+/** 只对普通文件取指纹；目录、超大文件、读不了的文件都返回 undefined */
+function fileHash(file: string): string | undefined {
+  try {
+    const stat = fs.statSync(file);
+    if (!stat.isFile() || stat.size > 64 * 1024 * 1024) return undefined;
+    return sha256(fs.readFileSync(file));
+  } catch {
+    return undefined;
+  }
 }
 
 export async function execute(action: Action, ctx: ExecContext): Promise<ExecResult | void> {
   switch (action.kind) {
-    case "fs.mkdir":
+    case "fs.mkdir": {
+      const createdDirs = implicitDirs(action.path);
       fs.mkdirSync(action.path, { recursive: true });
-      return;
+      // 末尾那个目录由 fs.rmdir 的 undo 负责；父级是顺带建的，撤销时要一起清掉
+      return { createdDirs };
+    }
     case "fs.move": {
       const createdDirs = implicitDirs(action.to);
+      // rename 之前取指纹：撤销时据此确认"目标位上还是我们搬过来的那一份"
+      const hash = fileHash(action.from);
       fs.mkdirSync(path.dirname(action.to), { recursive: true });
       if (fs.existsSync(action.to)) {
         throw new Error(`目标已存在，拒绝覆盖：${action.to}`);
       }
       fs.renameSync(action.from, action.to);
-      return { createdDirs };
+      return { createdDirs, hash };
     }
-    case "fs.delete":
+    case "fs.delete": {
+      // 删之前记下内容指纹：撤销（fs.restore）据此判断同名文件是不是我们删掉的那份
+      const hash = fileHash(action.path);
       fs.rmSync(action.path, { recursive: true, force: true });
-      return;
+      return { hash };
+    }
     case "fs.write": {
       const createdDirs = implicitDirs(action.path);
       fs.mkdirSync(path.dirname(action.path), { recursive: true });
       fs.writeFileSync(action.path, action.content, "utf8");
-      return { createdDirs };
+      return { createdDirs, hash: fileHash(action.path) };
     }
     case "ui.invoke": {
       if (!ctx.driver) throw new Error("ui.invoke 需要 UI 驱动");
@@ -178,6 +200,9 @@ export async function execute(action: Action, ctx: ExecContext): Promise<ExecRes
       await ctx.driver.moveWindow({ titleRegex: action.window }, action.rect);
       return;
     }
+    default:
+      // 未知 kind 不执行，但也绝不能记一条"成功"：审计里那条 ok 是假的
+      throw new Error(`未知动作类型，拒绝执行：${String((action as { kind?: unknown }).kind)}`);
   }
 }
 
@@ -196,25 +221,43 @@ export async function applyUndo(
   ctx: ExecContext,
   guard: UndoGuard = {},
 ): Promise<void> {
+  // 第二道闸：策略层已经查过动作自带的 undo，但这里还要挡住"日志里被写进来的"
+  // 撤销动作（伪造的轮转文件、旧版日志、宿主自己拼的条目）。
+  const problems = checkUndo(undo, ctx.root);
+  if (problems.length > 0) throw new Error(problems.join("；"));
+
   switch (undo.kind) {
     case "fs.move": {
       fs.mkdirSync(path.dirname(undo.to), { recursive: true });
-      if (fs.existsSync(undo.to)) fs.rmSync(undo.to, { force: true });
+      if (fs.existsSync(undo.to)) {
+        // 目标位还有东西：只有"还是我们搬过来的那一份"才能删，否则是别人的新文件。
+        // 旧日志没有 hash，无法证明归属，宁可报告冲突也不静默覆盖。
+        const current = fileHash(undo.to);
+        if (!guard.expectedHash || current !== guard.expectedHash) {
+          throw new Error(
+            `撤销目标位已有别的文件，拒绝覆盖：${undo.to}（任务记录里的内容指纹与实际不符）`,
+          );
+        }
+        fs.rmSync(undo.to, { force: true });
+      }
       fs.renameSync(undo.from, undo.to);
       removeImplicitDirs(guard.createdDirs);
       return;
     }
     case "fs.rmdir": {
       if (fs.existsSync(undo.path)) fs.rmdirSync(undo.path);
+      removeImplicitDirs(guard.createdDirs);
       return;
     }
     case "fs.restore": {
       const exists = fs.existsSync(undo.path);
-      if (exists && guard.expectedHash) {
-        const current = sha256(fs.readFileSync(undo.path));
-        if (current !== guard.expectedHash) {
+      if (exists) {
+        // 目标位已经有文件：只有"还是我们留下的那一份"才能动，否则是别人的新内容。
+        // 没有指纹（旧日志、超过 64 MiB、读不回来）就证明不了归属，宁可报冲突。
+        const current = fileHash(undo.path);
+        if (!guard.expectedHash || current !== guard.expectedHash) {
           throw new Error(
-            `文件在任务之后被修改，拒绝覆盖：${undo.path}（可用 deskshell undo --force 强制）`,
+            `文件在任务之后被修改或无法证明归属，拒绝覆盖：${undo.path}（任务记录里的内容指纹与实际不符）`,
           );
         }
       }
@@ -224,6 +267,7 @@ export async function applyUndo(
         fs.mkdirSync(path.dirname(undo.path), { recursive: true });
         fs.writeFileSync(undo.path, undo.content, "utf8");
       }
+      removeImplicitDirs(guard.createdDirs);
       return;
     }
     case "window.move": {
@@ -242,5 +286,8 @@ export async function applyUndo(
     }
     case "noop":
       return;
+    default:
+      // 以前这里没有 default：未知 kind 静默 return，撤销"成功"、文件却早没了
+      throw new Error(`未知撤销类型，拒绝当作已撤销：${String((undo as { kind?: unknown }).kind)}`);
   }
 }

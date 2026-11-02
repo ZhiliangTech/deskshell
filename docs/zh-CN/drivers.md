@@ -1,6 +1,12 @@
 # 驱动
 
-驱动只做一件事：把"看屏幕、点东西"翻译成内核能用的结构化动作。它不做权限判断，那是内核的事。
+通用 v0 驱动把平台操作翻译成内核能用的结构化动作；任务权限由内核或宿主管理。本页的 `UiDriver` 和通用 ValuePattern 示例描述旧入口。新 agent 的[专用记事本驱动](../../packages/drivers/windows/notepad.ts)另有固定计划、文档身份、定向输入及持续守卫合同，不自动继承通用驱动的回退操作。
+
+## 专用记事本驱动
+
+`11.2607.14.0` 的固定文档计划已通过真实服务 IPC、应用宿主和原生驱动完整链，分别验证 UTF-8 无 BOM 的 CRLF/LF、中文路径与正文、空行、精确副本及源文保持。本地合成规划与真实 DeepSeek 加原生三轮、四类故障及默认生产服务均已通过，精确发行版配置已放行；[选择器](../../packages/drivers/windows/notepad-profile-selection.ts)只接受放行后精确版本与 `zh-CN`，通用构造器无 profile 时仍禁用保存。
+
+本机编辑区支持 TextPattern/ValuePattern 读取，但 ValuePattern.SetValue 未产生所需 dirty 状态，因此编辑和文件名输入使用经验证的定向控件操作；raw CR 按源文件约定映射为 LF/CRLF，最终完整字节独立核验。同 PID 多窗口按具体 HWND、活动标签和文档实例绑定。守卫检测人工输入变化后停止，不代表任意外部 UIA/SendMessage 隔离；生产宿主生命周期只执行一个文档任务。详细来源链、运行限制和证据见[首个应用](first-application.md)。
 
 ## 接口
 

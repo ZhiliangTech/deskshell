@@ -63,7 +63,8 @@ export const skill = {
         path: path.join(root, "b.txt"),
         irreversible: true,
         post: [{ kind: "path.absent", path: path.join(root, "b.txt") }],
-        undo: { kind: "noop" },
+        // 有还原动作，但 skill 明确声明"这一步不可逆"，内核对 irreversible 的优先级高于 undo
+        undo: { kind: "fs.restore", path: path.join(root, "b.txt"), content: "b" },
       },
     ];
   },

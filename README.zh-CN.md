@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <b>给 agent 用的 OS 运行时：整台电脑是一个工具箱，每个动作都是一份合同——可声明、可断言、可撤销、可审计。</b><br>
-  不是"会点鼠标的 agent"：deskshell 跑在 agent 内部，把桌面变成工具。
+  <b>让 AI 的活真的落到你的文件里——做错了，一键退回原样。</b><br>
+  每个动作都是一份合同：可声明、可断言、可撤销、可审计。<code>deskshell relay</code> 是它第一个面向普通人的用法。
 </p>
 
 <p align="center">
@@ -52,6 +52,23 @@ node apps/cli-demo/thirty-seconds.ts
 
 这不是承诺，是测试——`scripts/thirty-seconds-test.ts` 会在三种情况下让构建失败：退出码非零、日志不是正好 5 行、目录没有逐字节还原。
 
+## 试一下 relay：AI 的活落到文件里，还能退回
+
+```bash
+deskshell relay --from note.md --to note.md        # 原地改写
+deskshell relay --from note.md --to draft.md --dry-run   # 只出外发清单，不发、不写
+deskshell undo --last --root .                     # 退回上一步，逐字节还原
+```
+
+它只做四件事：拿材料 → 出**外发清单**（发给谁、多少字节、摘要；清单里不出现任何绝对路径）→ 把结果**写回真实文件**（走内核，所以可撤销）→ 进账本。
+
+> **当前后端是占位实现**：`stubBackend()` 是确定性回显，写回的内容会是原文加一段 `[stub]`。
+> 这条命令现在证明的是"外发清单 → 写回 → 逐字节撤销 → 进账本"这条管线，不是"AI 改得对"。
+> 真模型接缝在 `packages/models/src/deepseek.ts`，需要一个与 `propose()` 同等有界的 `complete()`；
+> 没接上之前不提供 `--backend deepseek`，免得看起来能用其实不通。
+
+和"划词问答"的差别不在交互，在结构：气泡给你一段话，这里给你**一个能撤回的文件**加一份**能查的账**。见 [relay 说明](docs/zh-CN/relay-spec.md)。
+
 ## R0 —— 别人不报的那个数
 
 所有 computer-use 项目都报成功率，没有人报"失败之后留下了什么"。
@@ -61,20 +78,20 @@ node scripts/recovery-bench.ts
 ```
 
 ```
-R0-残渣     100.0%（15 次失败注入）
+R0-残渣     100.0%（17 次失败注入）
 R0-回滚     100.0%
 R0-可追溯   100.0%
-正常路径撤销后逐字节还原：4/4
+正常路径撤销后逐字节还原：5/5
 ```
 
 | 面 | 量的是什么 | 现在 |
 | --- | --- | --- |
-| **文件** | 逐字节还原、每步都撤销、每步都入账 | **100% / 100% / 100%**（15 次失败注入） |
+| **文件** | 逐字节还原、已完成步骤撤销、日志存在性 | **100% / 100% / 100%**（17 次失败注入） |
 | **UI** | 窗口几何、控件值，以及**拦住**不可逆步骤 | **100%**（5 次失败注入） |
 
 UI 那个 100% 之所以成立，是因为"动手前就拒绝"也算零残渣——判据见 [docs/zh-CN/recovery.md](docs/zh-CN/recovery.md)。
 
-**R0 = 失败后副作用归零率**：给每个场景的每一步都注入一次失败，然后逐字节比对目录、核对已执行步骤是否全部撤销、核对每一步是否都在日志里。定义与"如何加场景"见 [docs/zh-CN/recovery.md](docs/zh-CN/recovery.md)。
+**R0 = 失败后副作用归零率**：在五个文件场景的每一步注入后置断言失败，然后逐字节比对目录、核对已完成步骤的撤销数，并检查日志是否存在。结果仅代表当前夹具，包括写入时自动创建父目录的场景，不覆盖所有执行或恢复失败。定义与"如何加场景"见 [docs/zh-CN/recovery.md](docs/zh-CN/recovery.md)。
 
 ## 从你的 agent 里调用（MCP）
 
@@ -108,10 +125,10 @@ node scripts/recovery-bench.ts
 ```
 
 ```
-R0-残渣     100.0%（15 次失败注入）
+R0-残渣     100.0%（17 次失败注入）
 R0-回滚     100.0%
 R0-可追溯   100.0%
-正常路径撤销后逐字节还原：4/4
+正常路径撤销后逐字节还原：5/5
 ```
 
 所有 computer-use 项目都在报成功率。这是另一个数：**失败之后留下了什么。**
@@ -121,8 +138,8 @@ R0-可追溯   100.0%
 | | 普通 agent / 自动化脚本 | deskshell |
 | --- | --- | --- |
 | 动手前 | 直接开干，你不知道它会做什么 | `preview` 先给计划，标出风险与是否可撤销 |
-| 动手后 | "应该成功了吧" | 每步执行后跑断言，失败即停 |
-| 出错时 | 留下半个烂摊子 | 先撤失败动作自身，再逆序回滚全部已成功步骤 |
+| 动手后 | "应该成功了吧" | 执行后检查已提供的断言，失败即停 |
+| 出错时 | 留下半个烂摊子 | 尝试自撤和逆序回滚，如实报告恢复不完整 |
 | 事后 | 没人知道发生了什么 | JSONL 审计：谁、何时、改了什么、怎么撤 |
 | 模型 | 绑死某个厂商 | **内核零模型依赖**，模型只是 skill 内部的可替换件 |
 
@@ -178,7 +195,7 @@ git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> 部分网络打不开 npmjs.com 的**网页**，但 registry API 是通的——安装脚本因此走 API 下载。公共 npm 上的 `@zhiliangtech/deskshell` **实测 `latest=0.18.6`**，`npm i -g @zhiliangtech/deskshell` 直接可用。也可以走安装脚本、GitHub Packages，或从 Git 装：`npm i -g github:ZhiliangTech/deskshell`。
+> 部分网络打不开 npmjs.com 的**网页**，但 registry API 是通的——安装脚本因此走 API 下载。公共 npm 上的 `@zhiliangtech/deskshell` **实测 `latest=0.18.7`**，`npm i -g @zhiliangtech/deskshell` 直接可用。也可以走安装脚本、GitHub Packages，或从 Git 装：`npm i -g github:ZhiliangTech/deskshell`。
 
 ## 30 秒装好跑通
 
@@ -229,12 +246,13 @@ node scripts/new-skill.ts --name my-skill
 node bin/deskshell.ts run my-skill --mode preview
 ```
 
-三条硬规则：每步都要有 `post` 断言；每步都要有 `undo`；skill 里不准直接调系统 API。
+编写准则：为每步提供 `post` 断言，为可逆动作提供 `undo`，所有修改交给内核执行。协议 v0 中 `post` 仍可选；缺失/null `undo` 需要在执行前显式确认。`fs.delete` 缺少撤销动作时始终被拒绝。
 
 ## 更多
 
 - [STATUS.md](STATUS.md)：每条能力配一条可复现命令与实测输出
 - [CHANGELOG.md](CHANGELOG.md)：0.1.0 归档与已知限制
+- [项目方向与设计总览](PROJECT.md)：已确认的本地智能体产品方向、技术研究、工程路线与待确定事项。
 - [docs/](docs/)：协议、写 skill、撤销语义、录制器、驱动、版本策略、路线图（**英文**；中文在 [docs/zh-CN](docs/zh-CN/)）
 - `node scripts/build-docs.ts` → `site/index.html`（本地文档站）
 
@@ -242,13 +260,13 @@ node bin/deskshell.ts run my-skill --mode preview
 
 - **Linux 还没有可访问性树**：窗口层驱动（xdotool + wmctrl）可用，但 selector 级的 `invoke`/`click` 会明确报不支持，不会假装点成功。
 - **录制器是 300ms 轮询**，快速切换可能漏采；只捕获左键。
-- **撤销覆盖文件与窗口几何**；网络请求等外部副作用不可撤销（协议层会拒绝 `undo: null` 的动作）。
+- **撤销覆盖受支持的文件与 UI 改动**；缺失/null `undo` 或 `irreversible: true` 需要显式确认，已确认的不可逆影响无法恢复。`fs.delete` 缺少撤销动作仍被禁止。
 - 项目处于 `0.x`，破坏性变更走 RFC 并在 CHANGELOG 给迁移说明。
 
 ## 设计红线
 
 1. skill 不准直接调用系统 API，只能产出 `Action`。
-2. 每个 `Action` 必须有 `post` 断言；不可撤销的动作必须显式标记，内核会拒绝。
+2. 编写动作时建议逐步提供 `post` 断言，v0 校验已提供的断言；不可撤销动作必须在执行前显式确认，并遵守上述删除规则等更严格策略。
 3. 能力必须声明、必须带人话理由、必须落在作用域内。
 4. 内核不依赖任何模型；模型只允许出现在"理解屏幕"和"拆解任务"两个可替换接口后面。
 

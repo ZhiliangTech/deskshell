@@ -79,13 +79,15 @@ node scripts/publish-npm-unscoped.ts     # 无 scope：deskshell（临时副本�
 
 两个脚本都会自己从 registry 拉一份 npm CLI，本机不需要装 npm。
 
-**当前状态（2026-10-30）：** 公共 registry 上的 `deskshell` 只有一个 `0.0.0-stage` 占位版本。npm 12 对全新包走 staged publishing，真版本要**维护者用 2FA 批准**之后才可见，所以发布时要带上一次性密码：
+**当前状态（2026-10-31 实测）：** 公共 registry 上的 `@zhiliangtech/deskshell` **`latest = 0.18.7`**，已发版本 `0.0.0-stage, 0.10.0, 0.18.5, 0.18.6, 0.18.7`。无 scope 的 `deskshell` 停在早期版本，不要用它判断当前能力。
+
+无 scope 包碰到 npm 的 2FA 提示时才需要带一次性密码：
 
 ```bash
 NPM_OTP=<6 位码> NPM_NAME=deskshell node scripts/publish-npm-unscoped.ts
 ```
 
-公共 npm 现在**可用**：`latest=0.18.6`（2026-10-31 实测）。其它渠道：§1（安装脚本）、§2（GitHub Packages）、§4（Git）。`.github/workflows/publish.yml` 会在每个 `v*` tag 上发 GitHub Packages，已存在的版本自动跳过；只有配了 `NPM_TOKEN` secret 时才碰公共 npm。
+公共 npm 现在**可用**：`latest=0.18.7`（2026-10-31 实测）。其它渠道：§1（安装脚本）、§2（GitHub Packages）、§4（Git）。`.github/workflows/publish.yml` 会在每个 `v*` tag 上发 GitHub Packages，已存在的版本自动跳过；只有配了 `NPM_TOKEN` secret 时才碰公共 npm。
 
 ## "装好了"长什么样
 

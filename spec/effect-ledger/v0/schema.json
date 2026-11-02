@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ZhiliangTech/deskshell/spec/effect-ledger/v0/schema.json",
+  "title": "Effect Ledger v0 — LedgerEntry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "id", "taskId", "seq", "kind", "object", "beforeHash", "afterHash", "undo", "status", "at"],
+  "properties": {
+    "v": { "const": 0 },
+    "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "taskId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "seq": { "type": "integer", "minimum": 1 },
+    "kind": { "enum": ["fs.write", "fs.delete", "fs.move"] },
+    "object": { "type": "string", "minLength": 1 },
+    "beforeHash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "afterHash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "undo": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "content"],
+          "properties": {
+            "kind": { "const": "restore" },
+            "content": { "type": ["string", "null"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "from", "to"],
+          "properties": {
+            "kind": { "const": "move" },
+            "from": { "type": "string" },
+            "to": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "status": { "enum": ["ok", "rolled-back"] },
+    "at": { "type": "integer", "minimum": 0 }
+  }
+}

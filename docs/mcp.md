@@ -12,8 +12,12 @@ node packages/mcp/server.ts
 | --- | --- | --- |
 | `deskshell_skills` | — | installed skills with descriptions |
 | `deskshell_preview` | `skill`, `root`, `args?` | capability request sheet, steps, summary — **read-only** |
-| `deskshell_apply` | `skill`, `root`, `args?` | `taskId`, step results, rolled-back count |
+| `deskshell_apply` | `skill`, `root`, `args?`, `allowIrreversible?` | `taskId`, step results, rolled-back count |
 | `deskshell_undo` | `root`, `taskId?` | rolled-back count; without `taskId` undoes the latest run under `root` |
+
+MCP discovers both built-in skills and the user skill directory (`DESKSHELL_SKILLS_DIR`, or `~/.deskshell/skills`); user skills take precedence when names match. Desktop preview, apply, and undo use the same platform driver factory as the CLI. They still require the platform's desktop dependencies and permissions; filesystem-only skills do not need a desktop driver.
+
+An action with missing/null `undo` or `irreversible: true` requires `allowIrreversible: true` before execution. Confirmation does not bypass other policies, including the ban on `fs.delete` without an undo. Undo reports individual failures and counts only successful recovery operations.
 
 ## Wire it into a client
 

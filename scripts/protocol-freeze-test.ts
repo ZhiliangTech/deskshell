@@ -2,10 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   ACTION_KINDS,
+  ACTION_OPTIONAL,
   ACTION_REQUIRED,
   ASSERTION_KINDS,
   CAPABILITY_IDS,
   INVARIANTS,
+  JOURNAL_FIELDS,
+  JOURNAL_STATUS,
   PROTOCOL_VERSION,
   UNDO_KINDS,
 } from "../packages/core/src/protocol.ts";
@@ -44,6 +47,10 @@ check("动作种类与冻结清单一致", eq(ACTION_KINDS, spec.actionKinds), A
 check("断言种类与冻结清单一致", eq(ASSERTION_KINDS, spec.assertionKinds));
 check("撤销种类与冻结清单一致", eq(UNDO_KINDS, spec.undoKinds));
 check("能力清单与冻结清单一致", eq(CAPABILITY_IDS, spec.capabilityIds));
+// 公共字段与日志字段之前只写在 spec 里，实现怎么写都没人管 —— 这四项现在真的对齐
+check("动作公共字段与冻结清单一致", eq(["id", ...ACTION_OPTIONAL], spec.actionCommon), `${["id", ...ACTION_OPTIONAL].join(",")} vs ${spec.actionCommon.join(",")}`);
+check("日志字段与冻结清单一致", eq(JOURNAL_FIELDS, spec.journalFields), `${JOURNAL_FIELDS.join(",")} vs ${spec.journalFields.join(",")}`);
+check("日志状态与冻结清单一致", eq(JOURNAL_STATUS, spec.journalStatus));
 
 // 每个动作的必填字段
 for (const kind of ACTION_KINDS) {

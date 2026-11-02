@@ -66,6 +66,7 @@ export const skill: Skill = {
         kind: "fs.mkdir",
         path: `${root}/docs`,
         risk: "low",
+        post: [{ kind: "path.exists", path: `${root}/docs` }],
         undo: { kind: "fs.rmdir", path: `${root}/docs` },
       },
       {
@@ -83,13 +84,13 @@ export const skill: Skill = {
 };
 ```
 
-## 三条硬规则
+## 三条编写准则
 
-**规则一：每个动作都要有 post 断言。**
-不是"执行没报错就算成功"，而是"目标状态确实成立了才算成功"。
+**准则一：为每个动作提供 post 断言。**
+检查目标状态是否确实成立。协议 v0 为兼容现有技能，仍将 `post` 设为可选；内核校验已提供的断言，但不强制每步都有断言。
 
-**规则二：每个动作都要能撤销。**
-能改就能撤。删除类需求请用"移入回收站目录"表达，而不是 `fs.delete`。
+**准则二：为可逆动作提供 undo。**
+缺失/null `undo` 或 `irreversible: true` 都需要在执行前显式确认。已确认执行的不可逆动作无法恢复，不能用占位撤销动作伪装。可撤销的删除需求请用"移入回收站目录"表达；`fs.delete` 缺少撤销动作时，即使确认也会被拒绝。
 
 **规则三：不要碰系统 API。**
 skill 里不写 `fs.writeFileSync`、不写 `child_process`、不写 UIA。你只能产出 `Action`，由内核去执行。
@@ -122,7 +123,7 @@ async plan({ root }, ctx) {
 
 **只写 pre 不写 post**：失败会在下游爆炸，且无法定位是哪一步坏的。
 
-**undo 写成 null**：内核会拒绝执行。这是故意的。
+**undo 缺失或为 null**：执行前需要显式确认不可逆动作，预览会标明不可撤销；`fs.delete` 缺少撤销动作仍被禁止。
 
 **路径用相对路径**：一律用 `path.join(input.root, ...)`，并确保不越界。
 

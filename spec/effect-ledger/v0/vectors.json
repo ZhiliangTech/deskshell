@@ -1,0 +1,100 @@
+{
+  "protocol": "effect-ledger",
+  "version": 0,
+  "note": "每个用例在独立临时目录中执行；impl 需提供 apply/revert/read/ledger 与 ledgerPath。seed/mutate/appendRaw 由运行器直接操作文件系统，用来模拟外部世界。",
+  "cases": [
+    {
+      "id": "V1",
+      "title": "写新文件 → 读 → 撤回 → 文件消失，账本状态随之改变",
+      "steps": [
+        { "op": "apply", "action": { "kind": "write", "path": "a.txt", "content": "v1" }, "expect": { "status": "ok" } },
+        { "op": "ledger", "expect": { "count": 1, "statuses": ["ok"] } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "v1" } },
+        { "op": "revert", "target": "last", "expect": { "status": "restored" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": false } },
+        { "op": "ledger", "expect": { "count": 1, "statuses": ["rolled-back"] } }
+      ]
+    },
+    {
+      "id": "V2",
+      "title": "覆盖已有文件 → 撤回 → 逐字节还原",
+      "steps": [
+        { "op": "seed", "path": "a.txt", "content": "orig" },
+        { "op": "apply", "action": { "kind": "write", "path": "a.txt", "content": "v2" }, "expect": { "status": "ok" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "v2" } },
+        { "op": "revert", "target": "last", "expect": { "status": "restored" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "orig" } }
+      ]
+    },
+    {
+      "id": "V3",
+      "title": "无 undo 的删除被拒绝，且不动文件",
+      "steps": [
+        { "op": "seed", "path": "a.txt", "content": "keep" },
+        { "op": "apply", "action": { "kind": "delete", "path": "a.txt", "undo": "none" }, "expect": { "status": "refused", "reason": "DELETE_WITHOUT_UNDO" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "keep" } },
+        { "op": "ledger", "expect": { "count": 0 } }
+      ]
+    },
+    {
+      "id": "V4",
+      "title": "noop 占位不算撤销：删除被拒绝",
+      "steps": [
+        { "op": "seed", "path": "a.txt", "content": "keep" },
+        { "op": "apply", "action": { "kind": "delete", "path": "a.txt", "undo": "noop" }, "expect": { "status": "refused", "reason": "DELETE_WITH_PLACEHOLDER_UNDO" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "keep" } }
+      ]
+    },
+    {
+      "id": "V5",
+      "title": "带还原动作的删除 → 撤回后内容回来",
+      "steps": [
+        { "op": "seed", "path": "a.txt", "content": "keep" },
+        { "op": "apply", "action": { "kind": "delete", "path": "a.txt", "undo": "restore" }, "expect": { "status": "ok" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": false } },
+        { "op": "revert", "target": "last", "expect": { "status": "restored" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "keep" } }
+      ]
+    },
+    {
+      "id": "V6",
+      "title": "撤回时对象被别人改过 → 拒绝且不覆盖",
+      "steps": [
+        { "op": "seed", "path": "a.txt", "content": "orig" },
+        { "op": "apply", "action": { "kind": "write", "path": "a.txt", "content": "v2" }, "expect": { "status": "ok" } },
+        { "op": "mutate", "path": "a.txt", "content": "user" },
+        { "op": "revert", "target": "last", "expect": { "status": "refused", "reason": "CONFLICT" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "user" } },
+        { "op": "ledger", "expect": { "count": 1, "statuses": ["ok"] } }
+      ]
+    },
+    {
+      "id": "V7",
+      "title": "没有可撤回的记录",
+      "steps": [
+        { "op": "revert", "target": "last", "expect": { "status": "refused", "reason": "NOTHING_TO_REVERT" } }
+      ]
+    },
+    {
+      "id": "V8",
+      "title": "重复撤回被拒绝",
+      "steps": [
+        { "op": "apply", "action": { "kind": "write", "path": "a.txt", "content": "v1" }, "expect": { "status": "ok" } },
+        { "op": "revert", "target": "last", "expect": { "status": "restored" } },
+        { "op": "revert", "target": "last", "expect": { "status": "refused", "reason": "ALREADY_REVERTED" } }
+      ]
+    },
+    {
+      "id": "V9",
+      "title": "账本出现半行：跳过坏行、不致命、撤回仍然可用、坏行原样保留",
+      "steps": [
+        { "op": "seed", "path": "a.txt", "content": "orig" },
+        { "op": "apply", "action": { "kind": "write", "path": "a.txt", "content": "v2" }, "expect": { "status": "ok" } },
+        { "op": "appendRaw", "line": "{\"v\":0,\"id\":\"broken\"" },
+        { "op": "ledger", "expect": { "count": 1, "statuses": ["ok"] } },
+        { "op": "revert", "target": "last", "expect": { "status": "restored" } },
+        { "op": "read", "path": "a.txt", "expect": { "exists": true, "content": "orig" } }
+      ]
+    }
+  ]
+}

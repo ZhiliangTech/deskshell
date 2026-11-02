@@ -12,8 +12,12 @@ node packages/mcp/server.ts
 | --- | --- | --- |
 | `deskshell_skills` | — | 已安装技能与描述 |
 | `deskshell_preview` | `skill`、`root`、`args?` | 能力申请单、步骤、汇总——**只读** |
-| `deskshell_apply` | `skill`、`root`、`args?` | `taskId`、每步结果、回滚数 |
+| `deskshell_apply` | `skill`、`root`、`args?`、`allowIrreversible?` | `taskId`、每步结果、回滚数 |
 | `deskshell_undo` | `root`、`taskId?` | 回滚数；不给 `taskId` 就撤销 `root` 下最近一单 |
+
+MCP 同时发现内置技能和用户技能目录（`DESKSHELL_SKILLS_DIR`，默认 `~/.deskshell/skills`），同名时用户技能优先。桌面预览、执行和撤销与 CLI 共用平台驱动创建逻辑，仍需要对应平台的桌面依赖和权限；纯文件技能无需桌面驱动。
+
+缺失/null `undo` 或 `irreversible: true` 的动作需要在执行前传入 `allowIrreversible: true`。确认不能绕过其它策略，包括禁止缺少撤销动作的 `fs.delete`。撤销会报告每步失败，仅把成功的恢复操作计入回滚数。
 
 ## 接到客户端里
 

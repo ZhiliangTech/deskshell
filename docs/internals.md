@@ -7,9 +7,9 @@ How the pieces actually fit together, and which rules are enforced where. Writte
 ## The whole flow
 
 ```
-skill.plan(input, ctx) → Action[]          pure description, no side effects
-        ↓
 checkCapabilities(caps, granted, root)     every declared capability must be granted
+        ↓
+skill.plan(input, ctx) → Action[]          trusted skill code constructs a plan
         ↓
 checkAction(action, root, ids, caps)       per action: path escapes, ui scope, undoability
         ↓
@@ -19,6 +19,8 @@ undo     ─ read journal → replay undos in reverse → mark rolled-back
 ```
 
 Everything above is synchronous filesystem work plus driver calls. There is no scheduler, no retry loop, and no model.
+
+Planning is intended to be read-only, but skills currently run in the host process with filesystem access and the driver context; that convention is not a sandbox. Preview and apply each call `plan()` independently. Fixed plans and a trusted approval boundary are proposed in [RFC 0001](../rfcs/0001-local-agent-system.md).
 
 ## What the policy layer checks
 
@@ -81,6 +83,6 @@ The user directory wins on name collisions, and it survives upgrades because it 
 - **A new driver** — implement `UiDriver`, pass the 13 contract tests; the kernel stays unchanged.
 - **A model** — sits above `plan()`. It may produce actions through the same policy checks; nothing in the kernel imports a model.
 
-## What is deliberately missing
+## What remains to be built
 
-No scheduler, no queue, no daemon, no database, no plugin sandbox. Every one of those would be a new failure surface before the basics are proven. The journal plus the undo stack is enough to run, explain, and reverse a task — that is the whole promise.
+The current implementation has no durable task queue, resident task host, transactional task database, or plugin sandbox. Its JSONL journal records completed/failed actions, but cannot resolve a process crash between a system effect and the subsequent journal write. The [roadmap](roadmap.md) proposes these capabilities in stages while preserving the deterministic execution kernel.

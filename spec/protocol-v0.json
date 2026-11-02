@@ -50,7 +50,9 @@
     "risk",
     "pre",
     "post",
-    "undo"
+    "irreversible",
+    "undo",
+    "createdDirs"
   ],
   "assertionKinds": [
     "path.exists",
@@ -84,11 +86,13 @@
     "skill",
     "actionId",
     "kind",
+    "object",
     "summary",
     "status",
     "hash",
     "detail",
-    "undo"
+    "undo",
+    "createdDirs"
   ],
   "journalStatus": [
     "ok",

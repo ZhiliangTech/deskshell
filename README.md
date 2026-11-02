@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <b>An OS runtime for agents: the machine as a toolbox, every action a declared contract — asserted, undoable, auditable.</b><br>
-  Not "an agent that clicks": deskshell runs <i>inside</i> your agent, and turns the desktop into tools.
+  <b>Let AI actually finish the work inside your files — and put it back when it goes wrong.</b><br>
+  Every action is a declared contract: asserted, undoable, auditable. <code>deskshell relay</code> is the first everyday use of it.
 </p>
 
 <p align="center">
@@ -57,6 +57,24 @@ That last line matters: **the step that failed is in the journal too**. A run th
 
 The claim is a test, not a promise — `scripts/thirty-seconds-test.ts` fails the build if the exit code is non-zero, if the journal is not exactly 5 lines, or if the directory is not byte-identical afterwards.
 
+## Try the relay: the work lands in your file, and comes back out
+
+```bash
+deskshell relay --from note.md --to note.md        # rewrite in place
+deskshell relay --from note.md --to draft.md --dry-run   # manifest only: nothing sent, nothing written
+deskshell undo --last --root .                     # put it back, byte for byte
+```
+
+It does four things: take the material → print a **send manifest** (who gets it, how many bytes, which digest, no absolute paths) → write the result **back into the real file** (through the kernel, so it is undoable) → record it in the journal.
+
+> **The backend is a stub today**: `stubBackend()` is a deterministic echo, so what lands in the file is
+> your text plus a `[stub]` marker. What this command proves right now is the pipeline —
+> manifest → write-back → byte-exact undo → journal — not that a model wrote something good. The seam for a
+> real model is `packages/models/src/deepseek.ts`, which needs a `complete()` bounded the same way as
+> `propose()`; there is deliberately no `--backend deepseek` until that exists.
+
+The difference from a selection-popup is structural, not cosmetic: a bubble gives you a paragraph; this gives you **a file you can undo** and **a ledger you can check**. See [relay notes](docs/zh-CN/relay-spec.md).
+
 ## R0 — the number nobody else reports
 
 Every computer-use project publishes a success rate. None publish what a failure leaves behind.
@@ -66,20 +84,20 @@ node scripts/recovery-bench.ts
 ```
 
 ```
-R0-残渣     100.0%（15 次失败注入）
+R0-残渣     100.0%（17 次失败注入）
 R0-回滚     100.0%
 R0-可追溯   100.0%
-正常路径撤销后逐字节还原：4/4
+正常路径撤销后逐字节还原：5/5
 ```
 
 | Surface | What is measured | Now |
 | --- | --- | --- |
-| **Files** | byte-identical restore, every step undone, every step journaled | **100% / 100% / 100%** (15 injected failures) |
+| **Files** | byte-identical restore, completed steps undone, journal presence | **100% / 100% / 100%** (17 injected failures) |
 | **UI** | window geometry, control values, and *refusing* irreversible steps | **100%** (5 injected failures) |
 
 The UI number only reads 100% because "refused before touching anything" counts as zero residue — see [docs/recovery.md](docs/recovery.md).
 
-**R0 = recovery rate at zero residue**: inject a failure at every step of every scenario, then check the directory byte for byte, check every completed step was undone, check every step is in the journal. The same matrix against **UI actions** now reports **80%** (window moves roll back; typed text and pressed buttons do not). That number is published on purpose — [docs/recovery.md](docs/recovery.md).
+**R0 = recovery rate at zero residue**: inject a failing post-assertion at every step of five filesystem scenarios, then compare the directory byte for byte, check the completed-step rollback count, and check that a journal exists. These results describe the current fixtures, including writes that create their own parent directories; they do not cover every possible execution or recovery failure. Definitions and extension guidance: [docs/recovery.md](docs/recovery.md).
 
 ## Call it from your agent (MCP)
 
@@ -113,10 +131,10 @@ node scripts/recovery-bench.ts
 ```
 
 ```
-R0-residue     100.0%   (15 failure injections)
+R0-residue     100.0%   (17 failure injections)
 R0-rollback    100.0%
 R0-traceable   100.0%
-happy-path undo restores byte-for-byte: 4/4
+happy-path undo restores byte-for-byte: 5/5
 ```
 
 Every computer-use project reports a success rate. This is the other number: what a failure leaves behind.
@@ -126,8 +144,8 @@ Every computer-use project reports a success rate. This is the other number: wha
 | | Typical agent / automation script | deskshell |
 | --- | --- | --- |
 | Before acting | Just does it — you don't know what will happen | `preview` shows the plan, risk level, and whether each step is undoable |
-| After acting | "It probably worked" | Every step runs a post-assertion; failure stops the run |
-| On failure | Leaves a half-modified mess | Undoes the failing action's own side effects, then rolls back everything else in reverse |
+| After acting | "It probably worked" | Checks supplied post-assertions; failure stops the run |
+| On failure | Leaves a half-modified mess | Attempts self-undo and reverse rollback; reports any incomplete recovery |
 | Afterwards | Nobody knows what happened | JSONL journal: who, when, what changed, how to undo |
 | Model | Locked to one vendor | **Zero model dependency in the kernel** — a swappable part inside skills |
 
@@ -183,7 +201,7 @@ git clone https://github.com/ZhiliangTech/deskshell && cd deskshell
 node bin/deskshell.ts doctor
 ```
 
-> The npm **website** is blocked on some networks while the registry API stays fine — which is why the installer goes through the API. The public npm package is still waiting on a registry-side 2FA approval; meanwhile use the installer, GitHub Packages (`@zhiliangtech/deskshell`, 0.9.0–0.11.0), or `npm i -g github:ZhiliangTech/deskshell`.
+> The npm **website** is blocked on some networks while the registry API stays fine — which is why the installer goes through the API. The public npm package **works**: `npm i -g @zhiliangtech/deskshell` installs 0.18.7 (`latest`, measured 2026-10-31). GitHub Packages (`@zhiliangtech/deskshell`) and `npm i -g github:ZhiliangTech/deskshell` stay available as fallbacks.
 
 ## Quick start
 
@@ -234,12 +252,13 @@ node scripts/new-skill.ts --name my-skill
 node bin/deskshell.ts run my-skill --mode preview
 ```
 
-Three hard rules: every action needs a `post` assertion; every action needs an `undo`; skills never call system APIs directly.
+Authoring guidelines: provide a `post` assertion for every action, provide an `undo` for reversible actions, and route mutations through the kernel. Protocol v0 keeps `post` optional; missing/null `undo` requires explicit confirmation before apply. `fs.delete` without an undo is always rejected.
 
 ## Learn more
 
 - [STATUS.md](STATUS.md) — every capability paired with a reproducible command and its actual output
 - [CHANGELOG.md](CHANGELOG.md) — 0.1.0 scope and known limits
+- [Project direction and design](PROJECT.md) — agreed product and research directions, engineering roadmap, and open decisions (Chinese).
 - [docs/](docs/) — protocol, skills, undo semantics, recorder, drivers, versioning, roadmap (**English**; 中文在 [docs/zh-CN](docs/zh-CN/))
 - `node scripts/build-docs.ts` → `site/index.html` for a local docs site
 
@@ -251,13 +270,13 @@ Three hard rules: every action needs a `post` assertion; every action needs an `
 
 - **Linux has no accessibility tree yet**: the window-level driver (xdotool + wmctrl) works, but selector-level `invoke`/`click` reports unsupported instead of pretending to click.
 - **Recorder polls at 300 ms**, may miss fast switches; left clicks only.
-- **Undo covers file and window-geometry changes**; external side effects (network calls) are not undoable — the protocol rejects actions with `undo: null`.
+- **Undo covers supported file and UI changes**; missing/null `undo` or `irreversible: true` requires explicit confirmation, and confirmed irreversible effects cannot be recovered. `fs.delete` without an undo remains prohibited.
 - Pre-1.0: breaking changes go through an RFC and ship with migration notes in the CHANGELOG.
 
 ## Design invariants
 
 1. Skills never call system APIs; they only produce `Action`s.
-2. Every `Action` must declare a `post` assertion; non-undoable actions must be marked and will be rejected.
+2. Authors should provide a `post` assertion for each action; v0 validates supplied assertions. Non-undoable actions require explicit confirmation before execution, subject to stricter policies such as the deletion rule above.
 3. Capabilities must be declared, justified in plain language, and scoped.
 4. The kernel has no model dependency; models may only live behind two replaceable interfaces: perceive and plan.
 

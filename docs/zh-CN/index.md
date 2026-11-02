@@ -1,8 +1,8 @@
 # deskshell
 
-![deskshell](brand/banner.svg)
+![deskshell](../brand/banner.svg)
 
-![deskshell demo](assets/hero.gif)
+![deskshell demo](../assets/hero.gif)
 
 deskshell 是一个**给 agent 用的 OS 运行时**：不是"会点鼠标的 agent"，而是跑在 agent 内部、把整台电脑变成工具箱的那一层。它把"AI 要做什么"和"怎么保证不出事"彻底分开：
 

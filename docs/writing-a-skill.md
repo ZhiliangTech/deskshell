@@ -68,6 +68,7 @@ export const skill: Skill = {
         kind: "fs.mkdir",
         path: `${root}/docs`,
         risk: "low",
+        post: [{ kind: "path.exists", path: `${root}/docs` }],
         undo: { kind: "fs.rmdir", path: `${root}/docs` },
       },
       {
@@ -85,11 +86,11 @@ export const skill: Skill = {
 };
 ```
 
-## Three hard rules
+## Three authoring guidelines
 
-**Every action needs a post-assertion.** Not "it didn't throw" — "the target state actually holds".
+**Provide a post-assertion for every action.** Check that the target state actually holds. Protocol v0 keeps `post` optional for compatibility; the kernel validates supplied assertions but does not require one.
 
-**Every action needs an undo.** If something can be changed, it can be reverted. Deletions should be expressed as "move into a trash folder", not `fs.delete`.
+**Provide an undo for every reversible action.** Missing/null `undo` and `irreversible: true` require explicit confirmation before apply. Confirmed irreversible actions cannot be recovered and must not be represented by a placeholder undo. For reversible deletion, use a move into a trash folder. `fs.delete` without an undo is rejected even with confirmation.
 
 **Never touch system APIs.** No `fs.writeFileSync`, no `child_process`, no UIA inside a skill. Produce `Action`s and let the kernel execute them.
 
@@ -118,7 +119,7 @@ Omitting it means all platforms. Declaring it makes `deskshell list` mark the sk
 ## Common mistakes
 
 - **pre without post**: the failure surfaces downstream, and you can't tell which step broke.
-- **`undo: null`**: the kernel rejects the action. This is intentional.
+- **Missing/null `undo`**: apply requires explicit irreversible-action confirmation; `fs.delete` without an undo remains prohibited. Preview shows the step as non-undoable.
 - **relative paths**: always use `path.join(input.root, ...)`, and never escape the root.
 - **side effects inside `plan()`**: plan runs twice (preview + apply); any write happens twice.
 

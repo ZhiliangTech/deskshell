@@ -132,6 +132,19 @@ try {
   const bad = (await call("tools/call", { name: "deskshell_apply", arguments: { skill: "no-such", root } })) as ToolResult;
   check("未知技能返回 isError=true", bad.isError === true);
   check("未知技能的错误里列出可用技能", (bad.content?.[0]?.text ?? "").includes("downloads-cleanup"));
+
+  // 一行 `null` 是合法 JSON 但不是请求：以前直接解引用 req.method，进程带着 TypeError 退出。
+  await new Promise<void>((resolve) => {
+    const probe = spawn(process.execPath, [path.join("packages", "mcp", "server.ts")], { stdio: ["pipe", "pipe", "pipe"] });
+    let out = "";
+    probe.stdout.on("data", (chunk: Buffer) => { out += chunk.toString("utf8"); });
+    probe.on("close", (code) => {
+      check("一行 null 让服务返回错误码而不是崩溃", code === 0 && out.includes("-32600"), `exit=${code} out=${out.trim().slice(0, 80)}`);
+      resolve();
+    });
+    probe.stdin.write("null\n");
+    probe.stdin.end();
+  });
 } finally {
   server.stdin.end();
   server.kill();

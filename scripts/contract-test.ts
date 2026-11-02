@@ -64,7 +64,7 @@ await check("ui.type+assert", async () => {
       undo: null,
     },
   ]);
-  const report = await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal }, { driver });
+  const report = await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal, allowIrreversible: true }, { driver });
   return report.steps[0]?.status === "ok";
 }, "输入后断言未通过");
 
@@ -81,7 +81,7 @@ await check("assert.blocks", async () => {
       undo: null,
     },
   ]);
-  const report = await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal }, { driver });
+  const report = await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal, allowIrreversible: true }, { driver });
   return report.steps[0]?.status === "failed";
 }, "错误断言竟然通过了");
 
@@ -107,7 +107,7 @@ await check("rollback.cross-domain", async () => {
       undo: null,
     },
   ]);
-  const report = await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal }, { driver });
+  const report = await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal, allowIrreversible: true }, { driver });
   const existed = fs.existsSync(target);
   return report.rolledBack === 1 && !existed;
 }, "文件没有被回滚");
@@ -118,7 +118,7 @@ await check("ui.invoke", async () => {
   const skill = makeSkill([
     { id: "ok", kind: "ui.invoke", window: "Mock Window", selector: { automationId: "ok" }, post: [], undo: null },
   ]);
-  await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal }, { driver });
+  await run(skill, { root }, { mode: "apply", root, granted: skill.manifest.capabilities.map((c) => c.id), journalPath: journal, allowIrreversible: true }, { driver });
   return before === true && driver.treeData.children[1].enabled === false && driver.calls.some((c) => c.startsWith("invoke:"));
 }, "invoke 未生效");
 

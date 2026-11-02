@@ -87,6 +87,20 @@ interface Scenario {
 
 const scenarioList: Scenario[] = [
   {
+    name: "write-into-new-dir",
+    // 没有显式 mkdir：fs.write 自动创建的目录也必须随手动撤销/失败回滚清理。
+    fixture: () => undefined,
+    capabilities: ["fs.write", "fs.read"],
+    plan: (root) => ["first", "second"].map((name) => ({
+      id: `write:${name}`,
+      kind: "fs.write",
+      path: path.join(root, "new", "deep", `${name}.txt`),
+      content: name,
+      post: [{ kind: "path.exists", path: path.join(root, "new", "deep", `${name}.txt`) }],
+      undo: { kind: "fs.restore", path: path.join(root, "new", "deep", `${name}.txt`), content: null },
+    })),
+  },
+  {
     name: "nested-writes",
     fixture: () => undefined,
     capabilities: ["fs.write", "fs.read"],

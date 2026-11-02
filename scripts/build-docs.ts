@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { copyTree } from "../packages/core/src/copy.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const SITE = path.join(ROOT, "site");
@@ -386,7 +387,7 @@ for (const [from, to] of [
   [path.join(ROOT, "docs", "assets"), path.join(SITE, "assets")],
   [path.join(ROOT, "brand"), path.join(SITE, "brand")],
 ] as const) {
-  if (fs.existsSync(from)) fs.cpSync(from, to, { recursive: true });
+  if (fs.existsSync(from)) copyTree(from, to);
 }
 
 let built = 0;

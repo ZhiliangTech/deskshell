@@ -89,6 +89,9 @@ const env = {
   PATH: `${path.dirname(process.execPath)}${path.delimiter}${process.env.PATH ?? ""}`,
 };
 
+const agentHelp = tryRun(bin, ["agent", "--help"], { env });
+check("打包后的 agent 入口及宿主依赖可加载", agentHelp.code === 0 && agentHelp.out.includes("recovery-apply") && agentHelp.out.includes("host-start"), agentHelp.out.slice(-200));
+
 // ---------- 2) 按文档跑：deskshell new ----------
 const made = tryRun(bin, ["new", "hello-report"], { env });
 check("deskshell new 成功", made.code === 0, made.out.slice(-300));

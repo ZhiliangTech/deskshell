@@ -5,8 +5,10 @@ import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { run, PolicyError, undoTask } from "../packages/core/src/kernel.ts";
+import { copyTree } from "../packages/core/src/copy.ts";
 import { load } from "../packages/core/src/journal.ts";
 import { validateManifest } from "../packages/core/src/manifest.ts";
+import { createPlatformDriver, needsUiDriver } from "../packages/drivers/platform.ts";
 import type { CapabilityId, Skill } from "../packages/core/src/types.ts";
 
 const HERE = import.meta.dirname;
@@ -23,6 +25,7 @@ function usage(): void {
   console.log(`deskshell — AI 电脑管家的协议内核
 
 用法:
+  deskshell agent [command]              文件智能体宿主、计划、批准、停止与恢复
   deskshell list                          列出已安装的 skill
   deskshell run <name> [options]          运行一个 skill
   deskshell run a b c --parallel [opts]   并行跑多个 skill（各自独立、共用审计日志）
@@ -37,6 +40,8 @@ function usage(): void {
   deskshell undo --task <id> [--root DIR]  撤销某个任务
   deskshell undo --last [N] | --since <30m>  撤销最近 N 个（默认 1）任务 / 一段时间内的任务
   deskshell add <path> [--dir DIR] [--force]  安装外部 skill（默认 ~/.deskshell/skills）
+  deskshell relay --from <文件|-> [--to 文件]  AI 结果写回你的文件：清单先于发送，写回可撤销
+  deskshell timeline [--root DIR] [--object PATH] [--since 7d]  一个对象的历史：谁改过、能不能撤
   deskshell mcp install --client claude|cursor  把 deskshell 挂进 MCP 客户端配置（--print 只看不改）
 
 run 选项:
@@ -186,7 +191,7 @@ async function runSkill(
 
   const root = path.resolve(flags.root ?? ".demo/cli");
   const mode = (flags.mode ?? "preview") as "preview" | "apply" | "undo";
-  const needsDriver = entry.caps.some((x) => x.startsWith("ui.") || x === "window.move");
+  const needsDriver = needsUiDriver(entry.caps);
   let granted = (flags.grant ? flags.grant.split(",") : entry.caps) as CapabilityId[];
   if ("ask" in flags) {
     const declared = (skill.manifest.capabilities ?? []) as Array<{ id: string; reason?: string }>;
@@ -201,15 +206,12 @@ async function runSkill(
 
   let driver;
   if (needsDriver) {
-    if (process.platform === "win32") {
-      const { WindowsDriver } = await import("../packages/drivers/windows/driver.ts");
-      driver = new WindowsDriver();
-    } else if (process.platform === "darwin") {
-      const { MacDriver } = await import("../packages/drivers/macos/driver.ts");
-      driver = new MacDriver();
-    } else {
-      if (json) out(JSON.stringify({ ok: false, error: "no driver for this platform" }));
-      else out("当前平台还没有驱动实现");
+    try {
+      driver = await createPlatformDriver();
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      if (json) out(JSON.stringify({ ok: false, error }));
+      else out(error);
       return 2;
     }
   }
@@ -365,6 +367,11 @@ const { positional, flags } = parse(argv);
 const cmd = positional[0];
 
 switch (cmd) {
+  case "agent": {
+    process.argv.splice(2, 1);
+    await import("../apps/agent/cli.ts");
+    break;
+  }
   case "list": {
     const skills = listSkills();
     const pub = skills.filter((s) => !s.internal);
@@ -735,6 +742,46 @@ switch (cmd) {
     }
     break;
   }
+  case "relay": {
+    process.argv.splice(2, 1);
+    await import("../apps/relay/cli.ts");
+    break;
+  }
+  case "timeline": {
+    const root = path.resolve(flags.root ?? ".demo/cli");
+    const file = path.join(root, ".deskshell", "journal.jsonl");
+    if (!fs.existsSync(file)) {
+      console.log(`没有审计日志：${file}`);
+      break;
+    }
+    const entries = load(file);
+    const { buildTimeline, parseSince } = await import("../packages/ledger/src/timeline.ts");
+    const sinceMs = flags.since ? parseSince(flags.since) : undefined;
+    const histories = buildTimeline(entries, {
+      ...(flags.object ? { object: flags.object } : {}),
+      ...(sinceMs !== undefined ? { sinceMs } : {}),
+    });
+    if (flags.json === "true") {
+      console.log(JSON.stringify({ root, histories }));
+      break;
+    }
+    const total = histories.reduce((n: number, h: { items: unknown[] }) => n + h.items.length, 0);
+    if (total === 0) {
+      console.log("这段时间没有记录");
+      break;
+    }
+    console.log(`时间轴  ${root}  · ${histories.length} 个对象 · ${total} 条记录\n`);
+    for (const h of histories) {
+      console.log(h.object);
+      for (const it of h.items) {
+        const t = new Date(it.at).toLocaleString("zh-CN", { hour12: false });
+        const state = it.status === "rolled-back" ? "已撤回" : it.status === "failed" ? "失败" : it.revertible ? "可撤回" : "不可撤回";
+        console.log(`  ${t}  ${String(it.skill ?? "?").padEnd(10)} ${it.kind.padEnd(10)} ${it.summary.padEnd(30)} ${state}`);
+      }
+      console.log("");
+    }
+    break;
+  }
   case "add": {
     const src = positional[1];
     if (!src) {
@@ -772,7 +819,7 @@ switch (cmd) {
       break;
     }
     fs.mkdirSync(destRoot, { recursive: true });
-    fs.cpSync(srcDir, dest, { recursive: true, force: true });
+    copyTree(srcDir, dest);
     console.log(`已安装 ${m.name}@${m.version ?? "0.0.0"} → ${dest}`);
     console.log("它会申请这些能力：");
     for (const c of m.capabilities) console.log(`  · ${c.id}  ${c.reason}`);

@@ -43,7 +43,7 @@ No build step: the CLI is TypeScript run directly by Node's type stripping.
 
 ## 4. From Git, no registry at all
 
-Public npm **works**: `npm i -g @zhiliangtech/deskshell` installs **0.18.6** (measured `latest=0.18.6`). If `registry.npmjs.org` is slow, npm can install straight from the repo:
+Public npm **works**: `npm i -g @zhiliangtech/deskshell` installs **0.18.7** (measured `latest=0.18.7`). If `registry.npmjs.org` is slow, npm can install straight from the repo:
 
 ```bash
 npm i -g github:ZhiliangTech/deskshell
@@ -79,7 +79,7 @@ node scripts/publish-npm-unscoped.ts     # unscoped: deskshell (repo untouched, 
 
 Both scripts bootstrap an npm CLI from the registry, so no local npm install is needed.
 
-**Current state (measured 2026-10-31):** public registry `@zhiliangtech/deskshell` → **`latest = 0.18.6`**, versions `0.0.0-stage, 0.10.0, 0.18.5, 0.18.6`. Verified end-to-end: `npm i -g @zhiliangtech/deskshell@latest` then `deskshell mcp install --print` resolves to the installed `packages/mcp/server.ts`.
+**Current state (measured 2026-10-31):** public registry `@zhiliangtech/deskshell` → **`latest = 0.18.7`**, versions `0.0.0-stage, 0.10.0, 0.18.5, 0.18.6, 0.18.7`. Verified end-to-end: `npm i -g @zhiliangtech/deskshell@latest` then `deskshell mcp install --print` resolves to the installed `packages/mcp/server.ts`.
 
 Two ways to move public npm forward:
 

@@ -1,0 +1,531 @@
+{
+  "formatVersion": 1,
+  "updatedAt": "2026-10-31T09:41:38.471Z",
+  "scope": "Windows Notepad fixed document-copy workflow with bounded model proposals",
+  "release": {
+    "enabled": true,
+    "packageVersion": "11.2607.14.0",
+    "locale": "zh-CN",
+    "encoding": "utf8-no-bom",
+    "newlines": [
+      "crlf",
+      "lf"
+    ],
+    "maxNativeDocumentsPerHost": 1,
+    "probeIsMetadataOnly": true
+  },
+  "finalProductionRevisionMatches": true,
+  "finalRevision": {
+    "driver": "2eef97b12e25a05b18903685b165f6ae026f1672096779d2eb42142ff06f2de6",
+    "runtime": "48b84238b6bd15131771e1096aa43a990fa1dd9bb6d7d78521a526510f74dddd"
+  },
+  "functionalAcceptance": [
+    {
+      "id": "fixed-crlf",
+      "evidenceFixture": "deskshell-notepad-task-gTttNh",
+      "kind": "approved-native-notepad",
+      "nativeUiAcceptance": true,
+      "nativeProfile": "notepad-11.2607.14.0-zh-CN-candidate-v2",
+      "defaultServiceProfile": false,
+      "startedAt": "2026-10-31T09:29:28.735Z",
+      "finishedAt": "2026-10-31T09:29:42.827Z",
+      "newline": "crlf",
+      "taskId": "notepad-task-4979d870-41d4-4cf5-a673-e7f474be25ae",
+      "sessionId": null,
+      "status": "succeeded",
+      "goal": {
+        "copyHash": "0c722715784214b2f0bb3303c10b7555fdea374470c7381ae23828e07c50ee07",
+        "encoding": "utf8",
+        "newline": "crlf",
+        "satisfied": true,
+        "sourceUnchanged": true
+      },
+      "sourceUnchanged": true,
+      "sourceHash": "5d7a70ae47b5e3e3fa60deb70d650ba9f86088d7bcc397fde475bf37b06df5b1",
+      "exactCopy": true,
+      "copyHash": "0c722715784214b2f0bb3303c10b7555fdea374470c7381ae23828e07c50ee07",
+      "onlyExpectedNewFile": true,
+      "nativeJournalVerified": true,
+      "planningVerified": true,
+      "journal": [
+        {
+          "step": "open",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "edit",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "save-copy",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "save-copy-dialog",
+            "window": "native-window"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fixed-lf",
+      "evidenceFixture": "deskshell-notepad-task-Iub4pg",
+      "kind": "approved-native-notepad",
+      "nativeUiAcceptance": true,
+      "nativeProfile": "notepad-11.2607.14.0-zh-CN-candidate-v2",
+      "defaultServiceProfile": false,
+      "startedAt": "2026-10-31T09:30:45.792Z",
+      "finishedAt": "2026-10-31T09:30:59.951Z",
+      "newline": "lf",
+      "taskId": "notepad-task-33ffc589-d60a-4efc-830e-a3b8c0346623",
+      "sessionId": null,
+      "status": "succeeded",
+      "goal": {
+        "copyHash": "b03d8ddc5c1b7909efe80439655744524482d44feddf62e2ce1ac525b1bf2aac",
+        "encoding": "utf8",
+        "newline": "lf",
+        "satisfied": true,
+        "sourceUnchanged": true
+      },
+      "sourceUnchanged": true,
+      "sourceHash": "df1a8cc405167f8eeecd45fb64ef62201e9776796241c29372d47cad1d36085b",
+      "exactCopy": true,
+      "copyHash": "b03d8ddc5c1b7909efe80439655744524482d44feddf62e2ce1ac525b1bf2aac",
+      "onlyExpectedNewFile": true,
+      "nativeJournalVerified": true,
+      "planningVerified": true,
+      "journal": [
+        {
+          "step": "open",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "edit",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "save-copy",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "save-copy-dialog",
+            "window": "native-window"
+          }
+        }
+      ]
+    },
+    {
+      "id": "local-three-rounds",
+      "evidenceFixture": "deskshell-notepad-task-QTiwOk",
+      "kind": "local-planner-native-notepad",
+      "nativeUiAcceptance": true,
+      "nativeProfile": "notepad-11.2607.14.0-zh-CN-candidate-v2",
+      "defaultServiceProfile": false,
+      "startedAt": "2026-10-31T09:35:46.268Z",
+      "finishedAt": "2026-10-31T09:36:09.060Z",
+      "newline": "crlf",
+      "taskId": "notepad-task-31e5aa92-5df0-4344-b9d0-eeee149c07c8",
+      "sessionId": "autonomy-2dc8abee-92ae-480f-8824-890616e782b4",
+      "status": "succeeded",
+      "goal": {
+        "copyHash": "51a0a75e41844e4e01f89c7b7511c934296cb06111c456173ef771e251aaaf33",
+        "encoding": "utf8",
+        "newline": "crlf",
+        "satisfied": true,
+        "sourceUnchanged": true
+      },
+      "sourceUnchanged": true,
+      "sourceHash": "5fd93a99d8796b5de058eabedd6f6058f0a73cec4faa12c9ecb1d8ed35b5c60e",
+      "exactCopy": true,
+      "copyHash": "51a0a75e41844e4e01f89c7b7511c934296cb06111c456173ef771e251aaaf33",
+      "onlyExpectedNewFile": true,
+      "nativeJournalVerified": true,
+      "planningVerified": true,
+      "journal": [
+        {
+          "step": "open",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "edit",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "save-copy",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "save-copy-dialog",
+            "window": "native-window"
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "index": 1,
+          "step": "open",
+          "status": "verified",
+          "requestStatus": "completed",
+          "model": "synthetic-local-planner",
+          "usage": null,
+          "estimatedCostUsd": 0
+        },
+        {
+          "index": 2,
+          "step": "edit",
+          "status": "verified",
+          "requestStatus": "completed",
+          "model": "synthetic-local-planner",
+          "usage": null,
+          "estimatedCostUsd": 0
+        },
+        {
+          "index": 3,
+          "step": "save-copy",
+          "status": "verified",
+          "requestStatus": "completed",
+          "model": "synthetic-local-planner",
+          "usage": null,
+          "estimatedCostUsd": 0
+        }
+      ]
+    },
+    {
+      "id": "deepseek-three-rounds",
+      "evidenceFixture": "deskshell-notepad-task-rAEZ8F",
+      "kind": "live-deepseek-native-notepad",
+      "nativeUiAcceptance": true,
+      "nativeProfile": "notepad-11.2607.14.0-zh-CN-candidate-v2",
+      "defaultServiceProfile": false,
+      "startedAt": "2026-10-31T09:36:24.746Z",
+      "finishedAt": "2026-10-31T09:36:50.389Z",
+      "newline": "crlf",
+      "taskId": "notepad-task-920c25f9-3e32-427a-9573-de8950d874b8",
+      "sessionId": "autonomy-877536c5-2036-4c24-b7d3-37261765f0af",
+      "status": "succeeded",
+      "goal": {
+        "copyHash": "dd20bc3d79c266f9d806c6512239c1f8247e833435d73e0c22ac3d844bb7bd97",
+        "encoding": "utf8",
+        "newline": "crlf",
+        "satisfied": true,
+        "sourceUnchanged": true
+      },
+      "sourceUnchanged": true,
+      "sourceHash": "d9e678f52d726e94b024cdab5432a0728f1b6cf6b675c23363733b21ba3eba58",
+      "exactCopy": true,
+      "copyHash": "dd20bc3d79c266f9d806c6512239c1f8247e833435d73e0c22ac3d844bb7bd97",
+      "onlyExpectedNewFile": true,
+      "nativeJournalVerified": true,
+      "planningVerified": true,
+      "journal": [
+        {
+          "step": "open",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "edit",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "save-copy",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "save-copy-dialog",
+            "window": "native-window"
+          }
+        }
+      ],
+      "rounds": [
+        {
+          "index": 1,
+          "step": "open",
+          "status": "verified",
+          "requestStatus": "completed",
+          "model": "deepseek-flash",
+          "usage": {
+            "promptTokens": 664,
+            "completionTokens": 179,
+            "totalTokens": 843
+          },
+          "estimatedCostUsd": 0.0012618
+        },
+        {
+          "index": 2,
+          "step": "edit",
+          "status": "verified",
+          "requestStatus": "completed",
+          "model": "deepseek-flash",
+          "usage": {
+            "promptTokens": 679,
+            "completionTokens": 211,
+            "totalTokens": 890
+          },
+          "estimatedCostUsd": 0.0012834
+        },
+        {
+          "index": 3,
+          "step": "save-copy",
+          "status": "verified",
+          "requestStatus": "completed",
+          "model": "deepseek-flash",
+          "usage": {
+            "promptTokens": 683,
+            "completionTokens": 127,
+            "totalTokens": 810
+          },
+          "estimatedCostUsd": 0.0012864
+        }
+      ],
+      "newRequests": 3
+    },
+    {
+      "id": "default-service",
+      "evidenceFixture": "deskshell-notepad-task-HnCZB2",
+      "kind": "approved-native-notepad",
+      "nativeUiAcceptance": true,
+      "nativeProfile": "notepad-11.2607.14.0-zh-CN-v2",
+      "defaultServiceProfile": true,
+      "startedAt": "2026-10-31T09:39:06.471Z",
+      "finishedAt": "2026-10-31T09:39:21.627Z",
+      "newline": "crlf",
+      "taskId": "notepad-task-f850af53-ef7e-44e5-bcd4-dfbbaa43f855",
+      "sessionId": null,
+      "status": "succeeded",
+      "goal": {
+        "copyHash": "30b3aef280a740fbdd3d171361e2e26f8a530f3926049cab4581e6425f665b83",
+        "encoding": "utf8",
+        "newline": "crlf",
+        "satisfied": true,
+        "sourceUnchanged": true
+      },
+      "sourceUnchanged": true,
+      "sourceHash": "49661c5268e7801fd36458a03ea220c82ca9472ef9c9d08f2c38a98ce1265ecb",
+      "exactCopy": true,
+      "copyHash": "30b3aef280a740fbdd3d171361e2e26f8a530f3926049cab4581e6425f665b83",
+      "onlyExpectedNewFile": true,
+      "nativeJournalVerified": true,
+      "planningVerified": true,
+      "journal": [
+        {
+          "step": "open",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "edit",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "explicit-open",
+            "window": "native-window"
+          }
+        },
+        {
+          "step": "save-copy",
+          "phase": "verified",
+          "evidence": {
+            "buffer": "accessibility-text",
+            "bufferComplete": true,
+            "document": "single-tab-marker",
+            "inputMode": "targeted",
+            "path": "save-copy-dialog",
+            "window": "native-window"
+          }
+        }
+      ],
+      "profileProbe": {
+        "available": true,
+        "profileVerified": true,
+        "runtimeVerified": false,
+        "installedVersion": "11.2607.14.0"
+      },
+      "secondTaskRejectedBeforeInput": true
+    }
+  ],
+  "faultAcceptance": [
+    {
+      "scenario": "buffer-change",
+      "evidenceFixture": "deskshell-native-faults-wTiCso/deskshell-notepad-task-Jek6m2",
+      "passed": true,
+      "status": "needs_attention",
+      "code": "BUFFER_CHANGED",
+      "sourceUnchanged": true,
+      "noOutput": true,
+      "humanBufferPreserved": true
+    },
+    {
+      "scenario": "external-dialog",
+      "evidenceFixture": "deskshell-native-faults-N2Wqvw/deskshell-notepad-task-yqZs9q",
+      "passed": true,
+      "status": "needs_attention",
+      "code": "GUARD_UNLEASED_EVENT",
+      "sourceUnchanged": true,
+      "noOutput": true
+    },
+    {
+      "scenario": "driver-closed",
+      "evidenceFixture": "deskshell-native-faults-o9bgYl/deskshell-notepad-task-t7gcm6",
+      "passed": true,
+      "status": "needs_attention",
+      "code": "NOTEPAD_DRIVER_CLOSED",
+      "sourceUnchanged": true,
+      "noOutput": true
+    },
+    {
+      "scenario": "guard-crashed",
+      "evidenceFixture": "deskshell-native-faults-gBpGW8/deskshell-notepad-task-5NYnpd",
+      "passed": true,
+      "status": "needs_attention",
+      "code": "GUARD_EXITED",
+      "sourceUnchanged": true,
+      "noOutput": true
+    }
+  ],
+  "liveApi": {
+    "newNativeRequests": 3,
+    "nativeTokens": 2543,
+    "nativeEstimatedCostUsd": 0.0038316,
+    "goalTotalRequests": 6,
+    "goalTotalEstimatedCostUsd": 0.0076659,
+    "estimateIsInvoice": false
+  },
+  "regression": {
+    "passed": 70,
+    "skipped": [
+      "doctor",
+      "doctor.json",
+      "shell.ui",
+      "recorder.mode"
+    ],
+    "headless": true,
+    "isolatedFixture": "deskshell-native-release-6ba9ca554b514cf791d3105515ee8425",
+    "followupAfterReleaseGateEnabled": {
+      "profileSelection": 8,
+      "defaultNativeServiceVerified": true
+    }
+  },
+  "limitations": [
+    "Exact installed version and culture only; per-app language is rechecked through actual controls.",
+    "Any interactive desktop input invalidates native continuity; this is not a same-account UI automation sandbox.",
+    "Only the approved open/edit/save-copy workflow is planned; the model cannot change text, paths, grants or approvals.",
+    "Each production host owns one document task; another task requires host restart and a new plan.",
+    "Unknown effects are preserved for inspection; no application Undo or automatic UI replay."
+  ],
+  "developmentNotes": [
+    "Earlier synthetic/window-guided experiments are separate evidence.",
+    "Compatibility failures and input conflicts were recorded during development and were not counted as successful acceptance.",
+    "The external-dialog fault injector was changed to async so the monitor could process events without a blocked parent event loop."
+  ],
+  "finalSourceSha256": {
+    "packages/drivers/windows/notepad.ts": "e0772aafd07b5b72e4ff2d280edca29ab6cd2b98e4cb1aeafec40c899cb73774",
+    "packages/drivers/windows/notepad.ps1": "558b577eaeeda16d5d3b45984bf0afdd21ea8f04cbeec868967d333c0e889193",
+    "packages/drivers/windows/notepad-session-guard.ts": "02774f7b22f0dcfaa28373f2a1ab34f839fb01dc1bfd1eae640b59c2baa6d04a",
+    "packages/drivers/windows/notepad-session-guard.ps1": "bb77387c989a60d9c502c346a15ed5a2735c23e88bf135448c1f492d8105f91c",
+    "packages/drivers/windows/notepad-session-guard.cs": "d44b47c1b49acf41562f753238484c4a9a3bbf268d8a98af9c0a6bd0fdb43b8c",
+    "packages/drivers/windows/notepad-profile-selection.ts": "d86943598be3ebb06e0413b2d75deba8b8be186a1427c50de3a7028e8226219b",
+    "packages/drivers/windows/notepad-profile-metadata.ps1": "7196707ddacdf717a92ac8bd53efccfee667a13bed4e1939589166f4f9a5c2db",
+    "packages/runtime/src/notepad-task.ts": "4a7782b83af94e64f04e95cd94d8cbda46871eee767e8faed23b82dc72cdb3c9",
+    "packages/agent/src/autonomy.ts": "194a7346af30062e0070339a7ab693b471f9beef428760c99c13b138905e5e4d",
+    "packages/agent/src/notepad-agent.ts": "3349eedd9fd1e0068492162b80f917ef8d21a043756b31882b4bc6f6511d1e52",
+    "packages/agent/src/service.ts": "d7cc00e4acdfadc8cfde6124f6978c8834de4e01d5f5e5d745c24e23d4af3285",
+    "apps/agent/cli.ts": "53a221d1002688002af69b87b2c571aa306ba5dea4f2ca2dc3328f8ee1dda583",
+    "scripts/notepad-native-live-smoke.ts": "5aa39e6dfa3f6ea3cd759b82761b7de4924e5586906d99152790e5447c5a78e3",
+    "scripts/notepad-native-fault-smoke.ts": "97249dd0b068d4beab8ce6517579710e000812f194e75337a75bcd7f56811a19",
+    "scripts/lib/notepad-native-fault.ps1": "1b70b2819f9fa2bd5d0ae0d880d516a57dac315ec1bbf0151c1cd40ae64f56bd",
+    "scripts/regress.ts": "77576c2d3d76f0aa608909eaa17b82da85b4853b370e3265e95a29e13cb6a8b6",
+    "scripts/test-notepad-task.ts": "8108897d076edb18b5f0681fdfe2f3348902f823a65d6f4490c41dfbb5ea7798",
+    "scripts/test-autonomy.ts": "87afb719500d511d7520f71c7942ea3d967b1190a0c88f29843492104dee9ba1",
+    "scripts/test-notepad-agent.ts": "5edd41fb3963cbd48ba3a649d68579c49f27003811fb1a91688325956b3cb54e",
+    "scripts/test-application-service.ts": "c1f51f4ec8b5680c106c1d99325dd331ebbcb011216786fd8fc4d0bb59b0652f",
+    "scripts/notepad-native-test.ts": "b63d8f2d67383d2dda6616485ae26a040a2ce4ea48d3a0890e9c8a040d724ba6",
+    "scripts/test-notepad-session-guard.ts": "4a97eaadfea533ab6795085c6e298299ee95835ffdf0db8ad75ac871e202861b",
+    "scripts/test-notepad-profile-selection.ts": "df44aa672991db690611887622506bb438ffc098e6fa132fdc084bfde6bb7d71"
+  }
+}
